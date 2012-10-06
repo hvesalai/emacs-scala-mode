@@ -1,0 +1,14 @@
+A new scala-mode for emacs.
+
+The current scala-mode with for emacs that comes scala-dist is beyond
+repair. It is overly complex and hard to maintain.
+
+This new major mode intends to be simple, yet provide the following:
+- indenting
+- highlighting
+- motion commands
+
+The mode will target scala code written in a functinal style.
+
+Check out Example.scala to see how it indents.
+
