@@ -12,14 +12,14 @@ Indenting happens relative to an indent anchor. Usually the indent anchor is the
 the declaration or expression is inside a parameter list, then the anchor is inside the list.
 */
 
-def f(s: String <%,
-      i: Int) = 
+def f(s: String,
+      i: Int) =
   s.take(i) // indented relative to 'def'
 
 /* */ val x = foo(
   zot, // indented relative to '/* */'
   someThing 
-     map (x=a===> x.length) // indented relative to 'someThing'
+     map (x => x.length) // indented relative to 'someThing'
 )
 
 val x =
@@ -41,7 +41,7 @@ Any line not beginning with a declaration or expression start reserved word (i.e
 This rule does not apply in the following cases:
 - if the previous lines was empty
 - previous line was an annotation
-- previous statement ended with ';'
+- previous statement ended with ';,'
 - the current line starts a body (of declaration or anonymous function)
 - block or simple expression starts with an anonymous function (lambda) declaration
 */
@@ -89,6 +89,11 @@ List("foo", "bar")
       s.length
     )
 
+List("foo") map (
+  s => // start lambda
+  s.length // run-on rule does not apply
+)
+
 /*
 1.3 Parameter lists
 
@@ -102,6 +107,7 @@ of a line, it will be indented to the same column as the first paremeter groups 
 parentheses.
 - A closing parantheses that is on its own line, will be indented to the same column
   with the indent anchor.
+- Rule does not apply, if the first parameter was a lambda expression
 */
 
 class Foo(
@@ -181,12 +187,17 @@ val z = for { i <- 1 to 10,
         }
 
 /*
-1.7 If statements
+1.7 If and try statements
 
 If statements will be indented acording to the following rules:
 
-- The the body of the 'if' or 'else if' statement is a simple expression (i.e. not a block), then the next 'else if' or 'else' is aligned with the previous 'if' or 'else if',
+- If the the body of the 'if' or 'else if' statement is a simple expression (i.e. not a block), then the next 'else if' or 'else' is aligned with the previous 'if' or 'else if',
 - otherwise 'else if' and 'else' is aligned with previous block close.
+
+Try statements will be indented acording to the following rules:
+- If the body of the 'try' is a simple expression (i.e. not a block), then the next 'catch' is aligned with the previous try
+- otherwise 'catch' is aligned with previous block close.
+- Finally is aligned similarly
 */
 
 val x = if (kissa)
@@ -203,6 +214,25 @@ val y = if (kissa) {
 } else {
   zot
 }
+
+val a = try
+          foo()
+        catch {
+          case e => bar()
+        }
+
+val b = try {
+  foo()
+} catch {
+  case e => bar()
+} finally {
+  zot()
+}
+
+val c = try
+          zot()
+        finally
+          log("zotted")
 
 /*
 1.8 Block opening curly brackets on new line
@@ -232,3 +262,19 @@ class Foo
       "hello"
     }
 }
+
+/* 
+2. font-lock support
+*/
+
+/*
+2.1 Types
+*/
+
+val strings = Seq("""multi
+line"quote
+strings""", "normal strings", 'c')
+
+val `quoted id` = 1
+
+val symbol = 'Symbol
