@@ -12,3 +12,6 @@ The mode will target scala code written in a functinal style.
 
 Check out Example.scala to see how it indents.
 
+TODO:
+- indenting a row removes trailing whitespace and converts tabs to spaces
+

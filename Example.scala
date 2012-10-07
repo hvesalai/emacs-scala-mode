@@ -1,3 +1,4 @@
+
 /*
 1. Indenting
 
@@ -11,14 +12,14 @@ Indenting happens relative to an indent anchor. Usually the indent anchor is the
 the declaration or expression is inside a parameter list, then the anchor is inside the list.
 */
 
-def f(s: String,
+def f(s: String <%,
       i: Int) = 
   s.take(i) // indented relative to 'def'
 
 /* */ val x = foo(
   zot, // indented relative to '/* */'
-  someThing
-     map (x => x.length) // indented relative to 'someThing'
+  someThing 
+     map (x=a===> x.length) // indented relative to 'someThing'
 )
 
 val x =
