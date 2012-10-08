@@ -122,7 +122,7 @@ val f = foo(kissa,
             kala)
 
 val g = bar(
-  kissa
+  kissa,
   kala
 )
 

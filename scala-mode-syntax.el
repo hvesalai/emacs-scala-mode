@@ -8,7 +8,10 @@
 
 (require 'scala-mode-constants)
 
+;;;;
 ;;;; Scala syntax regular expressions
+;;;;
+
 ;;; Based on the Scala language specification 2.9.  Note: order is not
 ;;; the same as in the document, as here things are declared before
 ;;; used.
@@ -27,7 +30,14 @@
 (defconst scala-syntax:lower-group "[:lower:]")
 (defconst scala-syntax:letter-group (concat scala-syntax:lower-group scala-syntax:upper-group)) ;; TODO: add Lt, Lo, Nl
 (defconst scala-syntax:digit-group "0-9")
+(defconst scala-syntax:letterOrDigit-group (concat
+                                            scala-syntax:upperAndUnderscore-group 
+                                            scala-syntax:lower-group 
+                                            scala-syntax:digit-group))
 (defconst scala-syntax:opchar-group "!#%&*+/:<=>?@\\\\\\^|~\\-") ;; TODO: Sm, So
+
+;; Scala delimiters (Chapter 1), but no quotes
+(defconst scala-syntax:delimiter-group ".,;")
 
 ;; Integer Literal (Chapter 1.3.1)
 (defconst scala-syntax:nonZeroDigit-group "1-9")
@@ -147,50 +157,63 @@
 (defconst scala-syntax:after-reserved-symbol-underscore-re
   ;; what can be after reserved symbol _ (if there is something else, it
   ;; will be upper case letter per SLS)
-  (concat "$\\|[^" scala-syntax:upper-group scala-syntax:lower-group scala-syntax:digit-group "]"))
+  (concat "$\\|[^" scala-syntax:letterOrDigit-group "]"))
 
 (defconst scala-syntax:reserved-symbol-underscore-re
   ;; reserved symbol _
-  (concat "\\(^\\|[^" scala-syntax:upper-group scala-syntax:lower-group scala-syntax:digit-group "]\\)"
+  (concat "\\(^\\|[^" scala-syntax:letterOrDigit-group "]\\)"
           "\\(_\\)"
-          "\\($\\|[^" scala-syntax:upper-group scala-syntax:lower-group scala-syntax:digit-group "]\\)"))
+          "\\($\\|[^" scala-syntax:letterOrDigit-group "]\\)"))
+
+(defconst scala-syntax:reserved-symbols-unsafe-re
+  ;; reserved symbols. The regexp is unsafe as it does not
+  ;; check the context.
+  "\\([:=#@\u21D2\u2190]\\|=>\\|<[:%!?\\-]\\|>:\\)" )
 
 (defconst scala-syntax:reserved-symbols-re
   ;; reserved symbols and XML starts ('<!' and '<?')
   (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)" 
-          "\\([:=#@\u21D2\u2190]\\|=>\\|<[:%!?\\-]\\|>:\\)" 
+          scala-syntax:reserved-symbols-unsafe-re
           "\\($\\|[^" scala-syntax:opchar-group "]\\)"))
 
 (defconst scala-syntax:reserved-re
-  (concat scala-syntax:keywords-re "\\|" scala-syntax:reserved-symbols-re "\\|" scala-syntax:reserved-symbol-underscore-re))
+  (concat scala-syntax:keywords-re 
+          "\\|" scala-syntax:reserved-symbols-re 
+          "\\|" scala-syntax:reserved-symbol-underscore-re))
 
 (defconst scala-syntax:mustNotTerminate-keywords-re
-  "Keywords which cannot end a expression and are infact a sign of run-on."
-  (regexp-opt '("catch", "else", "extends", "finally",
-                "forSome", "match", "with", "yield") 'words))
+  (regexp-opt '("catch" "else" "extends" "finally"
+                "forSome" "match" "with" "yield") 'words)
+  "Keywords whiOAch cannot end a expression and are infact a sign of run-on.")
 
 (defconst scala-syntax:mustNotTerminate-re
-  "All keywords and symbols that cannot terminate a expression
-and are infact a sign of run-on, except for @, which may start
-an expression with annotation."
   (concat "\\(" scala-syntax:mustNotTerminate-keywords-re 
-          "\\|" scala-syntax:reserved-symbols-re "\\)"))
+          "\\|[.]\\)")
+  "All keywords and symbols that cannot terminate a expression
+and are infact a sign of run-on. Reserved-symbols not included.")
 
 (defconst scala-syntax:mustTerminate-re
+  (concat "\\([({\\[,;]\\|=>?\\|" scala-syntax:empty-line-re "\\)")
   "Symbols that must terminate an expression, i.e the following expression
-cannot be a run-on. This includes only , and ; and the empty line"
-  (concat "\\([,;]|" scala-syntax:empty-line-re "\\)"))
+cannot be a run-on. This includes only parenthesis, '=', '=>', ',' and ';'
+and the empty line")
 
 (defconst scala-syntax:mustNotContinue-re
-  "Keywords that begin an expression, i.e they cannot be run-on to the
-previous the line even if there is no semi in between."
-  ;; 'case' and 'while' are unclear. 'case' might belong to 'case class'
-  ;; while 'while' might belong to a 'do..while'
-  (regexp-opt '("abstract", "class", "def", "do", "final",
-                "for", "if", "implicit", "import", "lazy",
-                "new", "object", "override", "package", "private",
-                "protected", "return", "sealed", "throw",
-                "trait", "try", "type", "val", "var") 'words))
+  ;; Although SLS says case continues an expression, we say
+  ;; for the sake of indenting, it does not. Hence case is
+  ;; never a run-on of the previous line.
+  ;; While we cannot handle here since it could be 'do..while'
+  (concat "\\("
+          (regexp-opt '("abstract" "class" "def" "do" "final"
+                        "for" "if" "implicit" "import" "lazy"
+                        "new" "object" "override" "package" "private"
+                        "protected" "return" "sealed" "throw"
+                        "trait" "try" "type" "val" "var" "case") 
+                      'words)
+          "\\|[)}]\\|]\\)")
+  "Keywords that begin an expression and parenthesis that end an
+expression, i.e they cannot be run-on to the previous line even
+if there is no semi in between.")
 
 (defconst scala-syntax:double-arrow-re 
   "=>\\|\u21D2")
@@ -206,7 +229,10 @@ previous the line even if there is no semi in between."
   (re-search-forward scala-syntax:reserved-symbols-re nil t))
 
 
+;;;;
 ;;;; Character syntax table and related syntax-propertize functions
+;;;;
+
 ;;; The syntax table relies havily on the syntax-propertize-functions being
 ;;; run. Hence this syntax requires at least emacs 24, which introduced
 ;;; this new facility.
@@ -239,8 +265,9 @@ previous the line even if there is no semi in between."
     (modify-syntax-entry ?\] ")[" syntab)
     (modify-syntax-entry ?\} "){" syntab)
 
-    ;; _ is upper-case letter, but will be modified to be punctuation
-    ;; when in reserved symbol position by syntax-propertize-function
+    ;; _ is upper-case letter, but will be modified to be symbol
+    ;; constituent when in reserved symbol position by
+    ;; syntax-propertize-function
     (modify-syntax-entry ?\_ "w" syntab)
 
     ;; by default all opchars are punctuation, but they will be
@@ -296,7 +323,7 @@ match-group 'match-group'"
                       'syntax-table 
                       ,value))
 
-(defun scala-syntax:propertize-characterLiterals (start end)
+(defun scala-syntax:propertize-characterLiterals (start e§nd)
   "Mark start and end of character literals as syntax class
 7 (string quotes). Only valid character literals will be marked."
   (save-excursion
@@ -344,9 +371,9 @@ get marked. This means invalid one-line strings will not be fontified."
           (scala-syntax:put-syntax-table-property 1 '(15 . nil)))))))
 
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
-  "Mark all underscores (_) as punctuation (syntax 1) or upper
-case letter (syntax 2). Also mark opchars in idrest as symbol
-constituents (syntax 3)"
+  "Mark all underscores (_) as symbol constituents (syntax 3) or
+upper case letter (syntax 2). Also mark opchars in idrest as
+symbol constituents (syntax 3)"
   (save-excursion
     (goto-char start)
     (while (re-search-forward "_" end t)
@@ -356,17 +383,17 @@ constituents (syntax 3)"
          match-beg match-end 'syntax-table
          (if (= match-beg (line-beginning-position))
              (if (looking-at scala-syntax:after-reserved-symbol-underscore-re)
-                 '(1 . nil) ; punctuation
+                 '(3 . nil) ; symbol constituent
                '(2 . nil)) ; word syntax
            (save-excursion
              (goto-char (1- match-beg))
              (if (looking-at scala-syntax:reserved-symbol-underscore-re)
-                 '(1 . nil) ; punctuation
+                 '(3 . nil) ; symbol constituent
                ;; check for opchars that should be marked as symbol constituents (3)
                (goto-char match-end)
                (when (looking-at scala-syntax:op-re)
                  (scala-syntax:put-syntax-table-property 0 '(3 . nil)))
-               '(2 . nil))))))))) ;; word syntax (2) for the '_'
+               '(3 . nil))))))))) ;; symbol constituent syntax (3) also for the '_'
 
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function" 
@@ -374,3 +401,72 @@ constituents (syntax 3)"
   (scala-syntax:propertize-stringLiterals start end)
   (scala-syntax:propertize-underscore-and-idrest start end))
 
+
+;;;;
+;;;; Syntax navigation functions
+;;;;
+
+(defun scala-syntax:beginning-of-code-line ()
+  (interactive)
+  "Move to the beginning of code on the line, or to the end of
+the line, if the line is empty"
+  (let ((eol (line-end-position)))
+    (beginning-of-line)
+    (forward-comment (buffer-size))
+    (if (> (point) eol)
+        eol
+      (skip-syntax-forward " " eol))))
+
+(defun scala-syntax:looking-back-empty-line-p ()
+  "Return t if the previous line is empty"
+  (save-excursion
+    (skip-syntax-backward " " (line-beginning-position))
+    (and (bolp)
+         (forward-line -1)
+         (looking-at scala-syntax:empty-line-re))))
+
+(defun scala-syntax:skip-backward-ignorable ()
+  "Move backwards over ignorable whitespace and comments. A
+completely empty line is not ignorable and will not be moved
+over. Returns the number of points moved (will be negative)."
+  (while (and (not (scala-syntax:looking-back-empty-line-p))
+              (forward-comment -1)))
+  (skip-syntax-backward " " (line-beginning-position)))
+
+(defun scala-syntax:looking-back-token (re)
+  "Return the start position of the token matched by re, if the
+current position is preceeded by it, or nil if not. All ignorable
+comments and whitespace are ignored, i.e. does not search past an
+empty line. Expects to be outside of comment."
+  (save-excursion
+    ;; skip back all comments
+    (scala-syntax:skip-backward-ignorable)
+    (let ((end (point)))
+      ;; skip back punctuation or ids (words and related symbols and delimiters)
+      (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group))
+          (/= 0 (skip-syntax-backward "."))
+          (/= 0 (skip-syntax-backward "("))
+          (/= 0 (skip-syntax-backward "w_'$")))
+      ;; if we didn't move, then we didn't find anything
+      (if (= (point) end)
+          nil
+        (if (looking-at re) (point) nil)))))
+
+(defun scala-syntax:runonp (&optional point) 
+  (interactive)
+  "Returns t if the current point (or point at 'point) is on a
+line that is a run-on to previous line."
+  (save-excursion
+    (when point (goto-char point))
+    (scala-syntax:beginning-of-code-line)
+    (let ((p (not (or (looking-at scala-syntax:mustNotContinue-re)
+                      (scala-syntax:looking-back-empty-line-p)
+                      (scala-syntax:looking-back-token 
+                       scala-syntax:mustTerminate-re)))))
+      (when p (message "runon @ %d" (point)))
+      p )))
+    
+;    (defconst scala-syntax:mustNotTerminate-re
+;      scala-syntax:reserved-symbols-unsafe-re
+;(defconst scala-syntax:mustTerminate-re
+;(defconst scala-syntax:mustNotContinue-re

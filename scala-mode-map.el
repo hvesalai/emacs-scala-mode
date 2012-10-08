@@ -18,6 +18,7 @@
     (scala-mode-map:define-keys 
      keymap
      (([backspace]                'backward-delete-char-untabify)
+      ([(control c)(control r)]   'scala-syntax:runonp) ; TODO remove
       ;;       ("\r"                       'scala-newline)
       ([(control c)(control c)]   'comment-region)
       ;;       ("}"                        'scala-electric-brace)
