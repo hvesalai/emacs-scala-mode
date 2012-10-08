@@ -110,7 +110,7 @@ parentheses.
 - Rule does not apply, if the first parameter was a lambda expression
 */
 
-class Foo(
+class Foo( /* */
   i: String, // one step from indent anchor column
   k: String
 ) // at indent anchor column

@@ -193,9 +193,10 @@
 and are infact a sign of run-on. Reserved-symbols not included.")
 
 (defconst scala-syntax:mustTerminate-re
-  (concat "\\([({\\[,;]\\|=>?\\|" scala-syntax:empty-line-re "\\)")
-  "Symbols that must terminate an expression, i.e the following expression
-cannot be a run-on. This includes only parenthesis, '=', '=>', ',' and ';'
+  (concat "\\([,;]\\|=>?\\|\\s(\\|" scala-syntax:empty-line-re "\\)")
+  "Symbols that must terminate an expression or start a
+sub-expression, i.e the following expression cannot be a
+run-on. This includes only parenthesis, '=', '=>', ',' and ';'
 and the empty line")
 
 (defconst scala-syntax:mustNotContinue-re
@@ -210,7 +211,7 @@ and the empty line")
                         "protected" "return" "sealed" "throw"
                         "trait" "try" "type" "val" "var" "case") 
                       'words)
-          "\\|[)}]\\|]\\)")
+          "\\|\\s)\\)")
   "Keywords that begin an expression and parenthesis that end an
 expression, i.e they cannot be run-on to the previous line even
 if there is no semi in between.")
@@ -433,7 +434,7 @@ over. Returns the number of points moved (will be negative)."
               (forward-comment -1)))
   (skip-syntax-backward " " (line-beginning-position)))
 
-(defun scala-syntax:looking-back-token (re)
+(defun scala-syntax:looking-back-token (re &optional limit)
   "Return the start position of the token matched by re, if the
 current position is preceeded by it, or nil if not. All ignorable
 comments and whitespace are ignored, i.e. does not search past an
@@ -443,30 +444,12 @@ empty line. Expects to be outside of comment."
     (scala-syntax:skip-backward-ignorable)
     (let ((end (point)))
       ;; skip back punctuation or ids (words and related symbols and delimiters)
-      (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group))
-          (/= 0 (skip-syntax-backward "."))
-          (/= 0 (skip-syntax-backward "("))
-          (/= 0 (skip-syntax-backward "w_'$")))
+      (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group limit))
+          (/= 0 (skip-syntax-backward "." limit))
+          (/= 0 (skip-syntax-backward "(" limit))
+          (/= 0 (skip-syntax-backward ")" limit))
+          (/= 0 (skip-syntax-backward "w_'$" limit)))
       ;; if we didn't move, then we didn't find anything
       (if (= (point) end)
           nil
         (if (looking-at re) (point) nil)))))
-
-(defun scala-syntax:runonp (&optional point) 
-  (interactive)
-  "Returns t if the current point (or point at 'point) is on a
-line that is a run-on to previous line."
-  (save-excursion
-    (when point (goto-char point))
-    (scala-syntax:beginning-of-code-line)
-    (let ((p (not (or (looking-at scala-syntax:mustNotContinue-re)
-                      (scala-syntax:looking-back-empty-line-p)
-                      (scala-syntax:looking-back-token 
-                       scala-syntax:mustTerminate-re)))))
-      (when p (message "runon @ %d" (point)))
-      p )))
-    
-;    (defconst scala-syntax:mustNotTerminate-re
-;      scala-syntax:reserved-symbols-unsafe-re
-;(defconst scala-syntax:mustTerminate-re
-;(defconst scala-syntax:mustNotContinue-re
