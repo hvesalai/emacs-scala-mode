@@ -18,10 +18,9 @@
    (format "The Scala mode has been tested only on Emacs version 23.x (and not your Emacs version %s.%s)"  
            emacs-major-version  emacs-minor-version)))
 
-;; Attach .scala files to the scala-mode
-(add-to-list 'auto-mode-alist '("\\.scala\\'" . scala-mode))
-(modify-coding-system-alist 'file "\\.scala\\'" 'utf-8)
-
+(defgroup scala nil
+  "A programming mode for the Scala language 2.9"
+  :group 'languages)
 
 (defmacro scala-mode:make-local-variables (&rest quoted-names)
   (cons 'progn (mapcar #'(lambda (quoted-name) `(make-local-variable ,quoted-name)) quoted-names)))
@@ -62,7 +61,9 @@ When started, runs `scala-mode-hook'.
    'comment-end
    'comment-start-skip
    'comment-column
-   'comment-multi-line)
+   'comment-multi-line
+   'indent-line-function
+   'indent-tabs-mode)
 
   (add-hook 'syntax-propertize-extend-region-functions
             'scala-syntax:propertize-extend-region)
@@ -84,14 +85,14 @@ When started, runs `scala-mode-hook'.
         comment-column                  0
         comment-multi-line              t
         ;; TODO: comment-indent-function
+
+        indent-line-function            'scala-indent:indent-line
+        indent-tabs-mode                nil
         )
   (use-local-map scala-mode-map)
   (turn-on-font-lock)
 )
 
-        
-        
-
-        
-        
-  
+;; Attach .scala files to the scala-mode
+(add-to-list 'auto-mode-alist '("\\.scala\\'" . scala-mode))
+(modify-coding-system-alist 'file "\\.scala\\'" 'utf-8)

@@ -216,8 +216,8 @@ and the empty line")
 expression, i.e they cannot be run-on to the previous line even
 if there is no semi in between.")
 
-(defconst scala-syntax:double-arrow-re 
-  "=>\\|\u21D2")
+(defconst scala-syntax:body-start-re 
+  "=>?\\|\u21D2")
 
 (defconst scala-syntax:multiLineStringLiteral-start-re
   "\\(\"\\)\"\"")
@@ -274,10 +274,10 @@ if there is no semi in between.")
     ;; by default all opchars are punctuation, but they will be
     ;; modified by syntax-propertize-function to be symbol
     ;; constituents when a part of varid or capitalid
-    (dolist (char (mapcar 'identity "#%:<=>@!&*+-/?\\^|~\u21D2\u2190")) ;; TODO: Sm, So
+    (dolist (char (mapcar 'identity "!#%&*+/:<=>?@^|~-\u21D2\u2190")) ;; TODO: Sm, So
       (modify-syntax-entry char "." syntab))
 
-    ;; what can I say? It's the escape char.
+    ;; for clarity, the \ is alone here and not in the string above
     (modify-syntax-entry ?\\ "." syntab)
   
     ;; scala strings cannot span lines, so we mark
@@ -413,6 +413,7 @@ symbol constituents (syntax 3)"
 the line, if the line is empty"
   (let ((eol (line-end-position)))
     (beginning-of-line)
+    ;; TODO: check if we are inside a comment and come out of it
     (forward-comment (buffer-size))
     (if (> (point) eol)
         eol
@@ -453,3 +454,8 @@ empty line. Expects to be outside of comment."
       (if (= (point) end)
           nil
         (if (looking-at re) (point) nil)))))
+
+(defun scala-syntax:backward-parameter-groups ()
+  "Move back over all parameter groups to the start of the first one."
+  (while (scala-syntax:looking-back-token "\\s)" 1)
+    (backward-list)))

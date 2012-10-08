@@ -19,7 +19,7 @@ def f(s: String,
 /* */ val x = foo(
   zot, // indented relative to '/* */'
   someThing 
-     map (x => x.length) // indented relative to 'someThing'
+      map (x => x.length) // indented relative to 'someThing'
 )
 
 val x =
@@ -73,7 +73,7 @@ class Foo(
   // body here
 }
 
-trait Leijona( x: Int,
+trait Leijona( x: Int with Int,
                y: Int )
     extends Kissa // run-one line, acnhor is 'trait'
     with Harja // ditto
@@ -85,9 +85,10 @@ def someThingReallyLong(having: String, aLot: Int, ofParameters: Boolean):
 }
 
 List("foo", "bar") 
-    map ( s => // 'map' indented as run-on, 's =>' start lambda
-      s.length
-    )
+    map { s =>
+      s.length // 'map' indented as run-on, 's =>' start lambda
+          toString
+    }
 
 List("foo") map (
   s => // start lambda
@@ -115,8 +116,8 @@ class Foo( /* */
   k: String
 ) // at indent anchor column
 
-def f(   i: String, j: String,
-         k: String) // indented acording to previous
+def f( /* */ i: String, j: String with Bar,
+       k: String) // indented acording to previous
 
 val f = foo(kissa,
             kala)
@@ -245,22 +246,22 @@ While not couraged, should the opening curly bracket of a block be on a new line
   specified return value and one step from anchor otherwise.
 */
 
-class Foo 
-{
+class Foo {
   def foo
   {
-    println(zot)
+    zot
+        foo
   }
 
   def bar =
-    {
+  {
       zot
-    }
+  }
 
   val zot =
-    {
-      "hello"
-    }
+  {
+"hello"
+  }
 }
 
 /* 
