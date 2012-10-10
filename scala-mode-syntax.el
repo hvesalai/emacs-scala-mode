@@ -34,7 +34,7 @@
                                             scala-syntax:upperAndUnderscore-group 
                                             scala-syntax:lower-group 
                                             scala-syntax:digit-group))
-(defconst scala-syntax:opchar-group "!#%&*+/:<=>?@\\\\\\^|~\\-") ;; TODO: Sm, So
+(defconst scala-syntax:opchar-group "!#%&*+/:<=>?@\\\\\\^|~-") ;; TODO: Sm, So
 
 ;; Scala delimiters (Chapter 1), but no quotes
 (defconst scala-syntax:delimiter-group ".,;")
@@ -184,7 +184,8 @@
 (defconst scala-syntax:mustNotTerminate-keywords-re
   (regexp-opt '("catch" "else" "extends" "finally"
                 "forSome" "match" "with" "yield") 'words)
-  "Keywords whiOAch cannot end a expression and are infact a sign of run-on.")
+  "Keywords whiOAch cannot end a expression and are infact a sign
+  of run-on.")
 
 (defconst scala-syntax:mustNotTerminate-re
   (concat "\\(" scala-syntax:mustNotTerminate-keywords-re 
@@ -193,7 +194,7 @@
 and are infact a sign of run-on. Reserved-symbols not included.")
 
 (defconst scala-syntax:mustTerminate-re
-  (concat "\\([,;]\\|=>?\\|\\s(\\|" scala-syntax:empty-line-re "\\)")
+  (concat "\\([,;]\\|=>?\\([ ]\\|$\\)\\|\\s(\\|" scala-syntax:empty-line-re "\\)")
   "Symbols that must terminate an expression or start a
 sub-expression, i.e the following expression cannot be a
 run-on. This includes only parenthesis, '=', '=>', ',' and ';'
@@ -211,13 +212,23 @@ and the empty line")
                         "protected" "return" "sealed" "throw"
                         "trait" "try" "type" "val" "var" "case") 
                       'words)
-          "\\|\\s)\\)")
+          "\\|[]})]\\)")
   "Keywords that begin an expression and parenthesis that end an
 expression, i.e they cannot be run-on to the previous line even
 if there is no semi in between.")
 
 (defconst scala-syntax:body-start-re 
-  "=>?\\|\u21D2")
+  "\\(=>?\\|\u21D2\\)\\([ ]\\|$\\)"
+  "A regexp for detecting if a line ends with '=', '=>' or the
+  unicode symbol 'double arrow'")
+
+(defconst scala-syntax:continue-body-keywords-re
+  (regexp-opt '("catch" "else" "finally" "forSome" "match" "yield") 'words)
+  "Keywords which continue a statement, but have their own body")
+
+(defconst scala-syntax:list-keywords-re
+  (regexp-opt '("var" "val" "import") 'words)
+  ("Keywords that can start a list"))
 
 (defconst scala-syntax:multiLineStringLiteral-start-re
   "\\(\"\\)\"\"")
@@ -410,14 +421,21 @@ symbol constituents (syntax 3)"
 (defun scala-syntax:beginning-of-code-line ()
   (interactive)
   "Move to the beginning of code on the line, or to the end of
-the line, if the line is empty"
-  (let ((eol (line-end-position)))
-    (beginning-of-line)
-    ;; TODO: check if we are inside a comment and come out of it
-    (forward-comment (buffer-size))
+the line, if the line is empty. Return the new point.
+Not to be called on a line whose start is inside a comment."
+  (beginning-of-line)
+  (let ((eol (line-end-position))
+        (pos (point)))
+
+    (while (and (forward-comment 1)
+                (< (point) eol))
+      (setq pos (point)))
+    ;; Now we are either on a different line or at eol.
+    ;; Pos is the last point one the starting line.
     (if (> (point) eol)
-        eol
-      (skip-syntax-forward " " eol))))
+        (goto-char pos)
+      (skip-syntax-forward " " eol)
+      (point))))
 
 (defun scala-syntax:looking-back-empty-line-p ()
   "Return t if the previous line is empty"
@@ -456,6 +474,46 @@ empty line. Expects to be outside of comment."
         (if (looking-at re) (point) nil)))))
 
 (defun scala-syntax:backward-parameter-groups ()
-  "Move back over all parameter groups to the start of the first one."
-  (while (scala-syntax:looking-back-token "\\s)" 1)
+  "Move back over all parameter groups to the start of the first
+one."
+  (while (scala-syntax:looking-back-token "[])]" 1)
     (backward-list)))
+
+(defun scala-syntax:looking-back-else-if-p ()
+  ;; TODO: rewrite using (scala-syntax:if-skipped (scala:syntax:skip-backward-else-if))
+  (save-excursion
+    (if (and (scala-syntax:looking-back-token "\\s)" 1)
+             (backward-list)
+             (prog1 (scala-syntax:looking-back-token "if")
+               (goto-char (match-beginning 0)))
+             (prog1 (scala-syntax:looking-back-token "else")
+               (goto-char (match-beginning 0))))
+        (point) nil)))
+    
+(defun scala-syntax:backward-sexp () 
+  "Move backward one scala expression. It can be: parameter
+  list (value or type), id, reserved symbol, keyword, block, or
+  literal. Delimiters (.,;) and comments are skipped
+  silently. Position is placed at the beginning of the skipped
+  expression."
+  (interactive)
+  ;; emacs knows how to properly skip: lists, varid, capitalid,
+  ;; strings, symbols, chars, quotedid. What we have to handle here is
+  ;; most of all ids made of op chars
+
+  ;; skip comments, whitespace and scala delimiter chars .,; so we
+  ;; will be at the start of something interesting
+  (forward-comment (- (buffer-size)))
+  (while (> 0 (+ (skip-syntax-backward " ")
+                 (skip-chars-backward scala-syntax:delimiter-group))))
+  
+  (if (not (= (char-syntax (char-before)) ?\.))
+      ;; emacs can handle everything but opchars
+      (backward-sexp)
+    ;; just because some char has punctuation syntax, doesn't mean the
+    ;; position has it (since the propertize function can change
+    ;; things. So... let's first try to handle it as punctuation and
+    ;; if we go no success, then we let emacs try
+    (when (= (skip-syntax-backward ".") 0)
+      (backward-sexp))))
+    

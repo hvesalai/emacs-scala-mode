@@ -18,6 +18,8 @@
     (scala-mode-map:define-keys 
      keymap
      (([backspace]                'backward-delete-char-untabify)
+      ((kbd "C-M-b")              'scala-syntax:backward-sexp)
+      ([(control c)(control r)]   'scala-indent:goto-block-anchor)
       ;;       ("\r"                       'scala-newline)
       ([(control c)(control c)]   'comment-region)
       ;;       ("}"                        'scala-electric-brace)
