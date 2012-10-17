@@ -11,6 +11,7 @@
 (require 'scala-mode-fontlock)
 (require 'scala-mode-indent)
 (require 'scala-mode-map)
+(require 'cc-cmds)
 
 ;; Tested only for emacs 23
 (unless (<= 23 emacs-major-version)
@@ -24,6 +25,30 @@
 
 (defmacro scala-mode:make-local-variables (&rest quoted-names)
   (cons 'progn (mapcar #'(lambda (quoted-name) `(make-local-variable ,quoted-name)) quoted-names)))
+
+(defconst scala-mode:comment-line-start
+  (concat "[ \t]*"            ; whitespace
+          "\\(//+\\|\\**\\)"  ; comment start
+          "[ \t]*"))          ; whitespace
+
+(defconst scala-mode:paragraph-start
+  (concat scala-mode:comment-line-start
+          "\\($"               ; empty line
+          "\\|=[^=\n]+=[ ]*$"   ; heading 1
+          "\\|==[^=\n]+==[ ]*$"   ; heading 2
+          "\\|===[^=\n]+===[ ]*$"   ; heading 3
+          "\\|====+[^=\n]+====+[ ]*$"   ; heading 4-n
+          "\\|-"               ; unordered liststs
+          "\\|[1IiAa]\\."      ; ordered lists
+;          "\\|{{{"            ; code block start
+;          "\\|}}}"            ; code block end
+          "\\|@[a-zA-Z]+\\>"   ; annotations
+          "\\)"
+          ))
+
+(defconst scala-mode:paragraph-separate
+  (concat scala-mode:comment-line-start "$"))
+
 
 ;; (defun scala-mode ()
 ;;   "Major mode for editing scala code.
@@ -57,6 +82,9 @@ When started, runs `scala-mode-hook'.
   (scala-mode:make-local-variables
    'syntax-propertize-function
    'font-lock-defaults
+   'paragraph-start
+   'paragraph-separate
+   'fill-paragraph-function
    'comment-start
    'comment-end
    'comment-start-skip
@@ -72,25 +100,32 @@ When started, runs `scala-mode-hook'.
         parse-sexp-lookup-properties    t
 
         ;; TODO: font-lock
-        font-lock-defaults              '(scala-font-lock:keywords
+        font-lock-defaults              '((scala-font-lock:keywords)
                                           nil)
 
         ;; TODO: paragraph-start, paragraphs-separate, paragraph-ignore-fill-prefix
         ;; TODO: beginning-of-defun-function, end-of-defun-function
 
         ;; comments
+        paragraph-start                 scala-mode:paragraph-start
+        paragraph-separate              scala-mode:paragraph-separate
+        fill-paragraph-function         'c-fill-paragraph
         comment-start                   "// "
         comment-end                     ""
-        comment-start-skip              "\\(//+\\|/\\*+\\)\\s *"
+        comment-start-skip              "\\(//+\\|/\\*+\\)[ \t]*"
         comment-column                  0
         comment-multi-line              t
         ;; TODO: comment-indent-function
+
+        ;; TODO: forward-sexp-function
 
         indent-line-function            'scala-indent:indent-line
         indent-tabs-mode                nil
         )
   (use-local-map scala-mode-map)
   (turn-on-font-lock)
+  ;; add indent functionality to some characters
+  (scala-mode-map:add-self-insert-hooks)
 )
 
 ;; Attach .scala files to the scala-mode

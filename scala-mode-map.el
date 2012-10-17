@@ -13,13 +13,26 @@
 (defvar scala-mode-map nil
   "Local key map used for scala mode")
 
+(defun scala-mode-map:indent-parentheses ()
+  (when (and (= (char-syntax (char-before)) ?\))
+             (= (save-excursion (back-to-indentation) (point)) (1- (point))))
+    (scala-indent:indent-line)))
+
+(defun scala-mode-map:add-self-insert-hooks ()
+  (add-hook 'post-self-insert-hook
+            #'scala-mode-map:indent-parentheses))
+
 (when (not scala-mode-map)
   (let ((keymap (make-sparse-keymap)))
     (scala-mode-map:define-keys 
      keymap
      (([backspace]                'backward-delete-char-untabify)
-      ((kbd "C-M-b")              'scala-syntax:backward-sexp)
-      ([(control c)(control r)]   'scala-indent:goto-block-anchor)
+      
+      ;; TODO: remove, use forward-sexp-function insetead
+      ([backtab]                 'scala-indent:indent-with-reluctant-strategy)
+      ((kbd "C-M-b")              'scala-syntax:backward-sexp) 
+
+      ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
       ;;       ("\r"                       'scala-newline)
       ([(control c)(control c)]   'comment-region)
       ;;       ("}"                        'scala-electric-brace)

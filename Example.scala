@@ -12,49 +12,83 @@ Indenting happens relative to an indent anchor. Usually the indent anchor is the
 the declaration or expression is inside a parameter list, then the anchor is inside the list.
 */
 
-def f(s: String,
-      i: Int) =
+/* private */ def f(s: String,
+                    i: Int) =
   s.take(i) // indented relative to 'def'
 
-/* */ val x = foo(
-  zot, // indented relative to '/* */'
-  someThing 
-      map (x => x.length) // indented relative to 'someThing'
-)
+/* private */ val y = 1; val x = foo(
+    zot, // indented relative to '/* */'
+    someThing 
+      map ((s: String, i: Int) =>
+        x.length) // indented relative to 'someThing'
+  )
 
-val x =
+var foo = 
   foo( // indented relative to 'val'
     zot // indented relative to 'foo'
+      Zot
+      Nil
   )
 
 class OmgLol[Option[x] forSome {
-               val x: String // indented relative to 'Option'
+               val a, z: String // indented relative to 'Option'
              }] {
+  
+  val x = y match {
+      /* where do comments go */
+      case x => _
+    }
   // body
 }
 
-/*
-1.2. Run-on lines
 
-Any line not beginning with a declaration or expression start reserved word (i.e. class, trait, object, package, type, val, var, def, for, yield, if, else if, else, do, while) will be interpreted as a run-on of the previous line, and will be indented two step from the indent anchor. 
+/**
+  * Run-on lines
+  *
+  * ==Foo==
+  *
+  * Any line not beginning with a declaration or expression start reserved word (i.e. class, trait, object, package, type, val, var, def, for, yield, if, else if, else, do, while) will be interpreted as a run-on of the previous line, and will be indented two step from the indent anchor.
+  * 
+  * Ordered lists:
+  * 1. foo bar zot zot zot foo baa ölajdsfölkajdsf aödslf aöldskfj asödlf jasdf asdfjasd kfjas djfa skjdf asdf asdlfkjasd lfajs dfasd  flaksdjf sad f
+  * 1. fo bar zot zot zot foo baa ölajdsfölkajdsf aödslf aöldskfj asödlf jasdf asdfjasd kfjas djfa skjdf asdf asdlfkjasd lfajs dfasd flaksdjf sad f
+  * 
+  * This rule does not apply in the following cases:
+  * - if the previous lines was empty
+  * - previous line was an annotation
+  * - previous statement ended with ';,'
+  * - the current line starts a body (of declaration or anonymous function)
+  * - block or simple expression starts with an anonymous function
+  *   (lambda) declaration
+  *
+  * @author Heikki Vesalainen
+  * @version 1.2
+  */
 
-This rule does not apply in the following cases:
-- if the previous lines was empty
-- previous line was an annotation
-- previous statement ended with ';,'
-- the current line starts a body (of declaration or anonymous function)
-- block or simple expression starts with an anonymous function (lambda) declaration
-*/
+val f, g = List("foo", "bar").
+  filter (_ > 0) map ( s => // run-on, anchor is 'val', also start of lambda 
+    s.length
+      zot // run-on line, because in newlines-disabled region
+  )
+  sum // still a run-on
 
-val f = List("foo", "bar")
-    map ( s => // run-on, anchor is 'val', also start of lambda
-      s.length // not a run-on line, is body
+val f = {
+  List("foo", "bar").
+    filter (_ > 0) map ( s => // run-on, anchor is 'val', also start of lambda 
+      s.length
+        zot // run-on line, because in newlines-disabled region
     )
-    sum // still a run-on
+    sum
+}
 
-val f = 
-  List("foo", "bar") // not a run-on line, is body
-      map (s => s.length) // run-on line, anchor is 'List'
+val f = List("foo", "bar"). // not a run-on line, is body
+  filter(_ > 0).
+  map ( s =>
+    s.length
+  ) // run-on line, anchor is 'List'
+  filter ( s =>
+    s.length
+)
 
 zot() // previous line was empty
 
@@ -62,38 +96,54 @@ val f = List("foo", "bar");
 zot() // previous statement ended with ';'
 
 val f: Bar = new Zot
-    with Bar // run-on line, achor is 'val'
+    with Bar { // run-on line, achor is 'val'
+    def a
+        :String = {
+      asd
+    }
+  }
 
-class Foo(
+/* private */ class Foo(
   foo: String,
   bar: Bar
-      with Zot // run-on line, anchor is 'bar'
-) extends Bar
-    with Zot { // run-on line, anchor is 'class'
+      with 
+      Zot // run-on line, anchor is 'bar'
+) extends 
+    Bar
+    with 
+    Zot { // run-on line, anchor is 'class'
+  
   // body here
 }
 
+
+
 trait Leijona( x: Int with Int,
                y: Int )
-    extends Kissa // run-one line, acnhor is 'trait'
-    with Harja // ditto
+    extends cam.test.Kissa // run-one line, acnhor is 'trait'
+    with com.foo.super[Zot].Koira.this.type#Bar // ditto
 
-def someThingReallyLong(having: String, aLot: Int, ofParameters: Boolean): 
+def someThingReallyLong(having: String, aLot: Int, ofParameters: Boolean):// foo zot
     SomeAbsurdlyLongTypeThatBarelyFitsOnALine[Z, F] // run-on line, anchor is 'def'
     with SomeOtherType = { // ditto
   // body here
 }
 
 List("foo", "bar") 
-    map { s =>
-      s.length // 'map' indented as run-on, 's =>' start lambda
-          toString
-    }
+map { s/* */
+         : /* */  Any =>
+  s.length // 'map' indented as run-on, 's =>' start lambda
+  toString
+}
+filter (foo =>
+  bar
+)
 
-List("foo") map (
+List("foo") map ( 
   s => // start lambda
   s.length // run-on rule does not apply
 )
+
 
 /*
 1.3 Parameter lists
@@ -117,21 +167,31 @@ class Foo( /* */
 ) // at indent anchor column
 
 def f( /* */ i: String, j: String with Bar,
-       k: String) // indented acording to previous
+       k: String or
+         Int) // indented acording to previous
 
-val f = foo(kissa,
-            kala)
+val f = 
+{
+  foo(kissa,
+      kala
+        filter (odd))
+}
 
-val g = bar(
+{
+  val g = 
+    bar.
+      zot.
+      babarbar(
+        kissa,
+        kala
+      )
+}
+
+val h = "foo"
+zot(
   kissa,
   kala
 )
-
-val h = 
-  zot(
-    kissa,
-    kala
-  )
 
 type ->[FirstElementOfAPair,
         SecondElementOfAPair] =
@@ -149,16 +209,17 @@ Any block whose first word is 'case', but not 'case class' is a case block. The 
 indented with two steps, except for lines beginning with the word 'case'
 */
 
-val x = 
-  f match {
-    case xs: Seq[String] =>
+val x = f match {
+    case xs: Seq[String] 
+        if xs.size > 7 => 
       xs map ( x => x.length)
-          sum
-    case x: String =>
-      println(x);
-      x.length // not the ';' on previous line. Without it, this line would be interpreted as run-on
-  }
+        sum
 
+    case a: Int if a < 0 =>
+      println(x);
+      x.length // note the ';' on previous line. Without it, this line would be interpreted as run-on
+  }
+  
 /*
 1.6 For comprehension
 
@@ -169,19 +230,35 @@ parentheses indenting rules.
 - yield is aligned with for
 */
 
-val y = for { i <- 1 to 10,
-              j <- 2 to 20 }
-        yield i +j
+val y = for 
+        { 
+          i <- 1 to 10
+          j <- 2 to 20 
+        }
+        yield { 
+          i + j 
+        }
 
 val z =
   for {
-    i <- 1 to 10,
+    i <- 1 to 10
+    j <- 2 to 20
+    val zot = jaada
+    if asdasd
+  } yield
+      i + j
+
+
+val z = 
+  for
+  {
+    i <- 1 to 10
     j <- 2 to 20
   } yield {
     i + j
   }
 
-val z = for { i <- 1 to 10,
+val z = for { i <- 1 to 10
               j <- 2 to 20 }
         yield {
           i + j
@@ -203,64 +280,94 @@ Try statements will be indented acording to the following rules:
 
 val x = if (kissa)
           foo
+            map(s => s.toInt)
+            filter(_ > 0)
         else if (kala)
           bar
         else
           zot
 
 val y = if (kissa) {
-  foo
-} else if (kala) {
-  bar
-} else {
-  zot
-}
+    foo
+    bar
+    zot
+  } else if (kala) {
+    bar
+  } else {
+    zot
+  }
 
-val a = try
-          foo()
-        catch {
-          case e => bar()
-        }
+val a = try {
+    foo()
+  }
+  catch {
+    case e => bar()
+  }
 
 val b = try {
-  foo()
-} catch {
-  case e => bar()
-} finally {
-  zot()
-}
+    foo()
+  } catch {
+    case e => bar()
+  } finally {
+    zot()
+  }
 
 val c = try
           zot()
+        catch {
+          case x =>
+            foo
+        }
         finally
           log("zotted")
+
+do {
+  zot
+} while (bar)
+
+while (zot)
+bar
+
+    
 
 /*
 1.8 Block opening curly brackets on new line
 
-While not couraged, should the opening curly bracket of a block be on a new line, it is indented acording to the following rules:
+While not couraged, should the opening curly bracket of a block be on
+a new line, it is indented acording to the following rules:
 
-- If the block is the body of a package object, object, class or trait, then the opening is aligned acording to the anchor.
-- If the block is the body or value of a val, var, type, then the opening is aligned one step from the anchor
-- If the block is the body of a def, then the opening is aligned acording to the anchor for Unit functions without explicitly
+- If the block is the body of a package object, object, class or
+  trait, then the opening is aligned acording to the anchor.
+- If the block is the body or value of a val, var, type, then the
+  opening is aligned one step from the anchor
+- If the block is the body of a def, then the opening is aligned
+  acording to the anchor for Unit functions without explicitly
   specified return value and one step from anchor otherwise.
 */
 
-class Foo {
-  def foo
+{
+  class Foo
   {
-    zot
-        foo
-  }
-
-  def bar =
-  {
+    
+    def foo
+    {
       zot
-  }
-
-  val zot =
-  {
-"hello"
+        foo
+    }
+    
+    def bar =
+    {
+      zot
+    }
+    
+    def bar = 
+      (zot,
+       bar)
+    
+    val zot =
+    {
+      "hello"
+    }
   }
 }
 
@@ -272,10 +379,35 @@ class Foo {
 2.1 Types
 */
 
-val strings = Seq("""multi
-line"quote
-strings""", "normal strings", 'c')
+val strings = Seq("""
+                 | multi line"
+                 | quote strings
+                 | zot
+                 """, "normal strings", 'c')
 
-val `quoted id` = 1
+val `yield` = 1
 
 val symbol = 'Symbol
+
+var List(foo, bar)
+
+var foo, bar :: bar::Nil, foo @ (foo, bar), List(foo: Int, bar: String) = foo
+
+x match {
+  case zot => zot
+  case (foo, zot) => foo + zot
+  case List(a, b) => a + b
+  case a :: Nil => a + b
+  case Zot | Bar => println("foo")
+}
+
+val x: Zot with Apropos[Zot forSome { val x: String }, Zot -> Bar <% Dif]
+
+type ->[A,B] = (A,B)
+val x: List[Bar] -> List[Zot] => List[Bar -> Zot] = _.toZot
+
+class Mail extends Communication with { def x = 2 } with OldStyle[A <% String]
+
+{
+  case a: String if zot > bar =>
+}
