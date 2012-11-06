@@ -613,15 +613,18 @@ and whitespace are skipped before matching."
     (scala-syntax:skip-forward-ignorable)
     (looking-at re)))
 
-(defun scala-syntax:looking-back-token (re &optional limit)
+(defun scala-syntax:looking-back-token (re &optional max-chars)
   "Return the start position of the token matched by re, if the
 current position is preceeded by it, or nil if not. All ignorable
 comments and whitespace are ignored, i.e. does not search past an
-empty line. Expects to be outside of comment."
+empty line. Expects to be outside of comment. A limit for the
+search is calculated based on max-chars. The function won't look
+further than max-chars starting after skipping any ignorable."
   (save-excursion
     ;; skip back all comments
     (scala-syntax:skip-backward-ignorable)
-    (let ((end (point)))
+    (let ((end (point))
+          (limit (when max-chars (- (point) max-chars))))
       ;; skip back punctuation or ids (words and related symbols and delimiters)
       (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group limit))
           (/= 0 (skip-syntax-backward "." limit))
