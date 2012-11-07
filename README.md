@@ -106,5 +106,6 @@ https://github.com/hvesalai/scala-mode2
 Mode development: Heikki Vesalainen
 
 Contributors and valuable feedback:
+- Ray Racine
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
