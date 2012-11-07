@@ -295,6 +295,11 @@ Does not continue past limit.
   (message "limit %d" (scala-font-lock:limit-simpleType (point)))
   (message "mark from %d: %s at %d" (point) (scala-font-lock:mark-simpleType)
            (point)))
+
+(defun scala-font-lock:mark-string-escapes (limit)
+  (when (re-search-forward scala-syntax:string-escape-re limit)
+    (let ((state (syntax-ppss (match-beginning 0))))
+      (= (nth 3 state) ?\"))))
  
 (defun scala-font-lock:keywords ()
   ;; chars, string, comments are handled acording to syntax and
@@ -304,10 +309,6 @@ Does not continue past limit.
     (,scala-syntax:other-keywords-re 2 font-lock-keyword-face)
     (,scala-syntax:value-keywords-re 2 font-lock-constant-face)
     (,scala-syntax:path-keywords-re 2 font-lock-keyword-face)
-
-    ;; number literals
-    (,scala-syntax:floatingPointLiteral-re . font-lock-constant-face)
-    (,scala-syntax:integerLiteral-re . font-lock-constant-face)
 
     ;; User defined constants
     (,(scala-font-lock:create-user-constant-re) 0 font-lock-constant-face)
@@ -320,6 +321,9 @@ Does not continue past limit.
 
     ;; underscore
     (scala-font-lock:mark-underscore 2 font-lock-keyword-face)
+
+    ;; escapes inside strings
+    (scala-font-lock:mark-string-escapes (0 font-lock-constant-face prepend nil))
 
     ;; object
     (,(concat "\\<object[ \t]+\\(" 
@@ -424,6 +428,8 @@ Does not continue past limit.
         (group (and (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_.")))))
      (1 font-lock-keyword-face) (2 font-lock-string-face))
 
-    
+    ;; number literals (have to be here so that other rules take precedence)
+    (,scala-syntax:floatingPointLiteral-re . font-lock-constant-face)
+    (,scala-syntax:integerLiteral-re . font-lock-constant-face)
     
 ))

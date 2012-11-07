@@ -80,11 +80,14 @@
           "\\|" scala-syntax:escapeSequence-re
           "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
 
+(defconst scala-syntax:string-escape-re
+  (concat scala-syntax:escapeSequence-re 
+          "\\|" scala-syntax:UnicodeEscape-re))
+
 ;; String Literals (Chapter 1.3.5)
 (defconst scala-syntax:stringElement-re
   (concat "\\(" "[^\n\"\\\\\]" 
-          "\\|" scala-syntax:escapeSequence-re 
-          "\\|" scala-syntax:UnicodeEscape-re "\\)"))
+          "\\|" scala-syntax:string-escape-re  "\\)"))
 (defconst scala-syntax:oneLineStringLiteral-re (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
 (defconst scala-syntax:multiLineStringLiteral-re
   "\\(\"\\)\\(\"\"\\(\"?\"?[^\"]\\)*\"\"+\\)\\(\"\\)")
