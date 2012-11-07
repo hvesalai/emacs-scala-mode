@@ -305,6 +305,10 @@ Does not continue past limit.
     (,scala-syntax:value-keywords-re 2 font-lock-constant-face)
     (,scala-syntax:path-keywords-re 2 font-lock-keyword-face)
 
+    ;; number literals
+    (,scala-syntax:floatingPointLiteral-re . font-lock-constant-face)
+    (,scala-syntax:integerLiteral-re . font-lock-constant-face)
+
     ;; User defined constants
     (,(scala-font-lock:create-user-constant-re) 0 font-lock-constant-face)
 
@@ -329,20 +333,20 @@ Does not continue past limit.
               "\\)") 
      2 font-lock-type-face)
 
-    ;; extends, with, new
-    (,(concat "\\<\\(extends\\|with\\|new\\)[ \t]+\\([(" 
-              scala-syntax:id-first-char-group "]\\)")
-     (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType 
-                                       (goto-char (match-beginning 2))) 
-                                      nil
-                                      (0 font-lock-type-face nil t)))
+    ;; ;; extends, with, new
+    ;; (,(concat "\\<\\(extends\\|with\\|new\\)[ \t]+\\([(" 
+    ;;           scala-syntax:id-first-char-group "]\\)")
+    ;;  (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType 
+    ;;                                    (goto-char (match-beginning 2))) 
+    ;;                                   nil
+    ;;                                   (0 font-lock-type-face nil t)))
 
-    ;; ':'
-    (,scala-syntax:colon-re
-     (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType
-                                       (goto-char (match-end 2)))
-                                      nil
-                                      (0 font-lock-type-face nil t)))
+    ;; ;; ':'
+    ;; (,scala-syntax:colon-re
+    ;;  (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType
+    ;;                                    (goto-char (match-end 2)))
+    ;;                                   nil
+    ;;                                   (0 font-lock-type-face nil t)))
 
     ;; def
     (,(concat "\\<def[ \t]+\\(" scala-syntax:id-re "\\)") 1 font-lock-function-name-face)
@@ -364,5 +368,62 @@ Does not continue past limit.
                                         (1 font-lock-variable-name-face nil t)
                                         (2 font-lock-constant-face nil t)
                                         (3 font-lock-type-face nil t)))
+
+    ;; Some patterns from Erik
+    (,(rx "@" (in "a-zA-Z_") (0+ (in "a-zA-Z0-9_")))
+     . font-lock-preprocessor-face)
+
+    ;; :
+    (,(rx ":"
+        (0+ space)
+        (group (or
+                 (and (in "a-zA-Z_")
+                      (0+ (in "a-zA-Z0-9_"))
+                      (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                 (and (in "!#%&*+-/<=>?@\\^|~") (0+ (in "!#%&*+-/:<=>?@\\^|~"))))))
+      (1 font-lock-type-face))
+
+    (,(rx (group "extends")
+          (1+ space)
+          (group (or
+                   (and (in "a-zA-Z_")
+                        (0+ (in "a-zA-Z0-9_"))
+                        (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                   (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+      (1 font-lock-keyword-face) (2 font-lock-type-face))
+    
+    (,(rx (group "with")
+          (1+ space)
+          (group (or
+                   (and (in "a-zA-Z_")
+                        (0+ (in "a-zA-Z0-9_"))
+                        (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                   (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+      (1 font-lock-keyword-face) (2 font-lock-type-face))
+    
+    (,(rx (group "new")
+          (1+ space)
+          (group (or
+                   (and (in "a-zA-Z_")
+                        (0+ (in "a-zA-Z0-9_"))
+                        (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                   (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+      (1 font-lock-keyword-face) (2 font-lock-type-face))
+
+    ; uppercase
+    (,(rx symbol-start
+        (and (in "A-Z")
+             (0+ (in "a-zA-Z0-9_"))
+             (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~"))))))
+     . font-lock-type-face)
+
+    ; package name
+    (,(rx symbol-start
+        (group "package")
+        (1+ space)
+        (group (and (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_.")))))
+     (1 font-lock-keyword-face) (2 font-lock-string-face))
+
+    
     
 ))

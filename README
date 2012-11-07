@@ -12,6 +12,12 @@ The mode will target scala code written in a functinal style.
 
 Check out Example.scala to see how it indents.
 
-TODO:
-- indenting a row removes trailing whitespace and converts tabs to spaces
+Special thanks for valuable feedback:
+- Eiríkr Åsheim (aka Erik Osheim)
 
+TODO:
+- indent scaladoc left margin correctly
+- indenting a row removes trailing whitespace and converts tabs to spaces
+- highlight number (decimal, octal, hex, double, float) literals as constants
+- indent and fill multi-line strings with margin correctly
+- high-light headings and annotations inside scaladoc specially (use underline for headings)
