@@ -11,13 +11,35 @@ Currently the indenting of code has been finalized. Highlighting is
 under work. No scala specific motion commands have been added, but
 standard emacs motions work ofcourse.
 
+## Setting the mode up for use
+
+1. Download the files to a local directory, you can use the 'git'
+command. This will create a directory called scala-mode2.
+
+```
+> git git://github.com/hvesalai/scala-mode2.git
+```
+
+2. Include the following in your '.emacs'  file
+```
+(add-to-list 'load-path "/path/to/scala-mode2/")
+(require 'scala-mode)
+```
+
+3. That's it. Next you can start emacs and take look at the
+customization menu for scala-mode.
+
+Free emacs tip: if you are using emacs from a text terminal and you
+are having trouble with colors, try setting the customization variable
+(M-x customize-variable) 'frame-background-mode' to 'dark'.
+
 ## Indenting modes
 
-The indenting engine has two modes for handling run-on lines. The
+The indenting engine has three modes for handling run-on lines. The
 'reluctant' (default) mode is geared toward a general style of coding
 and the 'eager' for strictly functional style. A third mode called
 'operators' is between the two.  You can configure the mode from the
-mode customization menu (run M-x customize-mode).
+mode customization menu (M-x customize-mode).
 
 The difference between the modes is how they treat run-on lines. For
 example, the 'eager' mode will indent 'map' in the following code
@@ -53,34 +75,33 @@ val y = foo("bar")
 However, in all three modes pressing tab repeatedly on a line
 will toggle between the modes.
 
-TODO:
-- indent scaladoc left margin correctly
-- indenting a row should remove trailing whitespace and converts tabs to spaces
-- indent and fill multi-line strings with margin correctly
-
 ## Motion
 
 Basic emacs motion will work, including movement over expressions (M-C-f, M-C-b).
-
-TODO: 
-
-- movement commands to move to previous or next definition (val,
-var, def, class, trait, object)
 
 ## Code highlighting
 
 Highlighting code is still a work in progress. Feedback on how it
 should work is welcomed as issues to this github project.
 
-TODO:
-- highlight headings and annotations inside scaladoc specially (use underline for headings)
-- highlight variables in string interpolation (scala 2.10)
-
 ## Other features
 - supports multi-line strings
 - highlights only properly formatted string and character constants
 - fills scaladoc comments properly (TODO row comments)
 
-Special thanks for valuable feedback:
+## Future work
+
+- indent scaladoc left margin correctly
+- indenting a row should remove trailing whitespace and converts tabs to spaces
+- indent and fill multi-line strings with margin correctly
+- movement commands to move to previous or next definition (val,
+  var, def, class, trait, object)
+- highlight headings and annotations inside scaladoc specially (use underline for headings)
+- highlight variables in string interpolation (scala 2.10)
+
+All suggestions and especially pull requests are welcomed in github
+https://github.com/hvesalai/scala-mode2
+
+## Special thanks for valuable feedback:
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
