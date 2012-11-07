@@ -427,7 +427,7 @@ symbol, or nil if not."
         (point)))))
 
 (defun scala-indent:resolve-body-step (start &optional anchor)
-  (if (= (char-after start) ?\{)
+  (if (and (not (= start (point-max))) (= (char-after start) ?\{))
       0
     scala-indent:step))
 
@@ -473,7 +473,9 @@ anchor for calculating block indent for current point (or point
                        (goto-char anchor)
                        (scala-syntax:has-char-before ?= block-beg))))
                  scala-indent:step 0)))
-    (cond 
+    (cond
+     ;; at end of buffer
+     ((= start (point-max)) (+ scala-indent:step lead))
      ;; block close parentheses line up with anchor in normal case
      ((= (char-syntax (char-after start)) ?\))
       (+ 0 lead)) 
