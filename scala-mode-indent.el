@@ -22,7 +22,7 @@ indentation will be one or two steps depending on context."
 (defconst scala-indent:keywords-only-strategy 3
   "A strategy used internally by indent engine")
 
-(defcustom scala-indent:default-run-on-strategy 0
+(defcustom scala-indent:default-run-on-strategy 2
   "What strategy to use for detecting run-on lines, i.e. lines
 that continue a statement from the previous line. Possible values
 are: 
@@ -598,10 +598,10 @@ cannot be determined."
   (or (scala-indent:apply-indent-rules
        `((scala-indent:goto-open-parentheses-anchor scala-indent:resolve-open-parentheses-step)
          (scala-indent:goto-for-enumerators-anchor 0)
+         (scala-indent:goto-special-align-anchor 0)
          (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
          (scala-indent:goto-list-anchor 0)
          (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
-         (scala-indent:goto-special-align-anchor 0)
          (scala-indent:goto-block-anchor scala-indent:resolve-block-step)
      )
        point)
