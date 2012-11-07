@@ -295,6 +295,22 @@ Does not continue past limit.
     (let ((state (syntax-ppss (match-beginning 0))))
       (goto-char (match-end 0))
       (= (nth 3 state) ?\"))))
+
+(defun scala-font-lock:mark-numberLiteral (re limit)
+  (when (re-search-forward re limit t)
+    (goto-char (match-beginning 0))
+    (when (or (bolp) (string-match-p scala-syntax:number-safe-start-re (string (char-before))))
+      (goto-char (match-end 0)))))
+
+(defun scala-font-lock:mark-floatingPointLiteral (limit)
+  (scala-font-lock:mark-numberLiteral
+   scala-syntax:floatingPointLiteral-re
+   limit))
+
+(defun scala-font-lock:mark-integerLiteral (limit)
+  (scala-font-lock:mark-numberLiteral
+   scala-syntax:integerLiteral-re
+   limit))
  
 (defun scala-font-lock:keywords ()
   ;; chars, string, comments are handled acording to syntax and
@@ -424,7 +440,7 @@ Does not continue past limit.
      (1 font-lock-keyword-face) (2 font-lock-string-face))
 
     ;; number literals (have to be here so that other rules take precedence)
-    (,scala-syntax:floatingPointLiteral-re . font-lock-constant-face)
-    (,scala-syntax:integerLiteral-re . font-lock-constant-face)
+    (scala-font-lock:mark-floatingPointLiteral . font-lock-constant-face)
+    (scala-font-lock:mark-integerLiteral . font-lock-constant-face)
     
 ))

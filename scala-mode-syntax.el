@@ -51,10 +51,11 @@
 (defconst scala-syntax:hexNumeral-re (concat "0x[" scala-syntax:hexDigit-group "]+"))
 (defconst scala-syntax:octalNumeral-re (concat "0[" scala-syntax:octalDigit-group "]+"))
 (defconst scala-syntax:integerLiteral-re (concat "-?" ;; added from definition of literal
-                                          "\\(" scala-syntax:decimalNumeral-re
-                                          "\\|" scala-syntax:hexNumeral-re
-                                          "\\|" scala-syntax:octalNumeral-re
-                                          "\\)[Ll]?"))
+                                                 "\\(" scala-syntax:decimalNumeral-re
+                                                 "\\|" scala-syntax:hexNumeral-re
+                                                 "\\|" scala-syntax:octalNumeral-re
+                                                 "\\)[Ll]?"))
+
 
 ;; Floating Point Literal (Chapter 1.3.2)
 (defconst scala-syntax:exponentPart-re (concat "\\([eE][+-]?[" scala-syntax:digit-group "]+\\)"))
@@ -67,6 +68,9 @@
           scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
           "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:exponentPart-re
           "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:floatType-re "\\)"))
+
+(defconst scala-syntax:number-safe-start-re 
+  (concat "[^_" scala-syntax:letter-group "]"))
 
 ;; Boolean Literals (Chapter 1.3.3)
 (defconst scala-syntax:booleanLiteral-re "true|false")
