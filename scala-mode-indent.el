@@ -85,8 +85,8 @@ it is nilled."
                          scala-indent:eager-strategy)
                 scala-indent:reluctant-strategy))))
     (setq scala-indent:default-run-on-strategy new-strategy)
-    (message "scala-indent:default-run-on-strategy set to %s"
-             scala-indent:default-run-on-strategy)))
+;    (message "scala-indent:default-run-on-strategy set to %s" scala-indent:default-run-on-strategy)
+    ))
           
 (defun scala-indent:backward-sexp-to-beginning-of-line ()
   "Skip sexps backwards until reaches beginning of line (i.e. the
@@ -550,7 +550,7 @@ start with opening parenthesis."
   "Resolves the appropriate indent step for an open paren
 anchored at 'anchor'."
   (cond ((scala-syntax:looking-back-token ")")
-         (message "curry")
+;         (message "curry")
          0)
         ((save-excursion
            (goto-char anchor)
@@ -559,7 +559,7 @@ anchored at 'anchor'."
          (message "=")
          scala-indent:step)
         (t
-         (message "normal at %d" (current-column))
+;         (message "normal at %d" (current-column))
          0)))
 
 ;;;
@@ -579,7 +579,7 @@ nothing was applied."
              (anchor (funcall rule-statement point)))
         (if anchor
             (progn 
-              (message "indenting acording to %s at %d" rule-statement anchor)
+;              (message "indenting acording to %s at %d" rule-statement anchor)
               (when (/= anchor (point))
                 (error (format "Assertion error: anchor=%d, point=%d" anchor (point))))
               (+ (current-column)
@@ -621,7 +621,7 @@ strings"
     (if (eq last-command this-command)
         (scala-indent:toggle-effective-run-on-strategy)
       (scala-indent:reset-effective-run-on-strategy)))
-  (message "run-on-strategy is %s" (scala-indent:run-on-strategy))
+;  (message "run-on-strategy is %s" (scala-indent:run-on-strategy))
   (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line)))
 
 (defun scala-indent:indent-line (&optional strategy)

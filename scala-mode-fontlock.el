@@ -36,12 +36,12 @@ scala-mode has been reloaded."
                            (looking-at scala-syntax:other-keywords-unsafe-re)
                            (scala-syntax:looking-at-reserved-symbol nil)))
                   (looking-at scala-syntax:simplePattern-beginning-re))
-        (message "- now at %d" (point))
+;        (message "- now at %d" (point))
         (if (= (char-after) ?\()
             (forward-list)
           (goto-char (match-end 0))
           (scala-syntax:skip-forward-ignorable)
-          (message "+ now at %d" (point))
+;          (message "+ now at %d" (point))
           (cond ((looking-at "(")
                  (forward-list))
                 ((looking-at "@")
@@ -50,10 +50,10 @@ scala-mode has been reloaded."
                      (looking-at scala-syntax:other-keywords-unsafe-re))
                  (messssage "saw reserved symbol or keyword"))
                 ((looking-at scala-syntax:id-re)
-                 (message "saw id-re %d" (match-beginning 0))
+;                 (message "saw id-re %d" (match-beginning 0))
                  (goto-char (match-end 0)))
-                (t
-                 (message "nothing special here %s" (point)))
+;                (t
+;                 (message "nothing special here %s" (point)))
                 ))
         (scala-syntax:skip-forward-ignorable)))
     (point)))
@@ -84,13 +84,13 @@ Does not continue past limit.
    ;; quit if we are past limit
    ((or (and limit (>= (point) limit))
         (eobp))
-    (message "limit")
+;    (message "limit")
     nil)
    ;; Type pattern, just skip the whole thing. It will end at ',' or ')'.
    ;; Note: forms starting with ':' are handled by a completely separete
    ;; font-lock matcher.
    ((scala-syntax:looking-at-reserved-symbol ":")
-    (message ":")
+;    (message ":")
     (while (not (or (eobp)
                     (scala-syntax:looking-at "[,);]")
                     (scala-syntax:looking-at-reserved-symbol "|")
@@ -104,10 +104,10 @@ Does not continue past limit.
    ;; Binding part cannot start with reserved symbols. If they
    ;; are seen, we must quit.
    ((scala-syntax:looking-at-reserved-symbol nil)
-    (message "symbol")
+;    (message "symbol")
     nil)
    ((scala-syntax:looking-at-stableIdOrPath)
-    (message "stableId")
+;    (message "stableId")
     (let ((beg (match-beginning 0))
           (end (match-end 0))
           (varid (scala-syntax:looking-at-varid-p)))
@@ -116,7 +116,7 @@ Does not continue past limit.
              (cond 
               ((= (char-after end) ?\()
                ;; matched type
-               (message "it's a type")
+;               (message "it's a type")
                `(,beg ,end nil nil nil nil ,beg ,end))
               ((progn (scala-syntax:backward-sexp)
                       (= (char-before) ?.))
@@ -147,7 +147,7 @@ Does not continue past limit.
     t)
    ;; Pattern3 can be a literal. Just skip them.
    ((looking-at scala-syntax:literal-re)
-    (message "literal")
+;    (message "literal")
     (goto-char (match-end 0))
     (scala-syntax:skip-forward-ignorable)
     (set-match-data nil)
@@ -155,7 +155,7 @@ Does not continue past limit.
    ;; Start of a patterns list or alternatives. Skip if alternatives or
    ;; else leave point at start of first element.
    ((= (char-after) ?\()
-    (message "(")
+;    (message "(")
     (let ((alternatives-p 
            (save-excursion 
              (forward-char)
@@ -177,21 +177,21 @@ Does not continue past limit.
    ;; next element
    ((or (= (char-after) ?,)
         (= (char-after) ?\)))
-    (message ", or )")
+;    (message ", or )")
     (forward-char)
     (scala-syntax:skip-forward-ignorable)
     (set-match-data nil)
     t)
    ;; none of the above, just stop
-   (t 
-    (message "Cannot continue Pattern1 at %d" (point)) 
-    nil)
+;   (t 
+;    (message "Cannot continue Pattern1 at %d" (point)) 
+;    nil)
 ))
 
 (defun scala-font-lock:limit-pattern (&optional start)
   (save-excursion 
     (goto-char (scala-font-lock:limit-pattern2 start))
-    (message "now at %d" (point))
+;    (message "now at %d" (point))
     (when (scala-syntax:looking-at-reserved-symbol ":")
       (while (not (or (eobp)
                       (scala-syntax:looking-at-reserved-symbol "|")
@@ -209,7 +209,7 @@ Does not continue past limit.
 
 (defun scala-font-lock:mark-pattern-part (&optional limit)
   (when (scala-syntax:looking-at-reserved-symbol "|")
-    (message "skipping |")
+;    (message "skipping |")
     (forward-char)
     (scala-syntax:skip-forward-ignorable))
   (scala-font-lock:mark-pattern1-part limit t))
@@ -233,18 +233,18 @@ Does not continue past limit.
     (scala-syntax:skip-forward-ignorable))
   (let ((limit (point)))
     (goto-char start)
-    (message "simpeType limit at %d" limit)
+;    (message "simpeType limit at %d" limit)
     limit))
 
 (defun scala-font-lock:mark-simpleType (&optional limit)
-  (message "looking for simpleType at %d" (point))
+;  (message "looking for simpleType at %d" (point))
   (cond
    ;; stop at limit
    ((and limit (>= (point) limit))
     nil)
    ;; just dive into lists
    ((> (skip-chars-forward "[(,)]") 0)
-    (message "skipping list-marks")
+;    (message "skipping list-marks")
     (scala-syntax:skip-forward-ignorable)
     (set-match-data nil)
     t)
@@ -260,14 +260,14 @@ Does not continue past limit.
         (scala-syntax:looking-at-reserved-symbol
          "<[:%]\\|>?:")
         (looking-at "\\<forSome\\>"))
-    (message "skipping reserved")
+;    (message "skipping reserved")
     (goto-char (match-end 0))
     (scala-syntax:skip-forward-ignorable)
     (set-match-data nil)
     t)
    ;; color id after '#'
    ((= (char-after) ?#)
-    (message "at #")
+;    (message "at #")
     (forward-char)
     (if (and (not (or (looking-at scala-syntax:keywords-unsafe-re)
                       (scala-syntax:looking-at-reserved-symbol nil)))
@@ -275,7 +275,7 @@ Does not continue past limit.
         (goto-char (match-end 0)) nil))
    ;; color paths (including stableid)
    ((scala-syntax:looking-at-stableIdOrPath t)
-    (message "at path")
+;    (message "at path")
     (let ((end (match-end 0)))
       (goto-char end)
       (while (scala-syntax:looking-back-token "this\\|type")
@@ -287,14 +287,8 @@ Does not continue past limit.
     (scala-syntax:skip-forward-ignorable)
     t)
    (t
-    (message "Cannot continue simpleType at %d" (point))
+;    (message "Cannot continue simpleType at %d" (point))
     nil)))
-
-(defun s-mark ()
-  (interactive)
-  (message "limit %d" (scala-font-lock:limit-simpleType (point)))
-  (message "mark from %d: %s at %d" (point) (scala-font-lock:mark-simpleType)
-           (point)))
 
 (defun scala-font-lock:mark-string-escapes (limit)
   (when (re-search-forward scala-syntax:string-escape-re limit t)
