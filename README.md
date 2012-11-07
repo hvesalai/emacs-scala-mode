@@ -15,7 +15,6 @@ standard emacs motions work ofcourse.
 
 1. Download the files to a local directory, you can use the 'git'
 command. This will create a directory called scala-mode2.
-
 ```
 > git git://github.com/hvesalai/scala-mode2.git
 ```
@@ -31,7 +30,7 @@ customization menu for scala-mode.
 
 Free emacs tip: if you are using emacs from a text terminal and you
 are having trouble with colors, try setting the customization variable
-(M-x customize-variable) 'frame-background-mode' to 'dark'.
+'frame-background-mode' to 'dark' (use M-x customize-variable).
 
 ## Indenting modes
 
@@ -39,7 +38,7 @@ The indenting engine has three modes for handling run-on lines. The
 'reluctant' (default) mode is geared toward a general style of coding
 and the 'eager' for strictly functional style. A third mode called
 'operators' is between the two.  You can configure the mode from the
-mode customization menu (M-x customize-mode).
+mode customization menu (use M-x customize-mode when in scala-mode).
 
 The difference between the modes is how they treat run-on lines. For
 example, the 'eager' mode will indent 'map' in the following code
@@ -102,6 +101,10 @@ should work is welcomed as issues to this github project.
 All suggestions and especially pull requests are welcomed in github
 https://github.com/hvesalai/scala-mode2
 
-## Special thanks for valuable feedback:
+## Credit
+
+Mode development: Heikki Vesalainen
+
+Contributors and valuable feedback:
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
