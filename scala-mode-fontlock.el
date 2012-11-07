@@ -297,7 +297,7 @@ Does not continue past limit.
            (point)))
 
 (defun scala-font-lock:mark-string-escapes (limit)
-  (when (re-search-forward scala-syntax:string-escape-re limit)
+  (when (re-search-forward scala-syntax:string-escape-re limit t)
     (let ((state (syntax-ppss (match-beginning 0))))
       (= (nth 3 state) ?\"))))
  
