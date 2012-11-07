@@ -60,10 +60,7 @@ TODO:
 
 ## Motion
 
-Basic emacs motion will work. Use 
-
-M-C-f or M-C-Right to move forward one expression
-M-C-b or M-C-Left to move back one expression
+Basic emacs motion will work, including movement over expressions (M-C-f, M-C-b).
 
 TODO: 
 
