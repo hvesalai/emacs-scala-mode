@@ -624,7 +624,9 @@ strings"
         (scala-indent:toggle-effective-run-on-strategy)
       (scala-indent:reset-effective-run-on-strategy)))
 ;  (message "run-on-strategy is %s" (scala-indent:run-on-strategy))
-  (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line)))
+  (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))
+  (scala-lib:delete-trailing-whitespace)
+  )
 
 (defun scala-indent:indent-line (&optional strategy)
   "Indents the current line."

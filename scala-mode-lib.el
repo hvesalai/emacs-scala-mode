@@ -14,3 +14,9 @@
      ,@body
      (point)))
 
+(defun scala-lib:delete-trailing-whitespace ()
+  (save-excursion
+    (end-of-line)
+    (skip-syntax-backward " ")
+    (unless (bolp) 
+      (delete-char (- (line-end-position) (point))))))

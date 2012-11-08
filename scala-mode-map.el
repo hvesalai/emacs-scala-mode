@@ -26,14 +26,11 @@
   (let ((keymap (make-sparse-keymap)))
     (scala-mode-map:define-keys 
      keymap
-     (([backspace]                'backward-delete-char-untabify)
-      
+     (
+      ([backtab]                  'scala-indent:indent-with-reluctant-strategy)
       ;; TODO: remove, use forward-sexp-function insetead
-      ([backtab]                 'scala-indent:indent-with-reluctant-strategy)
       ((kbd "C-M-b")              'scala-syntax:backward-sexp) 
-
       ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
-      ;;       ("\r"                       'scala-newline)
       ([(control c)(control c)]   'comment-region)
       ;;       ("}"                        'scala-electric-brace)
       ))
