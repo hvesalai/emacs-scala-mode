@@ -13,8 +13,28 @@ indentation will be one or two steps depending on context."
   :type 'integer
   :group 'scala)
 
-(defcustom scala-indent:pad-equals t
-  "Whether or not to indent an extral level directly after =."
+(defcustom scala-indent:indent-value-expression t
+  "Whether or not to indent multi-line value expressions, with
+one extra step. When true, indenting will be
+
+val x = try {
+    some()
+  } catch {
+    case e => other
+  } finally {
+    clean-up()
+  }
+
+When nil, the same will indent as
+
+val x = try {
+  some()
+} catch {
+  case e => other
+} finally {
+  clean-up()
+}
+"
   :type 'boolean
   :group 'scala)
 
@@ -472,7 +492,7 @@ anchor for calculating block indent for current point (or point
       ;;; calculate a lead that is used for all steps. The lead is one
       ;;; indent step if there is a '=' between anchor and start,
       ;;; otherwise 0.
-      ((lead (if (and scala-indent:pad-equals (ignore-errors 
+      ((lead (if (and scala-indent:indent-value-expression (ignore-errors 
                    (save-excursion
                      (let ((block-beg (nth 1 (syntax-ppss start))))
                        (goto-char anchor)

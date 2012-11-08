@@ -34,6 +34,8 @@ are having trouble with colors, try setting the customization variable
 
 ## Indenting modes
 
+### Run-on lines (scala-indent:default-run-on-strategy)
+
 The indenting engine has three modes for handling run-on lines. The
 'reluctant' (default) mode is geared toward a general style of coding
 and the 'eager' for strictly functional style. A third mode called
@@ -73,6 +75,33 @@ val y = foo("bar")
 
 However, in all three modes pressing tab repeatedly on a line
 will toggle between the modes.
+
+### Value expressions (scala-indent:indent-value-expression)
+
+When set to t (default), blocks in value expressions will be indented
+one extra step to make the 'val', 'var' or 'def' stand out. For example:
+
+```
+val x = try {
+    some()
+  } catch {
+    case e => other
+  } finally {
+    clean-up()
+  }
+```
+
+When the variable is set to nil, the same will indent as:
+
+```
+val x = try {
+  some()
+} catch {
+  case e => other
+} finally {
+  clean-up()
+}
+```
 
 ## Motion
 
