@@ -13,6 +13,11 @@ indentation will be one or two steps depending on context."
   :type 'integer
   :group 'scala)
 
+(defcustom scala-indent:pad-equals t
+  "Whether or not to indent an extral level directly after =."
+  :type 'boolean
+  :group 'scala)
+
 (defconst scala-indent:eager-strategy 0
   "See 'scala-indent:run-on-strategy'")
 (defconst scala-indent:operator-strategy 1
@@ -464,14 +469,14 @@ anchor for calculating block indent for current point (or point
   "Resolves the appropriate indent step for block line at position
 'start' relative to the block anchor 'anchor'."
   (let 
-      ;; calculate a lead that is used for all steps. The lead is one
-      ;; indent step if there is a '=' between anchor and start,
-      ;; otherwise 0.
-      ((lead (if (ignore-errors 
+      ;;; calculate a lead that is used for all steps. The lead is one
+      ;;; indent step if there is a '=' between anchor and start,
+      ;;; otherwise 0.
+      ((lead (if (and scala-indent:pad-equals (ignore-errors 
                    (save-excursion
                      (let ((block-beg (nth 1 (syntax-ppss start))))
                        (goto-char anchor)
-                       (scala-syntax:has-char-before ?= block-beg))))
+                       (scala-syntax:has-char-before ?= block-beg)))))
                  scala-indent:step 0)))
     (cond
      ;; at end of buffer
