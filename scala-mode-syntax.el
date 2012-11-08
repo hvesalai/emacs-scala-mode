@@ -24,6 +24,11 @@
 ;; single letter matching groups (Chapter 1)
 (defconst scala-syntax:hexDigit-group "0-9A-Fa-f")
 (defconst scala-syntax:UnicodeEscape-re (concat "\\\\u[" scala-syntax:hexDigit-group "]\\{4\\}"))
+(defconst scala-syntax:LiteralDollar-re "\\$\\$")
+(defconst scala-syntax:BareInterpolation1-re "\\$[_a-zA-Z0-9]+%[0-9.]*[a-zA-Z]+")
+(defconst scala-syntax:BareInterpolation2-re "\\$[_a-zA-Z0-9]+")
+(defconst scala-syntax:BracesInterpolation1-re "\\${.+}%[0-9.]*[a-zA-Z]+")
+(defconst scala-syntax:BracesInterpolation2-re "\\${.+}")
 
 (defconst scala-syntax:upper-group "[:upper:]\\$") ;; missing _ to make ids work
 (defconst scala-syntax:upperAndUnderscore-group (concat "_" scala-syntax:upper-group ))
@@ -85,8 +90,13 @@
           "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
 
 (defconst scala-syntax:string-escape-re
-  (concat scala-syntax:escapeSequence-re 
-          "\\|" scala-syntax:UnicodeEscape-re))
+  (concat scala-syntax:escapeSequence-re
+          "\\|" scala-syntax:UnicodeEscape-re
+          "\\|" scala-syntax:LiteralDollar-re
+          "\\|" scala-syntax:BareInterpolation1-re
+          "\\|" scala-syntax:BareInterpolation2-re
+          "\\|" scala-syntax:BracesInterpolation1-re
+          "\\|" scala-syntax:BracesInterpolation2-re))
 
 ;; String Literals (Chapter 1.3.5)
 (defconst scala-syntax:stringElement-re
