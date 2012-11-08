@@ -1,4 +1,4 @@
-# scala-mode2 -- A new scala-mode for emacs
+# scala-mode2 — A new scala-mode for emacs
 
 This is a new scala major mode for emacs. It is a complete rewrite based on scala language specification 2.9.
 
@@ -101,7 +101,7 @@ should work is welcomed as issues to this github project.
 All suggestions and especially pull requests are welcomed in github
 https://github.com/hvesalai/scala-mode2
 
-## Credit
+## Credits
 
 Mode development: Heikki Vesalainen
 
