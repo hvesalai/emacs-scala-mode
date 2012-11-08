@@ -35,10 +35,11 @@ scala-mode has been reloaded."
       (while (and (not (or (eobp)
                            (looking-at scala-syntax:other-keywords-unsafe-re)
                            (scala-syntax:looking-at-reserved-symbol nil)))
-                  (looking-at scala-syntax:simplePattern-beginning-re))
+                  (scala-syntax:looking-at-simplePattern-beginning))
 ;        (message "- now at %d" (point))
         (if (= (char-after) ?\()
             (forward-list)
+          ;; else
           (goto-char (match-end 0))
           (scala-syntax:skip-forward-ignorable)
 ;          (message "+ now at %d" (point))
@@ -48,20 +49,22 @@ scala-mode has been reloaded."
                  (goto-char (match-end 0)))
                 ((or (scala-syntax:looking-at-reserved-symbol nil)
                      (looking-at scala-syntax:other-keywords-unsafe-re))
-                 (messssage "saw reserved symbol or keyword"))
+;                 (messssage "saw reserved symbol or keyword"))
                 ((looking-at scala-syntax:id-re)
 ;                 (message "saw id-re %d" (match-beginning 0))
                  (goto-char (match-end 0)))
 ;                (t
 ;                 (message "nothing special here %s" (point)))
-                ))
+                )))
         (scala-syntax:skip-forward-ignorable)))
+;    (message "limit at %s" (point))
     (point)))
 
 (defun scala-font-lock:limit-pattern2-list (&optional start)
   (let ((limit (scala-font-lock:limit-pattern2 start)))
     (while (= (char-after limit) ?,)
       (setq limit (scala-font-lock:limit-pattern2 (1+ limit))))
+;    (message "list limit at %s" limit)
     limit))
 
 (defun scala-font-lock:mark-pattern1-part (&optional limit pattern-p)
@@ -84,7 +87,7 @@ Does not continue past limit.
    ;; quit if we are past limit
    ((or (and limit (>= (point) limit))
         (eobp))
-;    (message "limit")
+;    (message "at limit %s" (point))
     nil)
    ;; Type pattern, just skip the whole thing. It will end at ',' or ')'.
    ;; Note: forms starting with ':' are handled by a completely separete
@@ -183,9 +186,9 @@ Does not continue past limit.
     (set-match-data nil)
     t)
    ;; none of the above, just stop
-;   (t 
+   (t 
 ;    (message "Cannot continue Pattern1 at %d" (point)) 
-;    nil)
+    nil)
 ))
 
 (defun scala-font-lock:limit-pattern (&optional start)

@@ -139,17 +139,16 @@
 
 ;; Paths (Chapter 3.1)
 ;; emacs has a problem with these regex, don't use them
-(defconst scala-syntax:classQualifier-re (concat "[[]" scala-syntax:id-re "[]]"))
-(defconst scala-syntax:stableId-re 
-  (concat "\\(\\(" "this"
-          "\\|" "super" scala-syntax:classQualifier-re 
-          "\\|" scala-syntax:id-re 
-          "\\)\\.\\)*"
-          scala-syntax:id-re))
-(defconst scala-syntax:path-re
-  (concat "\\(" scala-syntax:stableId-re
-          "\\|" "\\(" scala-syntax:id-re "\\." "\\)?" "this" "\\)"))
-
+;; (defconst scala-syntax:classQualifier-re (concat "[[]" scala-syntax:id-re "[]]"))
+;; (defconst scala-syntax:stableId-re 
+;;   (concat "\\(\\(" "this"
+;;           "\\|" "super" scala-syntax:classQualifier-re 
+;;           "\\|" scala-syntax:id-re 
+;;           "\\)\\.\\)*"
+;;           scala-syntax:id-re))
+;; (defconst scala-syntax:path-re
+;;   (concat "\\(" scala-syntax:stableId-re
+;;           "\\|" "\\(" scala-syntax:id-re "\\." "\\)?" "this" "\\)"))
 
 (defun scala-syntax:looking-at-super ()
   (save-excursion
@@ -196,12 +195,10 @@
              (set-match-data `(,beg ,(match-end 0)))
              (point))))))
 
-;; Patterns
-(defconst scala-syntax:simplePattern-beginning-re 
-  (concat "\\([_(]"
-          "\\|" scala-syntax:literal-re
-          "\\|" scala-syntax:stableId-re
-          "\\)"))
+(defun scala-syntax:looking-at-simplePattern-beginning ()
+  (or (looking-at "[_(]")
+      (looking-at scala-syntax:literal-re)
+      (scala-syntax:looking-at-stableIdOrPath)))
 
 ;;;
 ;;; Other regular expressions
