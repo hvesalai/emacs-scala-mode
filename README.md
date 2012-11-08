@@ -34,13 +34,15 @@ are having trouble with colors, try setting the customization variable
 
 ## Indenting modes
 
+You can configure the mode from the mode customization menu (use M-x
+customize-mode when in scala-mode).
+
 ### Run-on lines (scala-indent:default-run-on-strategy)
 
 The indenting engine has three modes for handling run-on lines. The
 'reluctant' (default) mode is geared toward a general style of coding
 and the 'eager' for strictly functional style. A third mode called
-'operators' is between the two.  You can configure the mode from the
-mode customization menu (use M-x customize-mode when in scala-mode).
+'operators' is between the two.
 
 The difference between the modes is how they treat run-on lines. For
 example, the 'eager' mode will indent 'map' in the following code
