@@ -663,7 +663,7 @@ one."
     (while (scala-syntax:looking-at scala-syntax:modifiers-re)
       (scala-syntax:forward-sexp)
       (when (scala-syntax:looking-at "[")
-        (forward-sexp)))))
+        (forward-list)))))
 
 (defun scala-syntax:looking-back-else-if-p ()
   ;; TODO: rewrite using (scala-syntax:if-skipped (scala:syntax:skip-backward-else-if))
@@ -733,16 +733,10 @@ beginning of the skipped expression."
   (forward-comment (buffer-size))
   (while (< 0 (+ (skip-syntax-forward " ")
                  (skip-chars-forward scala-syntax:delimiter-group))))
-  
-  (if (not (= (char-syntax (char-after)) ?\.))
-      ;; emacs can handle everything but opchars
-      (forward-sexp)
-    ;; just because some char has punctuation syntax, doesn't mean the
-    ;; position has it (since the propertize function can change
-    ;; things. So... let's first try to handle it as punctuation and
-    ;; if we got no success, then we let emacs try
-    (when (= (skip-syntax-forward ".") 0)
-      (forward-sexp))))
+
+  ;; emacs can handle everything but opchars  
+  (when (= (skip-syntax-forward ".") 0)
+    (goto-char (or (scan-sexps (point) 1) (buffer-end 1)))))
     
 (defun scala-syntax:backward-sexp () 
   "Move backward one scala expression. It can be: parameter
@@ -756,10 +750,9 @@ beginning of the skipped expression."
   (while (> 0 (+ (skip-syntax-backward " ")
                  (skip-chars-backward scala-syntax:delimiter-group))))
   
-  (if (not (or (bobp) (= (char-syntax (char-before)) ?\.)))
-      (backward-sexp)
-    (when (= (skip-syntax-backward ".") 0)
-      (backward-sexp))))
+  (when (= (skip-syntax-backward ".") 0)
+    (goto-char (or (scan-sexps (point) -1) (buffer-end -1)))
+    (backward-prefix-chars)))   
     
 (defun scala-syntax:has-char-before (char end)
   (save-excursion

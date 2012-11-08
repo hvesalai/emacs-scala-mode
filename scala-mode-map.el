@@ -28,8 +28,6 @@
      keymap
      (
       ([backtab]                  'scala-indent:indent-with-reluctant-strategy)
-      ;; TODO: remove, use forward-sexp-function insetead
-      ((kbd "C-M-b")              'scala-syntax:backward-sexp) 
       ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
       ([(control c)(control c)]   'comment-region)
       ;;       ("}"                        'scala-electric-brace)

@@ -76,7 +76,9 @@ will toggle between the modes.
 
 ## Motion
 
-Basic emacs motion will work, including movement over expressions (M-C-f, M-C-b).
+Basic emacs motion will work as expected. The forward-sexp and
+backward-sexp (M-C-f, M-C-b) motion commands will move over reserved
+words, literals, ids and lists.
 
 ## Code highlighting
 
@@ -87,11 +89,11 @@ should work is welcomed as issues to this github project.
 - supports multi-line strings
 - highlights only properly formatted string and character constants
 - fills scaladoc comments properly (TODO row comments)
+- indenting a code line removes trailing whitespace
 
 ## Future work
 
 - indent scaladoc left margin correctly
-- indenting a row should remove trailing whitespace and converts tabs to spaces
 - indent and fill multi-line strings with margin correctly
 - movement commands to move to previous or next definition (val,
   var, def, class, trait, object)

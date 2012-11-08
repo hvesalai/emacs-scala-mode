@@ -49,6 +49,13 @@
 (defconst scala-mode:paragraph-separate
   (concat scala-mode:comment-line-start "$"))
 
+(defun scala-mode:forward-sexp-function (&optional count)
+  (unless count (setq count 1))
+  (if (< count 0)
+      (dotimes (n (abs count))
+        (scala-syntax:backward-sexp))
+    (dotimes (n count)
+      (scala-syntax:forward-sexp))))
 
 ;; (defun scala-mode ()
 ;;   "Major mode for editing scala code.
@@ -90,6 +97,7 @@ When started, runs `scala-mode-hook'.
    'comment-start-skip
    'comment-column
    'comment-multi-line
+   'forward-sexp-function
    'indent-line-function
    'indent-tabs-mode)
 
@@ -118,7 +126,7 @@ When started, runs `scala-mode-hook'.
         ;; TODO: comment-indent-function
 
         ;; TODO: forward-sexp-function
-
+        forward-sexp-function           'scala-mode:forward-sexp-function
         indent-line-function            'scala-indent:indent-line
         indent-tabs-mode                nil
         )
