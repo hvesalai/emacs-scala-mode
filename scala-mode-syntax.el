@@ -51,9 +51,9 @@
 (defconst scala-syntax:hexNumeral-re (concat "0x[" scala-syntax:hexDigit-group "]+"))
 (defconst scala-syntax:octalNumeral-re (concat "0[" scala-syntax:octalDigit-group "]+"))
 (defconst scala-syntax:integerLiteral-re (concat "-?" ;; added from definition of literal
-                                                 "\\(" scala-syntax:decimalNumeral-re
-                                                 "\\|" scala-syntax:hexNumeral-re
+                                                 "\\(" scala-syntax:hexNumeral-re
                                                  "\\|" scala-syntax:octalNumeral-re
+                                                 "\\|" scala-syntax:decimalNumeral-re
                                                  "\\)[Ll]?"))
 
 
