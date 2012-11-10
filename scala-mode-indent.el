@@ -13,6 +13,26 @@ indentation will be one or two steps depending on context."
   :type 'integer
   :group 'scala)
 
+(defcustom scala-indent:align-forms t
+  "Whether or not to align 'else', 'yield', 'catch', 'finally'
+below their respective expression start. When non-nil, identing
+will be
+
+val x = if (foo)
+          bar
+        else
+          zot
+
+when nil, the same will indent as
+
+val x = if (foo)
+    bar
+  else
+    zot
+"
+  :type 'boolean
+  :group 'scala)
+
 (defcustom scala-indent:indent-value-expression t
   "Whether or not to indent multi-line value expressions, with
 one extra step. When true, indenting will be
@@ -304,10 +324,10 @@ is not on a run-on line."
        (t
         scala-indent:step)))))
 
-(defconst scala-indent:special-align-re
+(defconst scala-indent:forms-align-re
   (regexp-opt '("yield" "else" "catch" "finally") 'words))
 
-(defun scala-indent:special-align-p (&optional point)
+(defun scala-indent:forms-align-p (&optional point)
   "Returns scala-syntax:beginning-of-code-line for the line on
 which current point (or point 'point') is, if the line starts
 with one of 'yield', 'else', 'catch' and 'finally', otherwise
@@ -315,18 +335,18 @@ nil. Also, the previous line must not be with '}'"
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
-    (when (looking-at scala-indent:special-align-re)
+    (when (looking-at scala-indent:forms-align-re)
       (goto-char (match-beginning 0))
       (point))))
     
 
-(defun scala-indent:goto-special-align-anchor (&optional point)
+(defun scala-indent:goto-forms-align-anchor (&optional point)
   "Moves back to the point whose column will be used as the
 anchor relative to which indenting of special words on beginning
 of the line on which point (or point 'point') is, or nul if not
 special word found. Special words include 'yield', 'else',
 'catch' and 'finally'"
-  (let ((special-beg (scala-indent:special-align-p point)))
+  (let ((special-beg (scala-indent:forms-align-p point)))
     (when special-beg
       (goto-char special-beg)
       (if (and (scala-syntax:looking-back-token "}")
@@ -334,31 +354,45 @@ special word found. Special words include 'yield', 'else',
                  (goto-char (match-beginning 0))
                  (= (match-beginning 0) (scala-lib:point-after (scala-syntax:beginning-of-code-line)))))
           (goto-char (match-beginning 0))
-        (cond ((looking-at "\\<yield\\>")
-               ;; align with 'for'
-               (if (scala-syntax:search-backward-sexp "\\<for\\>")
-                   (point)
-                 (message "matching 'for' not found")
-                 nil))
-              ((looking-at "\\<else\\>")
-               ;; align with 'if' or 'else if'
-               (if (scala-syntax:search-backward-sexp "\\<if\\>")
-                   (if (scala-syntax:looking-back-token "\\<else\\>")
-                       (goto-char (match-beginning 0))
-                     (point))
-                 nil))
-              ((looking-at "\\<catch\\>")
-               ;; align with 'try'
-               (if (scala-syntax:search-backward-sexp "\\<try\\>")
-                   (point)
-                 (message "matching 'try' not found")
-                 nil))
-              ((looking-at "\\<finally\\>")
-               ;; align with 'try'
-               (if (scala-syntax:search-backward-sexp "\\<try\\>")
-                   (point)
-                 (message "matching 'try' not found")
-                 nil)))))))
+        (let ((anchor 
+               (cond ((looking-at "\\<yield\\>")
+                      ;; align with 'for'
+                      (if (scala-syntax:search-backward-sexp "\\<for\\>")
+                          (point)
+                        (message "matching 'for' not found")
+                        nil))
+                     ((looking-at "\\<else\\>")
+                      ;; align with 'if' or 'else if'
+                      (if (scala-syntax:search-backward-sexp "\\<if\\>")
+                          (if (scala-syntax:looking-back-token "\\<else\\>")
+                              (goto-char (match-beginning 0))
+                            (point))
+                        nil))
+                     ((looking-at "\\<catch\\>")
+                      ;; align with 'try'
+                      (if (scala-syntax:search-backward-sexp "\\<try\\>")
+                          (point)
+                        (message "matching 'try' not found")
+                        nil))
+                     ((looking-at "\\<finally\\>")
+                      ;; align with 'try'
+                      (if (scala-syntax:search-backward-sexp "\\<try\\>")
+                          (point)
+                        (message "matching 'try' not found")
+                        nil)))))
+          (if scala-indent:align-forms
+              anchor
+            (when anchor
+              ;; TODO: merge to use the new function for this
+              (when (scala-indent:backward-sexp-to-beginning-of-line)
+                (back-to-indentation))
+              (point))))))))
+
+(defun scala-indent:resolve-forms-align-step (start anchor)
+  (if scala-indent:align-forms
+      0
+    ;; TODO: merge to use step calculation
+    0)) 
 
 ;;;
 ;;; Lists and enumerators
@@ -432,11 +466,14 @@ symbol, or nil if not."
             (backward-list))
           (when (scala-syntax:looking-back-token scala-indent:value-keyword-re)
             (goto-char (match-beginning 0))
-            (if (looking-at "\\<if\\>")
-                (if (scala-syntax:looking-back-token "\\<else\\>")
-                    (match-beginning 0)
-                  (point))
-              (point)))))))
+            (when (and (looking-at "\\<if\\>")
+                       (scala-syntax:looking-back-token "\\<else\\>"))
+              (match-beginning 0))
+            ;;TODO merge with teh function
+            (when (and (not scala-indent:align-forms)
+                       (scala-indent:backward-sexp-to-beginning-of-line))
+              (back-to-indentation))
+            (point))))))
 
 (defun scala-indent:goto-body-anchor (&optional point)
   (let ((declaration-end (scala-indent:body-p point)))
@@ -623,7 +660,7 @@ cannot be determined."
   (or (scala-indent:apply-indent-rules
        `((scala-indent:goto-open-parentheses-anchor scala-indent:resolve-open-parentheses-step)
          (scala-indent:goto-for-enumerators-anchor 0)
-         (scala-indent:goto-special-align-anchor 0)
+         (scala-indent:goto-forms-align-anchor scala-indent:resolve-forms-align-step)
          (scala-indent:goto-list-anchor 0)
          (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
          (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
