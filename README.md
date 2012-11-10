@@ -80,8 +80,9 @@ will toggle between the modes.
 
 ### Value expressions (scala-indent:indent-value-expression)
 
-When set to t (default), blocks in value expressions will be indented
-one extra step to make the 'val', 'var' or 'def' stand out. For example:
+When this variable is set to t (default), blocks in value expressions
+will be indented one extra step to make the 'val', 'var' or 'def'
+stand out. For example:
 
 ```
 val x = try {
@@ -103,6 +104,30 @@ val x = try {
 } finally {
   clean-up()
 }
+```
+
+### Parameter lists (scala-indent:align-parameters)
+
+When this variable is set to 't' (default), parameters and run-on
+lines in parameter lists will always align under and acording to the
+first parameter.
+
+```
+val x = equals(List(1,2,3) map (x =>
+                 x + 1))
+
+val y = List( "Alpha", "Bravo",
+              "Charlie" )
+```
+
+When the variable is set to nil, the same will be as:
+
+```
+val x = equals(List(1,2,3) map (x =>
+    x + 1))
+
+val y = List( "Alpha", "Bravo",
+    "Charlie" )
 ```
 
 ## Motion

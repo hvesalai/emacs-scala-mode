@@ -58,6 +58,32 @@ val x = try {
   :type 'boolean
   :group 'scala)
 
+(defcustom scala-indent:align-parameters t
+  "Whether or not to indent parameter lists so that next
+  parameter lines always align under the first parameter. When
+  non-nil, indentation will be
+
+def foo(x: Int, y: List[Int]
+        z: Int)
+
+val x = foo(1, List(1, 2, 3) map (i => 
+              i + 1
+            ), 2)
+
+When nil, the same will indent as
+
+def foo(x: Int, y: List[Int]
+        z: Int)
+
+val x = foo(1, List(1, 2, 3) map (i => 
+    i + 1
+  ), 2)
+"
+  :type 'boolean
+  :group 'scala)
+
+
+
 (defconst scala-indent:eager-strategy 0
   "See 'scala-indent:run-on-strategy'")
 (defconst scala-indent:operator-strategy 1
@@ -137,7 +163,7 @@ it is nilled."
   "Skip sexps backwards until reaches beginning of line (i.e. the
 point is at the first non whitespace or comment character). It
 does not move outside enclosin list. Returns the current point or
-nil if the beginnig of line could not be reached because of
+nil if the beginning of line could not be reached because of
 enclosing list."
   (let ((code-beg (scala-lib:point-after 
                    (scala-syntax:beginning-of-code-line))))
@@ -150,6 +176,26 @@ enclosing list."
                           (scala-syntax:beginning-of-code-line))))))
     (unless (> (point) code-beg)
       (point))))
+
+(defun scala-indent:align-anchor ()
+  "Go to beginning of line, if a) scala-indent:align-parameters
+is nil or backward-sexp-to-beginning-of-line is non-nil. This has
+the effect of staying within lists if
+scala-indent:align-parameters is non-nil."
+  (when (or (scala-indent:backward-sexp-to-beginning-of-line)
+            (not scala-indent:align-parameters))
+    (back-to-indentation)))
+
+(defun scala-indent:value-expression-lead (start anchor)
+  ;; calculate an indent lead. The lead is one indent step if there is
+  ;; a '=' between anchor and start, otherwise 0.
+  (if (and scala-indent:indent-value-expression 
+           (ignore-errors 
+             (save-excursion
+               (let ((block-beg (nth 1 (syntax-ppss start))))
+                 (goto-char anchor)
+                 (scala-syntax:has-char-before ?= block-beg)))))
+      scala-indent:step 0))
 
 ;;;
 ;;; Run-on 
@@ -287,8 +333,7 @@ is not on a run-on line."
     (while (and (scala-indent:run-on-line-p nil strategy)
                 (scala-syntax:skip-backward-ignorable)
                 (scala-indent:backward-sexp-to-beginning-of-line)))
-    (when (scala-indent:backward-sexp-to-beginning-of-line)
-      (back-to-indentation))
+    (scala-indent:align-anchor)
     (point)))
 
 (defconst scala-indent:double-indent-re
@@ -321,8 +366,9 @@ is not on a run-on line."
        ;;      (= (point) end)))
        ;;  0)
        ;; else normal indent
-       (t
-        scala-indent:step)))))
+       (t (+ (if scala-indent:align-parameters 0
+               (scala-indent:value-expression-lead start anchor))
+             scala-indent:step))))))
 
 (defconst scala-indent:forms-align-re
   (regexp-opt '("yield" "else" "catch" "finally") 'words))
@@ -401,15 +447,17 @@ special word found. Special words include 'yield', 'else',
 (defun scala-indent:goto-list-anchor-impl (point)
   (goto-char point)
   ;; find the first element of the list
-  (forward-comment (buffer-size))
-  (if (= (line-number-at-pos point) 
-         (line-number-at-pos))
-      (goto-char point)
-    (beginning-of-line))
-      
-  ;; align list with first non-whitespace character
-  (skip-syntax-forward " ")
-  (point))
+  (if (not scala-indent:align-parameters)
+      (progn (back-to-indentation) (point))
+    (forward-comment (buffer-size))
+    (if (= (line-number-at-pos point) 
+           (line-number-at-pos))
+        (goto-char point)
+      (beginning-of-line))
+    
+    ;; align list with first non-whitespace character
+    (skip-syntax-forward " ")
+    (point)))
 
 (defun scala-indent:goto-list-anchor (&optional point)
   "Moves back to the point whose column will be used to indent
@@ -418,6 +466,11 @@ point or nil if the point is not in a list element > 1."
   (let ((list-beg (scala-syntax:list-p point)))
     (when list-beg
       (scala-indent:goto-list-anchor-impl list-beg))))
+
+(defun scala-indent:resolve-list-step (start anchor)
+  (if scala-indent:align-parameters 
+      0
+    (scala-indent:resolve-block-step start anchor)))
 
 (defun scala-indent:for-enumerators-p (&optional point)
   "Returns the point after opening parentheses if the current
@@ -453,14 +506,15 @@ point or nil if the point is not in a enumerator element > 1."
   (regexp-opt '("if" "else" "yield" "for" "try" "finally" "catch") 'words))
 
 (defun scala-indent:body-p (&optional point)
-  "Returns the position of '=' or '=>' (TODO: not ATM) symbol if
-current point (or point 'point) is on a line that follows said
-symbol, or nil if not."
+  "Returns the position of '=', 'if or 'else if' (TODO: or '=>')
+symbol if current point (or point 'point) is on a line that
+follows said symbol, or nil if not."
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
     (or (scala-syntax:looking-back-token scala-syntax:body-start-re 3)
         (progn
+          ;; if, else if
           (when (scala-syntax:looking-back-token ")" 1)
             (goto-char (match-end 0))
             (backward-list))
@@ -482,10 +536,10 @@ symbol, or nil if not."
       (if (looking-at scala-indent:value-keyword-re)
           (point)
         (when (scala-indent:backward-sexp-to-beginning-of-line)
-          (scala-indent:goto-run-on-anchor nil 
-                                           scala-indent:keywords-only-strategy))
-        (when (scala-indent:backward-sexp-to-beginning-of-line)
-          (back-to-indentation))
+          (scala-indent:goto-run-on-anchor 
+           nil 
+           scala-indent:keywords-only-strategy))
+        (scala-indent:align-anchor)
         (point)))))
 
 (defun scala-indent:resolve-body-step (start &optional anchor)
@@ -518,23 +572,14 @@ anchor for calculating block indent for current point (or point
         (when (scala-indent:backward-sexp-to-beginning-of-line)
           (scala-indent:goto-run-on-anchor nil 
                                            scala-indent:keywords-only-strategy))
-        (when (scala-indent:backward-sexp-to-beginning-of-line)
-          (back-to-indentation))
+        (scala-indent:align-anchor)
         (point)))))
 
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
 'start' relative to the block anchor 'anchor'."
   (let 
-      ;;; calculate a lead that is used for all steps. The lead is one
-      ;;; indent step if there is a '=' between anchor and start,
-      ;;; otherwise 0.
-      ((lead (if (and scala-indent:indent-value-expression (ignore-errors 
-                   (save-excursion
-                     (let ((block-beg (nth 1 (syntax-ppss start))))
-                       (goto-char anchor)
-                       (scala-syntax:has-char-before ?= block-beg)))))
-                 scala-indent:step 0)))
+      ((lead (scala-indent:value-expression-lead start anchor)))
     (cond
      ;; at end of buffer
      ((= start (point-max)) (+ scala-indent:step lead))
@@ -582,7 +627,8 @@ start with opening parenthesis."
       (goto-char parentheses-beg)
       (cond
        ;; case 1
-       ((and (= (char-after) ?\()
+       ((and scala-indent:align-parameters
+             (= (char-after) ?\()
              (scala-indent:run-on-p)
              (scala-syntax:looking-back-token ")" 1))
         (scala-syntax:backward-parameter-groups)
@@ -643,7 +689,7 @@ nothing was applied."
              (anchor (funcall rule-statement point)))
         (if anchor
             (progn 
-;              (message "indenting acording to %s at %d" rule-statement anchor)
+              (message "indenting acording to %s at %d" rule-statement anchor)
               (when (/= anchor (point))
                 (error (format "Assertion error: anchor=%d, point=%d" anchor (point))))
               (+ (current-column)
@@ -659,9 +705,9 @@ point 'point'. Returns the new column, or nil if the indent
 cannot be determined."
   (or (scala-indent:apply-indent-rules
        `((scala-indent:goto-open-parentheses-anchor scala-indent:resolve-open-parentheses-step)
-         (scala-indent:goto-for-enumerators-anchor 0)
+         (scala-indent:goto-for-enumerators-anchor scala-indent:resolve-list-step)
          (scala-indent:goto-forms-align-anchor scala-indent:resolve-forms-align-step)
-         (scala-indent:goto-list-anchor 0)
+         (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
          (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
          (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
          (scala-indent:goto-block-anchor scala-indent:resolve-block-step)
