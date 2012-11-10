@@ -182,7 +182,7 @@ val x = if (foo)
 val y = for (i <- 1 to 10)
         yield i * i
 
-val someLongName = aFunctionCall(bar, 
+val someLongName = aFunctionCall(bar,
                                  if (zot)
                                    1
                                  else
@@ -190,11 +190,6 @@ val someLongName = aFunctionCall(bar,
                                  for (i <- i to 10)
                                  yield i)
 
-// the current indent engine has some known issues demostrated here
-val someLongName = aFunctionCall(bar, if (zot)
-                                   1
-                                      else
-                                   3)
 val x = for {
     i <- i to 10 }
         yield i)
