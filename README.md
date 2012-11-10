@@ -34,8 +34,12 @@ are having trouble with colors, try setting the customization variable
 
 ## Indenting modes
 
-You can configure the mode from the mode customization menu (use M-x
-customize-mode when in scala-mode).
+Where four developers meet, there are four opinions on how code should
+be indented. Luckily scala-mode already supports 2^4 different
+ways of indenting.
+
+You can configure the scala-mode indentation from the mode
+customization menu (use M-x customize-mode when in scala-mode).
 
 ### Run-on lines (scala-indent:default-run-on-strategy)
 
@@ -80,9 +84,9 @@ will toggle between the modes.
 
 ### Value expressions (scala-indent:indent-value-expression)
 
-When this variable is set to t (default), blocks in value expressions
-will be indented one extra step to make the 'val', 'var' or 'def'
-stand out. For example:
+When this variable is set to non-nil (default), blocks in value
+expressions will be indented one extra step to make the 'val', 'var'
+or 'def' stand out. For example:
 
 ```
 val x = try {
@@ -108,7 +112,7 @@ val x = try {
 
 ### Parameter lists (scala-indent:align-parameters)
 
-When this variable is set to 't' (default), parameters and run-on
+When this variable is set to non-nil (default), parameters and run-on
 lines in parameter lists will always align under and acording to the
 first parameter.
 
@@ -132,7 +136,7 @@ val y = List( "Alpha", "Bravo",
 
 ### Forms (scala-indent:align-forms)
 
-When this variable is set to 't' (default), `if`, `for` and `try`
+When this variable is set to non-nil (default), `if`, `for` and `try`
 forms are aligned.
 
 ```
@@ -144,7 +148,7 @@ val x = if (kala)
           zot
 
 val x = try "1".toInt
-        catch { case e => 0)
+        catch { case e => 0}
         finally { println("hello") }
 
 val xs = for (i <- 1 to 10)
@@ -162,7 +166,7 @@ val x = if (kala)
     zot
 
 val x = try "1".toInt
-  catch { case e => 0)
+  catch { case e => 0}
   finally { println("hello") }
 
 val xs = for (i <- 1 to 10)
