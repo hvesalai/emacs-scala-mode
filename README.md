@@ -130,6 +130,45 @@ val y = List( "Alpha", "Bravo",
     "Charlie" )
 ```
 
+### Forms (scala-indent:align-forms)
+
+When this variable is set to 't' (default), `if`, `for` and `try`
+forms are aligned.
+
+```
+val x = if (kala)
+          foo
+        else if (koira)
+          bar
+        else
+          zot
+
+val x = try "1".toInt
+        catch { case e => 0)
+        finally { println("hello") }
+
+val xs = for (i <- 1 to 10)
+         yield i
+```
+
+When the variable is set to nil, the same will be as:
+
+```
+val x = if (kala)
+    foo
+  else if (koira)
+    bar
+  else
+    zot
+
+val x = try "1".toInt
+  catch { case e => 0)
+  finally { println("hello") }
+
+val xs = for (i <- 1 to 10)
+  yield i
+```
+
 ## Motion
 
 Basic emacs motion will work as expected. The forward-sexp and

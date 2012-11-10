@@ -87,6 +87,7 @@ When started, runs `scala-mode-hook'.
 ;  :abbrev
 
   (scala-mode:make-local-variables
+   'scala-mode:debug-messages
    'syntax-propertize-function
    'font-lock-defaults
    'paragraph-start
@@ -103,7 +104,8 @@ When started, runs `scala-mode-hook'.
 
   (add-hook 'syntax-propertize-extend-region-functions
             'scala-syntax:propertize-extend-region)
-  (setq 
+  (setq scala-mode:debug-messages       nil
+
         syntax-propertize-function      'scala-syntax:propertize
         parse-sexp-lookup-properties    t
 

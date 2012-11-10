@@ -13,26 +13,6 @@ indentation will be one or two steps depending on context."
   :type 'integer
   :group 'scala)
 
-(defcustom scala-indent:align-forms t
-  "Whether or not to align 'else', 'yield', 'catch', 'finally'
-below their respective expression start. When non-nil, identing
-will be
-
-val x = if (foo)
-          bar
-        else
-          zot
-
-when nil, the same will indent as
-
-val x = if (foo)
-    bar
-  else
-    zot
-"
-  :type 'boolean
-  :group 'scala)
-
 (defcustom scala-indent:indent-value-expression t
   "Whether or not to indent multi-line value expressions, with
 one extra step. When true, indenting will be
@@ -82,7 +62,25 @@ val x = foo(1, List(1, 2, 3) map (i =>
   :type 'boolean
   :group 'scala)
 
+(defcustom scala-indent:align-forms t
+  "Whether or not to align 'else', 'yield', 'catch', 'finally'
+below their respective expression start. When non-nil, identing
+will be
 
+val x = if (foo)
+          bar
+        else
+          zot
+
+when nil, the same will indent as
+
+val x = if (foo)
+    bar
+  else
+    zot
+"
+  :type 'boolean
+  :group 'scala)
 
 (defconst scala-indent:eager-strategy 0
   "See 'scala-indent:run-on-strategy'")
@@ -186,13 +184,15 @@ scala-indent:align-parameters is non-nil."
             (not scala-indent:align-parameters))
     (back-to-indentation)))
 
-(defun scala-indent:value-expression-lead (start anchor)
+(defun scala-indent:value-expression-lead (start anchor &optional not-block-p)
   ;; calculate an indent lead. The lead is one indent step if there is
   ;; a '=' between anchor and start, otherwise 0.
   (if (and scala-indent:indent-value-expression 
            (ignore-errors 
              (save-excursion
-               (let ((block-beg (nth 1 (syntax-ppss start))))
+               (let ((block-beg (if not-block-p 
+                                    start
+                                  (nth 1 (syntax-ppss start)))))
                  (goto-char anchor)
                  (scala-syntax:has-char-before ?= block-beg)))))
       scala-indent:step 0))
@@ -429,16 +429,13 @@ special word found. Special words include 'yield', 'else',
           (if scala-indent:align-forms
               anchor
             (when anchor
-              ;; TODO: merge to use the new function for this
-              (when (scala-indent:backward-sexp-to-beginning-of-line)
-                (back-to-indentation))
+              (scala-indent:align-anchor)
               (point))))))))
 
 (defun scala-indent:resolve-forms-align-step (start anchor)
   (if scala-indent:align-forms
       0
-    ;; TODO: merge to use step calculation
-    0)) 
+    (scala-indent:value-expression-lead start anchor t)))
 
 ;;;
 ;;; Lists and enumerators
@@ -522,11 +519,9 @@ follows said symbol, or nil if not."
             (goto-char (match-beginning 0))
             (when (and (looking-at "\\<if\\>")
                        (scala-syntax:looking-back-token "\\<else\\>"))
-              (match-beginning 0))
-            ;;TODO merge with teh function
-            (when (and (not scala-indent:align-forms)
-                       (scala-indent:backward-sexp-to-beginning-of-line))
-              (back-to-indentation))
+              (goto-char (match-beginning 0)))
+            (when (not scala-indent:align-forms)
+              (scala-indent:align-anchor))
             (point))))))
 
 (defun scala-indent:goto-body-anchor (&optional point)
@@ -545,7 +540,8 @@ follows said symbol, or nil if not."
 (defun scala-indent:resolve-body-step (start &optional anchor)
   (if (and (not (= start (point-max))) (= (char-after start) ?\{))
       0
-    scala-indent:step))
+    (+ (scala-indent:value-expression-lead start anchor t)
+       scala-indent:step)))
 
 ;;;
 ;;; Block
@@ -689,7 +685,8 @@ nothing was applied."
              (anchor (funcall rule-statement point)))
         (if anchor
             (progn 
-              (message "indenting acording to %s at %d" rule-statement anchor)
+              (if scala-mode:debug-messages
+                  (message "indenting acording to %s at %d" rule-statement anchor))
               (when (/= anchor (point))
                 (error (format "Assertion error: anchor=%d, point=%d" anchor (point))))
               (+ (current-column)
