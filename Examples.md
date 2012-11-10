@@ -124,8 +124,8 @@ val someLongName = aFunctionCall(aCollection map ( name =>
                                    value
                                  ))
 
-trait Foo extends Map[Option[x] forSome { 
-                        type x <: String 
+trait Foo extends Map[Option[x] forSome {
+                        type x <: String
                       }, Boolean]
 
 val someLongName = aFunctionCall(
@@ -160,7 +160,8 @@ val someLongName = aFunctionCall(aCollection map ( name =>
   ))
 
 val someLongName = aFunctionCall("foo".
-    length)
+    length
+  )
 
 trait Foo extends Map[Option[x] forSome {
     type x <: String
