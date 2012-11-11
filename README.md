@@ -71,7 +71,17 @@ val x = 20 +
 ```
 
 The *reluctant* mode (default) will not indent the line in either
-case. 
+case. However, all three modes will indent the second line in these
+examples as specified by the *Scala Language Specification*, section
+1.2.
+
+```
+val x = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).
+  map (x => x + 1) // last token of previous line can not terminate a statement
+
+val y = (List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+           map (x => x + 1)) // inside 'newlines disabled' region
+```
 
 You can use empty lines in *eager* mode to stop it from indenting a
 line. For example
