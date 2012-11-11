@@ -1,6 +1,6 @@
 # scala-mode2 — A new scala-mode for emacs
 
-This is a new scala major mode for emacs. It is a complete rewrite
+This is a new scala major mode for emacs 24. It is a complete rewrite
 based on scala language specification 2.9.
 
 The mode intends to provide the basic emacs support, including
@@ -14,19 +14,24 @@ standard emacs motions work ofcourse.
 
 ## Setting the mode up for use
 
-1. Download the files to a local directory, you can use the *git*
+1. Make sure you have the latest version of **GNU Emacs** installed. 
+The mode has been developed on 24.2 and uses features not available
+in emacs prior to version 24.
+
+2. Download the files to a local directory, you can use the *git*
 command. This will create a directory called scala-mode2.
 ```
 > git git://github.com/hvesalai/scala-mode2.git
 ```
 
-2. Include the following in your '.emacs'  file
+3. Include the following in your '.emacs'  file. If you have been
+using the old scala-mode, make sure it is no longer in load-path.
 ```
 (add-to-list 'load-path "/path/to/scala-mode2/")
 (require 'scala-mode)
 ```
 
-3. That's it. Next you can start emacs and take a look at the
+4. That's it. Next you can start emacs and take a look at the
 customization menu for scala-mode (use **M-x** *customize-mode* when
 in scala-mode or use **M-x** *customize-variable* to customize one
 variable).
@@ -39,15 +44,15 @@ customization variable *frame-background-mode* to *dark* (use **M-x**
 ## Indenting modes
 
 *Where four developers meet, there are four opinions on how code should
-be indented. Luckily scala-mode already supports 2^4 different
-ways of indenting.*
+be indented. Luckily scala-mode already supports 2^4 different ways of 
+indenting.*
 
 ### Run-on lines (scala-indent:default-run-on-strategy)
 
 The indenting engine has three modes for handling run-on lines. The
-*reluctant* (default) mode is geared toward a general style of coding
-and the *eager* for strictly functional style. A third mode called
-*operators* is between the two.
+**reluctant** (default) mode is geared toward a general style of coding
+and the **eager** for strictly functional style. A third mode called
+**operators** is between the two.
 
 The difference between the modes is how they treat run-on lines. For
 example, the *eager* mode will indent *map* in the following code
@@ -58,11 +63,11 @@ val x = List(1, 2, 3)
 ```
 
 The *operators* and *eager* modes will indent the second row in the
-following code:
+following code, as the first line ends with opchar.
 
 ```
-val x = 20 
-  + 21
+val x = 20 + 
+  21
 ```
 
 The *reluctant* mode (default) will not indent the line in either
@@ -77,10 +82,10 @@ val x = foo("bar")
 
 val y = foo("bar")
 
-("zot", "kala")
+("zot", "kala") // a tuple
 ```
 
-However, in all three modes pressing tab repeatedly on a line
+However, in all three modes pressing **tab** key repeatedly on a line
 will toggle between the modes.
 
 ### Value expressions (scala-indent:indent-value-expression)
@@ -118,24 +123,24 @@ lines in parameter lists will always align under and acording to the
 first parameter.
 
 ```
-val x = equals(List(1,2,3) map (x =>
-                 x + 1))
-
 val y = List( "Alpha", "Bravo",
               "Charlie" )
-```
 
-When the variable is set to *nil*, the same will be as:
-
-```
 val x = equals(List(1,2,3) map (x =>
-    x + 1))
+                 x + 1))
+```
 
+When the variable is set to *nil*, the same will be indented as:
+
+```
 val y = List( "Alpha", "Bravo",
     "Charlie" )
+
+val x = equals(List(1,2,3) map (x =>
+    x + 1))
 ```
 
-### Forms (scala-indent:align-forms)
+### Expresison forms: if, for, try (scala-indent:align-forms)
 
 When this variable is set to *t* (default), *if*, *for* and *try*
 forms are aligned.
@@ -156,7 +161,7 @@ val xs = for (i <- 1 to 10)
          yield i
 ```
 
-When the variable is set to *nil*, the same will be as:
+When the variable is set to *nil*, the same will be indented as:
 
 ```
 val x = if (kala)
@@ -177,7 +182,7 @@ val xs = for (i <- 1 to 10)
 ## Motion
 
 Basic emacs motion will work as expected. The *forward-sexp* and
-*backward-sexp* (**M-C-f**, **M-C-b**) motion commands will move over
+*backward-sexp* ( **M-C-f**, **M-C-b** ) motion commands will move over
 reserved words, literals, ids and lists.
 
 ## Code highlighting
@@ -188,7 +193,7 @@ should work is welcomed as issues to this github project.
 ## Other features
 - supports multi-line strings both in highlight and movement
 - highlights only properly formatted string and character constants
-- fills scaladoc comments properly (**M-q**)
+- fills scaladoc comments properly ( **M-q** )
 - indenting a code line removes trailing whitespace
 
 ## Future work
