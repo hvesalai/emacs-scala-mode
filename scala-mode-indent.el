@@ -668,6 +668,14 @@ anchored at 'anchor'."
 ;         (message "normal at %d" (current-column))
          0)))
 
+(defun scala-indent:goto-line-comment-anchor (&optional pos)
+  "Goto and return the position relative to which a line comment
+will be indented. This will be the start of the line-comment on
+previous line, if any."
+  (if (and (looking-at "\\s *//")
+           (forward-comment -1))
+      (point)))
+      
 ;;;
 ;;; Indentation engine
 ;;;
@@ -701,7 +709,8 @@ nothing was applied."
 point 'point'. Returns the new column, or nil if the indent
 cannot be determined."
   (or (scala-indent:apply-indent-rules
-       `((scala-indent:goto-open-parentheses-anchor scala-indent:resolve-open-parentheses-step)
+       `((scala-indent:goto-line-comment-anchor 0)
+         (scala-indent:goto-open-parentheses-anchor scala-indent:resolve-open-parentheses-step)
          (scala-indent:goto-for-enumerators-anchor scala-indent:resolve-list-step)
          (scala-indent:goto-forms-align-anchor scala-indent:resolve-forms-align-step)
          (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
@@ -739,10 +748,43 @@ strings"
   (let ((state (save-excursion (syntax-ppss (line-beginning-position)))))
     (if (not (nth 8 state)) ;; 8 = start pos of comment or string, nil if none
         (scala-indent:indent-code-line strategy)
-      (scala-indent:indent-line-to (current-indentation))
-      nil)))
+      (if (integerp (nth 4 state)) ;; 4 = nesting level of comment for scaladoc
+          (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state)))
+        (scala-indent:indent-line-to (current-indentation))))))
 
 (defun scala-indent:indent-with-reluctant-strategy ()
   (interactive)
   (scala-indent:indent-line scala-indent:reluctant-strategy))
         
+(defun scala-indent:scaladoc-indent (comment-start-pos)
+  "Calculate indent for a multi-line comment. Scaladoc
+lines (starting with /**) are indented under the second
+aseterix. Other multi-line comment rows are indented undet the
+first asterisk.
+
+Note: start line is indented as code since the start of the
+comment is outside the comment region. "
+  (save-excursion 
+    (goto-char comment-start-pos)
+    (when (looking-at "/\\*+")
+      (goto-char
+       (if (= (- (match-end 0) (match-beginning 0)) 3)
+           (- (match-end 0) 1)
+         (+ (match-beginning 0) 1)))
+        (current-column))))
+
+(defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
+  "This function is meant to be used with post-self-insert-hook.
+
+Indents the line if position is right after an asterisk in a
+multi-line comment block and there is only whitespace before the asterisk.
+
+If insert-space is true, also adds a space after the asterisk if
+the asterisk is the last character on the line."
+  (let ((state (syntax-ppss)))
+    (when (and (integerp (nth 4 state))
+               (looking-back "^\\s *\\*" (line-beginning-position)))
+      (when (and insert-space-p
+                 (looking-at "\\s *$"))
+        (insert " "))
+      (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))

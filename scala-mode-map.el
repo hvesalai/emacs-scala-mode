@@ -4,6 +4,8 @@
 
 (provide 'scala-mode-map)
 
+(require 'scala-mode-indent)
+
 (defmacro scala-mode-map:define-keys (key-map key-funcs)
   (cons 'progn (mapcar 
    #'(lambda (key-func)
@@ -27,10 +29,7 @@
     (scala-mode-map:define-keys 
      keymap
      (
-      ([backtab]                  'scala-indent:indent-with-reluctant-strategy)
-      ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
-      ([(control c)(control c)]   'comment-region)
-      ;;       ("}"                        'scala-electric-brace)
+;;      ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
       ))
      (setq scala-mode-map keymap)))
   
