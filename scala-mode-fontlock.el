@@ -327,6 +327,10 @@ Does not continue past limit.
     ;; User defined constants
     (,(scala-font-lock:create-user-constant-re) 0 font-lock-constant-face)
 
+    ;; Annotations
+    (, (rx (and "@" (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_."))))
+     . font-lock-preprocessor-face)
+
     ;; reserved symbols
     (scala-font-lock:mark-reserved-symbols 2 font-lock-keyword-face)
 
@@ -388,8 +392,6 @@ Does not continue past limit.
                                         (3 font-lock-type-face nil t)))
 
     ;; Some patterns from Erik
-    (,(rx "@" (in "a-zA-Z_") (0+ (in "a-zA-Z0-9_")))
-     . font-lock-preprocessor-face)
 
     ;; :
     (,(rx ":"
