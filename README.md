@@ -21,7 +21,7 @@ in emacs prior to version 24.
 2. Download the files to a local directory, you can use the *git*
 command. This will create a directory called scala-mode2.
 ```
-> git git://github.com/hvesalai/scala-mode2.git
+> git clone git://github.com/hvesalai/scala-mode2.git
 ```
 
 3. Include the following in your '.emacs'  file. If you have been
