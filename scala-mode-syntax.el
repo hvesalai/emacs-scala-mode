@@ -107,7 +107,7 @@
 (defconst scala-syntax:relaxed-char-and-string-literal-re
   (concat scala-syntax:characterLiteral-re 
           "\\|" scala-syntax:multiLineStringLiteral-re
-          "\\|\\(\"\\)" "\\(\\(\\\\\"\\|[^\"\n]\\)*[^\\\\\n\"]\\)?" "\\(\"\\)"))
+          "\\|\\(\"\\)" "\\(\\\\.\\|[^\"\n\\]\\)*" "\\(\"\\)"))
 
 ;; Identifiers (Chapter 1.1)
 (defconst scala-syntax:op-re 
@@ -485,19 +485,19 @@ characters and one-line strings will not be fontified."
              ((match-beginning 4) ;; balanced multi-line literal
               (scala-syntax:put-syntax-table-property 4 '(15 . nil))
               (scala-syntax:put-syntax-table-property 7 '(15 . nil)))
-             ((and (save-excursion ;; valid string-literals
-                     (goto-char (match-beginning 8))
-                     ;; really valid?
-                     (looking-at-p scala-syntax:oneLineStringLiteral-re))
-                   (or 
-                    ;; normal string, content is not empty
-                    (match-end 10) 
-                    ;; empty string at line end
-                    (= (match-end 11) (line-end-position)) 
-                    ;; no " after empty string
-                    (not (= (char-after (match-end 11)) ?\"))))
-              (scala-syntax:put-syntax-table-property 8 '(7 . nil))
-              (scala-syntax:put-syntax-table-property 11 '(7 . nil)))
+             ((or  
+               ;; normal string, content is not empty
+               (match-beginning 9) 
+               ;; empty string at line end
+               (= (match-end 10) (line-end-position)) 
+               ;; no " after empty string
+               (not (= (char-after (match-end 10)) ?\")))
+              (when (save-excursion
+                      (goto-char (match-beginning 8))
+                      ;; really valid?
+                      (looking-at-p scala-syntax:oneLineStringLiteral-re))
+                (scala-syntax:put-syntax-table-property 8 '(7 . nil))
+                (scala-syntax:put-syntax-table-property 10 '(7 . nil))))
              (t ;; backtrack and continue to next while loop
               (goto-char (match-beginning 0))
               (throw 'break nil)))))
