@@ -90,7 +90,7 @@
 
 ;; String Literals (Chapter 1.3.5)
 (defconst scala-syntax:stringElement-re
-  (concat "\\(" "[^\n\"\\\\\]" 
+  (concat "\\(" "[^\n\"\\\\]" 
           "\\|" scala-syntax:string-escape-re  "\\)"))
 (defconst scala-syntax:oneLineStringLiteral-re (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
 (defconst scala-syntax:multiLineStringLiteral-re
@@ -98,6 +98,16 @@
 (defconst scala-syntax:stringLiteral-re
   (concat "\\(" scala-syntax:multiLineStringLiteral-re 
           "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
+
+;; If you change this or any of the used regex, be sure to
+;; maintain this or update propertize function acordingly:
+;; group 1 = char start, 3 = char end
+;; group 4 = multi-line string start, 7 = end
+;; group 8 = string start, 11 = end
+(defconst scala-syntax:relaxed-char-and-string-literal-re
+  (concat scala-syntax:characterLiteral-re 
+          "\\|" scala-syntax:multiLineStringLiteral-re
+          "\\|\\(\"\\)" "\\(\\(\\\\\"\\|[^\"\n]\\)*[^\\\\\n\"]\\)?" "\\(\"\\)"))
 
 ;; Identifiers (Chapter 1.1)
 (defconst scala-syntax:op-re 
@@ -439,22 +449,15 @@ match-group 'match-group'"
                       'syntax-table 
                       ,value))
 
-(defun scala-syntax:propertize-characterLiterals (start e§nd)
-  "Mark start and end of character literals as syntax class
-7 (string quotes). Only valid character literals will be marked."
-  (save-excursion
-    (goto-char start)
-    (while (re-search-forward scala-syntax:characterLiteral-re end t)
-      (scala-syntax:put-syntax-table-property 1 '(7 . nil))
-      (scala-syntax:put-syntax-table-property 3 '(7 . nil)))))
-
-(defun scala-syntax:propertize-stringLiterals (start end)
-  "Mark start and end of both one-line and multi-line string
-literals. One-line strings use syntax class 7 (string quotes),
-while multi-line strings are marked with 15 (generic string
-delimiter). Multi-line string literals are marked even if they
-are unbalanced. One-line string literals have to be balanced to
-get marked. This means invalid one-line strings will not be fontified."
+(defun scala-syntax:propertize-char-and-string-literals (start end)
+  "Mark start and end of character literals as well as one-line
+and multi-line string literals. One-line strings and characters
+use syntax class 7 (string quotes), while multi-line strings are
+marked with 15 (generic string delimiter). Multi-line string
+literals are marked even if they are unbalanced. One-line string
+literals have to be balanced to get marked. This means invalid
+characters and one-line strings will not be fontified."
+        
   (let* ((string-state (nth 3 (syntax-ppss start)))
          (unbalanced-p (eq string-state t)))
 
@@ -469,16 +472,32 @@ get marked. This means invalid one-line strings will not be fontified."
           (scala-syntax:put-syntax-table-property 1 '(15 . nil)))
         ;; match any balanced one-line or multi-line literals
         (catch 'break
-          (while (re-search-forward scala-syntax:stringLiteral-re end t)
+          (while (re-search-forward 
+                  scala-syntax:relaxed-char-and-string-literal-re end t)
+            ;; Expects the following groups:
+            ;; group 1 = char start, 3 = char end
+            ;; group 4 = multi-line string start, 7 = end
+            ;; group 8 = string start, 10 = end
             (cond
-             ((match-beginning 2)
-              (scala-syntax:put-syntax-table-property 2 '(15 . nil))
-              (scala-syntax:put-syntax-table-property 5 '(15 . nil)))
-             ((or (match-end 7) ; group 7 is non-nil, ie. online string is not empty
-                  (= (match-end 8) (line-end-position)) ; empty string at line end
-                  (not (= (char-after (match-end 8)) ?\"))) ; no " after empty string 
-              (scala-syntax:put-syntax-table-property 6 '(7 . nil))
-              (scala-syntax:put-syntax-table-property 8 '(7 . nil)))
+             ((match-beginning 1)
+              (scala-syntax:put-syntax-table-property 1 '(7 . nil))
+              (scala-syntax:put-syntax-table-property 3 '(7 . nil)))
+             ((match-beginning 4) ;; balanced multi-line literal
+              (scala-syntax:put-syntax-table-property 4 '(15 . nil))
+              (scala-syntax:put-syntax-table-property 7 '(15 . nil)))
+             ((and (save-excursion ;; valid string-literals
+                     (goto-char (match-beginning 8))
+                     ;; really valid?
+                     (looking-at-p scala-syntax:oneLineStringLiteral-re))
+                   (or 
+                    ;; normal string, content is not empty
+                    (match-end 10) 
+                    ;; empty string at line end
+                    (= (match-end 11) (line-end-position)) 
+                    ;; no " after empty string
+                    (not (= (char-after (match-end 11)) ?\"))))
+              (scala-syntax:put-syntax-table-property 8 '(7 . nil))
+              (scala-syntax:put-syntax-table-property 11 '(7 . nil)))
              (t ;; backtrack and continue to next while loop
               (goto-char (match-beginning 0))
               (throw 'break nil)))))
@@ -514,8 +533,7 @@ symbol constituents (syntax 3)"
 
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function" 
-  (scala-syntax:propertize-characterLiterals start end)
-  (scala-syntax:propertize-stringLiterals start end)
+  (scala-syntax:propertize-char-and-string-literals start end)
   (scala-syntax:propertize-underscore-and-idrest start end))
 
 
