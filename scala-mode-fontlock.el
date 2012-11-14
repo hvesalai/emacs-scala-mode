@@ -301,9 +301,11 @@ Does not continue past limit.
 
 (defun scala-font-lock:mark-numberLiteral (re limit)
   (when (re-search-forward re limit t)
-    (goto-char (match-beginning 0))
-    (when (or (bolp) (string-match-p scala-syntax:number-safe-start-re (string (char-before))))
-      (goto-char (match-end 0)))))
+    (if (string-match-p scala-syntax:number-safe-start-re
+                        ;; get char-before match or a magic ',', which is safe
+                        (string (or (char-before (match-beginning 0)) ?,)))
+        t
+      (scala-font-lock:mark-numberLiteral re limit))))
 
 (defun scala-font-lock:mark-floatingPointLiteral (limit)
   (scala-font-lock:mark-numberLiteral
