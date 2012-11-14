@@ -13,10 +13,10 @@
 (require 'scala-mode-map)
 (require 'cc-cmds)
 
-;; Tested only for emacs 23
-(unless (<= 23 emacs-major-version)
+;; Tested only for emacs 24
+(unless (<= 24 emacs-major-version)
   (error
-   (format "The Scala mode has been tested only on Emacs version 23.x (and not your Emacs version %s.%s)"  
+   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"  
            emacs-major-version  emacs-minor-version)))
 
 (defgroup scala nil
