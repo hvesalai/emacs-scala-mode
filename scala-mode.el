@@ -51,6 +51,7 @@ When started, runs `scala-mode-hook'.
    'scala-mode:debug-messages
    'post-self-insert-hook
    'syntax-propertize-function
+   'font-lock-syntactic-face-function
    'font-lock-defaults
    'paragraph-start
    'paragraph-separate
@@ -74,8 +75,9 @@ When started, runs `scala-mode-hook'.
         parse-sexp-lookup-properties    t
 
         ;; TODO: font-lock
-        font-lock-defaults              '((scala-font-lock:keywords)
+        font-lock-defaults              '(scala-font-lock:keywords
                                           nil)
+        font-lock-syntactic-face-function 'scala-font-lock:syntactic-face-function
 
         ;; TODO: beginning-of-defun-function, end-of-defun-function
 

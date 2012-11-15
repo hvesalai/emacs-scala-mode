@@ -467,3 +467,12 @@ Does not continue past limit.
     (scala-font-lock:mark-integerLiteral . font-lock-constant-face)
     
 ))
+
+(defun scala-font-lock:syntactic-face-function (state)
+  "Return correct face for string or comment"
+  (if (and (integerp (nth 4 state))
+           (save-excursion
+             (goto-char (nth 8 state))
+             (looking-at "/\\*\\*\\($\\|[^*]\\)")))
+      font-lock-doc-face
+    (if (nth 3 state) font-lock-string-face font-lock-comment-face)))

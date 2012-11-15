@@ -103,7 +103,7 @@
              (fill-paragraph))
            t)
           ((eq (nth 4 state) t)
-           ;; let normal fill-function handle this
+           ;; line comment, let normal fill-function handle this
            nil)
           ((eq (nth 3 state) t)
            ;; mask multi-line strings and fill.

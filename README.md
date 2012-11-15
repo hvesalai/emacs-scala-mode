@@ -321,6 +321,8 @@ customization variable *frame-background-mode* to *dark* (use **M-x**
 
 ## Future work
 
+- syntax-begin-function for reliably fontifying elements which span
+  multiple lines
 - beginning-of-defun, end-of-defun
 - indent case, etc after they are typed (use first space as self-insert-hook)
 - indent multi-line strings with margin correctly
