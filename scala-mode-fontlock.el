@@ -395,7 +395,7 @@ Does not continue past limit.
 
     ;; type ascriptions (: followed by a type)
     (,(rx 
-       (not (in "!#%&*+-/:<=>?@\\^|~"))
+       (or (not (in "!#%&*+-/:<=>?@\\^|~")) line-start)
        (group ":")
        (0+ space)
        (group (or
