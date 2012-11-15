@@ -613,6 +613,7 @@ stableId"
 (defun scala-syntax:skip-forward-ignorable ()
   "Moves forward over ignorable whitespace and comments. A 
 completely empty line is not ignorable and will not be mobed over."
+  (interactive)
   (save-match-data
     (while (and (not (scala-syntax:looking-at-empty-line-p))
                 (forward-comment 1)))

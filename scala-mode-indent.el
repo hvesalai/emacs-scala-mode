@@ -662,20 +662,25 @@ anchored at 'anchor'."
            (goto-char anchor)
            ;; find =
            (scala-syntax:has-char-before ?= start))
-         (message "=")
+;         (message "=")
          scala-indent:step)
         (t
 ;         (message "normal at %d" (current-column))
          0)))
 
-(defun scala-indent:goto-line-comment-anchor (&optional pos)
+(defun scala-indent:goto-line-comment-anchor (&optional point)
   "Goto and return the position relative to which a line comment
 will be indented. This will be the start of the line-comment on
 previous line, if any."
-  (if (and (looking-at "\\s *//")
-           (forward-comment -1))
-      (point)))
-      
+  (let ((pos (point)))
+    (when (save-excursion
+            (when point (goto-char point))
+            (when (and (looking-at "\\s *//")
+                       (not (scala-syntax:looking-back-empty-line-p))
+                       (forward-comment -1))
+              (setq pos (point))))
+      (goto-char pos))))
+    
 ;;;
 ;;; Indentation engine
 ;;;
@@ -686,6 +691,7 @@ the sum of the value and the respective indent step, or nil if
 nothing was applied."
   (when rule-indents
     (save-excursion
+      (when point (goto-char point))
       (let* ((pos (scala-syntax:beginning-of-code-line))
              (rule-indent (car rule-indents))
              (rule-statement (car rule-indent))
@@ -694,7 +700,7 @@ nothing was applied."
         (if anchor
             (progn 
               (if scala-mode:debug-messages
-                  (message "indenting acording to %s at %d" rule-statement anchor))
+                  (message "indenting acording to %s at %d for pos %d for point %s" rule-statement anchor pos point))
               (when (/= anchor (point))
                 (error (format "Assertion error: anchor=%d, point=%d" anchor (point))))
               (+ (current-column)
@@ -748,9 +754,19 @@ strings"
   (let ((state (save-excursion (syntax-ppss (line-beginning-position)))))
     (if (not (nth 8 state)) ;; 8 = start pos of comment or string, nil if none
         (scala-indent:indent-code-line strategy)
-      (if (integerp (nth 4 state)) ;; 4 = nesting level of comment for scaladoc
-          (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state)))
-        (scala-indent:indent-line-to (current-indentation))))))
+      (scala-indent:indent-line-to 
+       (cond ((integerp (nth 4 state))    ;; 4 = nesting level of multi-line comment
+              (scala-indent:scaladoc-indent (nth 8 state)))
+             ((eq t (nth 3 state))   ;; 3 = t for multi-line string
+              (or (save-excursion
+                    (beginning-of-line)
+                    (when (and (looking-at "\\s *|")
+                               (progn (goto-char (nth 8 state))
+                                      (looking-at "\\(\"\"\"\\)|")))
+                      (goto-char (match-end 1))
+                      (current-column)))
+                  (current-indentation)))
+             (t (current-indentation)))))))
 
 (defun scala-indent:indent-with-reluctant-strategy ()
   (interactive)
