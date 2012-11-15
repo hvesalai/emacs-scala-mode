@@ -13,7 +13,7 @@ indentation will be one or two steps depending on context."
   :type 'integer
   :group 'scala)
 
-(defcustom scala-indent:indent-value-expression t
+(defcustom scala-indent:indent-value-expression nil
   "Whether or not to indent multi-line value expressions, with
 one extra step. When true, indenting will be
 
@@ -38,7 +38,7 @@ val x = try {
   :type 'boolean
   :group 'scala)
 
-(defcustom scala-indent:align-parameters t
+(defcustom scala-indent:align-parameters nil
   "Whether or not to indent parameter lists so that next
   parameter lines always align under the first parameter. When
   non-nil, indentation will be
@@ -62,7 +62,7 @@ val x = foo(1, List(1, 2, 3) map (i =>
   :type 'boolean
   :group 'scala)
 
-(defcustom scala-indent:align-forms t
+(defcustom scala-indent:align-forms nil
   "Whether or not to align 'else', 'yield', 'catch', 'finally'
 below their respective expression start. When non-nil, identing
 will be

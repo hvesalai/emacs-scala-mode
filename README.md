@@ -97,21 +97,8 @@ line will toggle between the modes.
 
 ### Value expressions (scala-indent:indent-value-expression)
 
-When this variable is set to *t* (default), blocks in value
-expressions will be indented one extra step to make the *val*, *var*
-or *def* stand out. For example:
-
-```
-val x = try {
-    some()
-  } catch {
-    case e => other
-  } finally {
-    clean-up()
-  }
-```
-
-When the variable is set to *nil*, the same will indent as:
+When this variable is set to *nil* (default), body of a value
+expressions will be indented in the traditional way.
 
 ```
 val x = try {
@@ -123,11 +110,35 @@ val x = try {
 }
 ```
 
+However, when the variable is set to *t*, the body will be indented
+one extra step to make the *val*, *var* or *def* stand out. For
+example:
+
+```
+val x = try {
+    some()
+  } catch {
+    case e => other
+  } finally {
+    clean-up()
+  }
+```
+
 ### Parameter lists (scala-indent:align-parameters)
 
-When this variable is set to *t* (default), parameters and run-on
-lines in parameter lists will always align under and acording to the
+When this variable is set to *nil* (default), parameters and run-on
+lines in parameter lists will not align under or acording to the
 first parameter.
+
+```
+val y = List( "Alpha", "Bravo",
+  "Charlie" )
+
+val x = equals(List(1,2,3) map (x =>
+  x + 1))
+```
+
+When the variable is set to *t*, the same will be indented as:
 
 ```
 val y = List( "Alpha", "Bravo",
@@ -137,20 +148,28 @@ val x = equals(List(1,2,3) map (x =>
                  x + 1))
 ```
 
-When the variable is set to *nil*, the same will be indented as:
-
-```
-val y = List( "Alpha", "Bravo",
-    "Charlie" )
-
-val x = equals(List(1,2,3) map (x =>
-    x + 1))
-```
-
 ### Expresison forms: if, for, try (scala-indent:align-forms)
 
-When this variable is set to *t* (default), *if*, *for* and *try*
-forms are aligned.
+When this variable is set to *nil* (default), *if*, *for* and *try*
+forms are not aligned specially.
+
+```
+val x = if (kala)
+  foo
+else if (koira)
+  bar
+else
+  zot
+
+val x = try "1".toInt
+catch { case e => 0}
+finally { println("hello") }
+
+val xs = for (i <- 1 to 10)
+yield i
+```
+
+When the variable is set to *t*, the same will be indented as:
 
 ```
 val x = if (kala)
@@ -166,24 +185,6 @@ val x = try "1".toInt
 
 val xs = for (i <- 1 to 10)
          yield i
-```
-
-When the variable is set to *nil*, the same will be indented as:
-
-```
-val x = if (kala)
-    foo
-  else if (koira)
-    bar
-  else
-    zot
-
-val x = try "1".toInt
-  catch { case e => 0}
-  finally { println("hello") }
-
-val xs = for (i <- 1 to 10)
-  yield i
 ```
 
 ## Indenting multi-line comments
