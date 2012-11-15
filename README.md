@@ -325,7 +325,6 @@ customization variable *frame-background-mode* to *dark* (use **M-x**
 - syntax-begin-function for reliably fontifying elements which span
   multiple lines
 - beginning-of-defun, end-of-defun
-- indent case, etc after they are typed (use first space as self-insert-hook)
 - movement commands to move to previous or next definition (val,
   var, def, class, trait, object)
 - highlight headings and annotations inside scaladoc specially (use

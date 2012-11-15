@@ -22,7 +22,9 @@
 
 (defun scala-mode-map:add-self-insert-hooks ()
   (add-hook 'post-self-insert-hook
-            #'scala-mode-map:indent-parentheses))
+            'scala-mode-map:indent-parentheses)
+  (add-hook 'post-self-insert-hook
+            'scala-mode:indent-on-special-words))
 
 (when (not scala-mode-map)
   (let ((keymap (make-sparse-keymap)))

@@ -789,7 +789,25 @@ comment is outside the comment region. "
          (+ (match-beginning 0) 1)))
         (current-column))))
 
-(defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
+(defconst scala-indent:indent-on-words-re
+  (concat "^\\s *"
+          (regexp-opt '("catch" "case" "else" "finally" "yield") 'words)))
+
+(defun scala-mode:indent-on-special-words ()
+  "This function is meant to be used with post-self-insert-hook.
+
+Indents the line if position is right after a space that is after
+a word that needs to be indented specially."
+  ;; magic numbers used 4 = length of "case"
+  (when (and (> (current-column) 4)
+             (= (char-before) ?\s)
+             (= (char-syntax (char-before (- (point) 1))) ?w)
+             (save-excursion (backward-char)
+                             (looking-back scala-indent:indent-on-words-re))
+             (not (nth 8 (syntax-ppss))))
+    (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))))
+
+(defun scala-mode:indent-on-scaladoc-asterisk (&optional insert-space-p)
   "This function is meant to be used with post-self-insert-hook.
 
 Indents the line if position is right after an asterisk in a
@@ -804,3 +822,8 @@ the asterisk is the last character on the line."
                  (looking-at "\\s *$"))
         (insert " "))
       (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
+
+(defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
+  (message "scala-mode:indent-scaladoc-asterisk has been deprecated, use
+scala-mode:indent-on-scaladoc-asterisk")
+  (scala-mode:indent-on-scaladoc-asterisk insert-space-p))
