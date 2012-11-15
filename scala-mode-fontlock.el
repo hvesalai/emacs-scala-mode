@@ -7,7 +7,7 @@
 (require 'scala-mode-syntax)
 (require 'scala-mode-constants)
 
-(defcustom scala-font-lock:constant-list '("Nil")
+(defcustom scala-font-lock:constant-list '()
   "A list of strigs that should be fontified in constant
 face. This customization property takes effect only after the
 scala-mode has been reloaded."
@@ -351,7 +351,7 @@ Does not continue past limit.
               "\\)") 
      1 font-lock-constant-face)
 
-    ;; class, trait
+    ;; class, trait, object
     (,(concat "\\<\\(class\\|trait\\)[ \t]+\\(" 
               scala-syntax:id-re 
               "\\)") 
@@ -384,7 +384,7 @@ Does not continue past limit.
                                          (2 font-lock-constant-face nil t)
                                          (3 font-lock-type-face nil t)))
 
-    ;; Case (but not case class|object)
+    ;; case (but not case class|object)
     ("\\<case[ \t]+\\([^:]\\)"
      (scala-font-lock:mark-pattern-part (scala-font-lock:limit-pattern
                                          (goto-char (match-beginning 1)))
@@ -393,19 +393,21 @@ Does not continue past limit.
                                         (2 font-lock-constant-face nil t)
                                         (3 font-lock-type-face nil t)))
 
-    ;; Some patterns from Erik
+    ;; type ascriptions (: followed by a type)
+    (,(rx 
+       (not (in "!#%&*+-/:<=>?@\\^|~"))
+       (group ":")
+       (0+ space)
+       (group (or
+               (and (in "a-zA-Z_")
+                    (0+ (in "a-zA-Z0-9_"))
+                    (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+               (and (in "!#%&*+-/<=>?@\\^|~") (0+ (in "!#%&*+-/:<=>?@\\^|~"))))))
+     (1 font-lock-keyword-face) (2 font-lock-type-face))
 
-    ;; :
-    (,(rx ":"
-        (0+ space)
-        (group (or
-                 (and (in "a-zA-Z_")
-                      (0+ (in "a-zA-Z0-9_"))
-                      (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-                 (and (in "!#%&*+-/<=>?@\\^|~") (0+ (in "!#%&*+-/:<=>?@\\^|~"))))))
-      (1 font-lock-type-face))
-
-    (,(rx (group "extends")
+    ;; extends followed by type
+    (,(rx symbol-start
+          (group "extends")
           (1+ space)
           (group (or
                    (and (in "a-zA-Z_")
@@ -414,7 +416,9 @@ Does not continue past limit.
                    (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
       (1 font-lock-keyword-face) (2 font-lock-type-face))
     
-    (,(rx (group "with")
+    ;; with followed by type
+    (,(rx symbol-start
+          (group "with")
           (1+ space)
           (group (or
                    (and (in "a-zA-Z_")
@@ -423,7 +427,9 @@ Does not continue past limit.
                    (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
       (1 font-lock-keyword-face) (2 font-lock-type-face))
     
-    (,(rx (group "new")
+    ;; new followed by type
+    (,(rx symbol-start
+          (group "new")
           (1+ space)
           (group (or
                    (and (in "a-zA-Z_")
@@ -432,14 +438,24 @@ Does not continue past limit.
                    (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
       (1 font-lock-keyword-face) (2 font-lock-type-face))
 
-    ; uppercase
+    ;; uppercase means a type or object
     (,(rx symbol-start
         (and (in "A-Z")
              (0+ (in "a-zA-Z0-9_"))
              (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~"))))))
-     . font-lock-type-face)
+     . font-lock-constant-face)
+    ;; . font-lock-type-face)
+    ; uncomment this to go back to highlighting objects as types
 
-    ; package name
+    ;; uppercase
+    (,(rx symbol-start
+          (group 
+           (and (in "A-Z")
+                (0+ (in "a-zA-Z0-9_"))
+                (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))))
+     . font-lock-constant-face)
+
+    ;; package name
     (,(rx symbol-start
         (group "package")
         (1+ space)
