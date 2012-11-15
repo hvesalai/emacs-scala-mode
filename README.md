@@ -202,7 +202,7 @@ scaladoc style guide.
   */
 ```
 
-Other multi-line comments are indented under the first asterix.
+Other multi-line comments are indented under the first asterisk.
 
 ```
 /****
@@ -214,6 +214,12 @@ Other multi-line comments are indented under the first asterix.
  A comment
  */
 ```
+
+Typing an asterisk in multi-line comment region, at the start of a
+line, will trigger indent. Furthermore, if the configurable variable
+*scala-indent:add-space-for-scaladoc-asterisk* is t (default) and the
+asterisk was the last character on the line, a space will be inserted
+after it.
 
 ## Filling (i.e. word wrap)
 
@@ -268,14 +274,6 @@ you may want to try. Just copy-paste it to your `.emacs` file.
   ;; when using the 'eager' mode by default and you want to "outdent" a 
   ;; code line as a new statement.
   (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
-
-  ;; Add the scalaindent:indent-scaladoc-asterisk
-  ;; post-self-insert-hook which indents the multi-line comment
-  ;; asterisk to its correct place when you type it. It also adds a
-  ;; space after the asterisk if the parameter to the function is
-  ;; t. If you don't want the space, replace t with nil.
-  (add-hook 'post-self-insert-hook
-            '(lambda () (scala-mode:indent-scaladoc-asterisk t)))
 
   ;; and other bindings here
 ))

@@ -114,6 +114,12 @@ are not ruled out by the language specification.
 
 (make-variable-buffer-local 'scala-indent:effective-run-on-strategy)
 
+(defcustom scala-indent:add-space-for-scaladoc-asterisk t
+  "When non-nil, a space will be added after a scaladoc asterisk,
+when it is added to an empty line."
+  :type 'boolean
+  :group 'scala)
+
 (defun scala-indent:run-on-strategy ()
   "Returns the currently effecti run-on strategy"
   (or scala-indent:effective-run-on-strategy
@@ -789,11 +795,16 @@ comment is outside the comment region. "
          (+ (match-beginning 0) 1)))
         (current-column))))
 
+(defun scala-indent:indent-on-parentheses ()
+  (when (and (= (char-syntax (char-before)) ?\))
+             (= (save-excursion (back-to-indentation) (point)) (1- (point))))
+    (scala-indent:indent-line)))
+
 (defconst scala-indent:indent-on-words-re
   (concat "^\\s *"
           (regexp-opt '("catch" "case" "else" "finally" "yield") 'words)))
 
-(defun scala-mode:indent-on-special-words ()
+(defun scala-indent:indent-on-special-words ()
   "This function is meant to be used with post-self-insert-hook.
 
 Indents the line if position is right after a space that is after
@@ -807,23 +818,23 @@ a word that needs to be indented specially."
              (not (nth 8 (syntax-ppss))))
     (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))))
 
-(defun scala-mode:indent-on-scaladoc-asterisk (&optional insert-space-p)
+(defun scala-indent:indent-on-scaladoc-asterisk ()
   "This function is meant to be used with post-self-insert-hook.
 
 Indents the line if position is right after an asterisk in a
 multi-line comment block and there is only whitespace before the asterisk.
 
-If insert-space is true, also adds a space after the asterisk if
-the asterisk is the last character on the line."
+If scala-indent:add-space-for-scaladoc-asterisk is t, also adds a
+space after the asterisk if the asterisk is the last character on
+the line."
   (let ((state (syntax-ppss)))
     (when (and (integerp (nth 4 state))
                (looking-back "^\\s *\\*" (line-beginning-position)))
-      (when (and insert-space-p
+      (when (and scala-indent:add-space-for-scaladoc-asterisk
                  (looking-at "\\s *$"))
         (insert " "))
       (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
 
 (defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
-  (message "scala-mode:indent-scaladoc-asterisk has been deprecated, use
-scala-mode:indent-on-scaladoc-asterisk")
-  (scala-mode:indent-on-scaladoc-asterisk insert-space-p))
+  (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
+

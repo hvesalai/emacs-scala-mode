@@ -15,16 +15,13 @@
 (defvar scala-mode-map nil
   "Local key map used for scala mode")
 
-(defun scala-mode-map:indent-parentheses ()
-  (when (and (= (char-syntax (char-before)) ?\))
-             (= (save-excursion (back-to-indentation) (point)) (1- (point))))
-    (scala-indent:indent-line)))
-
 (defun scala-mode-map:add-self-insert-hooks ()
   (add-hook 'post-self-insert-hook
-            'scala-mode-map:indent-parentheses)
+            'scala-indent:indent-on-parentheses)
   (add-hook 'post-self-insert-hook
-            'scala-mode:indent-on-special-words))
+            'scala-indent:indent-on-special-words)
+  (add-hook 'post-self-insert-hook
+            'scala-indent:indent-on-scaladoc-asterisk))
 
 (when (not scala-mode-map)
   (let ((keymap (make-sparse-keymap)))
