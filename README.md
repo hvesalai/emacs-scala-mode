@@ -318,6 +318,21 @@ customization variable *frame-background-mode* to *dark* (use **M-x**
 - highlights only properly formatted string and character constants
 - indenting a code line removes trailing whitespace
 
+## Known issues
+
+*do/while* is not always handled correctly. For example:
+
+```scala
+do
+  foo
+while (bar)
+  foo
+```
+
+The indenter thinks the second occurrence of `foo` is the body of the while.
+To work around this, terminate the while with a semicolon,
+or put a blank line after it.
+
 ## Future work
 
 - syntax-begin-function for reliably fontifying elements which span

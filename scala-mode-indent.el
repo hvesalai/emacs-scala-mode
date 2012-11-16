@@ -505,23 +505,36 @@ point or nil if the point is not in a enumerator element > 1."
 ;;; Body
 ;;;
 
-(defconst scala-indent:value-keyword-re
-  (regexp-opt '("if" "else" "yield" "for" "try" "finally" "catch") 'words))
+(defconst scala-indent:control-keywords-cond-re
+  (regexp-opt '("if" "while" "for") 'words)
+  "All the flow control keywords that are followed by a
+condition (or generators in the case of 'for') in parentheses.")
+
+(defconst scala-indent:control-keywords-other-re
+  (regexp-opt '("else" "do" "yield" "try" "finally" "catch") 'words)
+  "Other flow control keywords (not followed by parentheses)")
+
+(defconst scala-indent:control-keywords-re
+  (concat scala-indent:control-keywords-cond-re
+          scala-indent:control-keywords-other-re))
 
 (defun scala-indent:body-p (&optional point)
-  "Returns the position of '=', 'if or 'else if' (TODO: or '=>')
-symbol if current point (or point 'point) is on a line that
-follows said symbol, or nil if not."
+  "Returns the position of '=' symbol, or one of the
+scala-indent:control-keywords-re or
+scala-indent:control-keywords-cond-re keywords if current
+point (or point 'point) is on a line that follows said symbol or
+keyword, or nil if not."
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
     (or (scala-syntax:looking-back-token scala-syntax:body-start-re 3)
+        (scala-syntax:looking-back-token scala-indent:control-keywords-other-re)
         (progn
           ;; if, else if
           (when (scala-syntax:looking-back-token ")" 1)
             (goto-char (match-end 0))
             (backward-list))
-          (when (scala-syntax:looking-back-token scala-indent:value-keyword-re)
+          (when (scala-syntax:looking-back-token scala-indent:control-keywords-cond-re)
             (goto-char (match-beginning 0))
             (when (and (looking-at "\\<if\\>")
                        (scala-syntax:looking-back-token "\\<else\\>"))
@@ -534,7 +547,7 @@ follows said symbol, or nil if not."
   (let ((declaration-end (scala-indent:body-p point)))
     (when declaration-end
       (goto-char declaration-end)
-      (if (looking-at scala-indent:value-keyword-re)
+      (if (looking-at scala-indent:control-keywords-re)
           (point)
         (when (scala-indent:backward-sexp-to-beginning-of-line)
           (scala-indent:goto-run-on-anchor 
