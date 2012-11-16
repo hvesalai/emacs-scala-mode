@@ -506,7 +506,7 @@ point or nil if the point is not in a enumerator element > 1."
 ;;;
 
 (defconst scala-indent:value-keyword-re
-  (regexp-opt '("if" "else" "yield" "for" "try" "finally" "catch") 'words))
+  (regexp-opt '("if" "else" "while" "yield" "for" "try" "finally" "catch") 'words))
 
 (defun scala-indent:body-p (&optional point)
   "Returns the position of '=', 'if or 'else if' (TODO: or '=>')
