@@ -148,7 +148,7 @@ val x = equals(List(1,2,3) map (x =>
                  x + 1))
 ```
 
-### Expresison forms: if, for, try (scala-indent:align-forms)
+### Expression forms: if, for, try (scala-indent:align-forms)
 
 When this variable is set to *nil* (default), *if*, *for* and *try*
 forms are not aligned specially.
