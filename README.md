@@ -309,6 +309,14 @@ can do so in the mode hook (set *indent-tabs-mode* to t).
 Highlighting code is still a work in progress. Feedback on how it
 should work is welcomed as issues to this github project.
 
+It may come as a suprice to some that scaladoc comments (comments that
+start with exactly `/** `) are highlighted in the same color as
+strings. This is because scaladoc comments get the font-lock-doc-face,
+which is usually an alias for font-lock-string-face (a heritage from
+lisp, the native language of emacs, where document comments are
+strings). If this really bothers you, you may customize the face (use
+**M-x** *customize-face*).
+
 Free emacs tip: if you are using emacs from a text terminal with dark
 background and you are having trouble with colors, try setting the
 customization variable *frame-background-mode* to *dark* (use **M-x**
