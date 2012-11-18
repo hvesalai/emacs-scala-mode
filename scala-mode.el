@@ -12,7 +12,6 @@
 (require 'scala-mode-fontlock)
 (require 'scala-mode-indent)
 (require 'scala-mode-map)
-(require 'cc-cmds)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)

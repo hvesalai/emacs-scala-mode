@@ -606,7 +606,7 @@ anchor for calculating block indent for current point (or point
       (+ scala-indent:step lead))
      ;; other than case-line in case-block get double indent
      ((save-excursion 
-        (goto-char (1+ (nth 1 (syntax-ppss start))))
+        (goto-char (1+ (or (nth 1 (syntax-ppss start)) 0)))
         (forward-comment (buffer-size))
         (and (scala-syntax:looking-at-case-p)
              (> start (match-beginning 0))))
