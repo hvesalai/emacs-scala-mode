@@ -6,8 +6,6 @@
 
 (provide 'scala-mode-syntax)
 
-(require 'scala-mode-constants)
-
 ;;;;
 ;;;; Scala syntax regular expressions
 ;;;;
@@ -295,28 +293,6 @@
           "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
 
 
-;; (defconst scala-syntax:colon-looking-at-re
-;;   ;; reserved symbol ':'. The regexp is safe for use with
-;;   ;; 'looking-at' function, if the point before is not opchar
-;;   (concat "\\(:\\)\\(" scala-syntax:after-reserved-symbol-re "\\)"))
-
-;; (defconst scala-syntax:bar-looking-at-re
-;;   ;; reserved symbol '|'. The regexp is safe for use with
-;;   ;; 'looking-at' function, if the point before is not opchar
-;;   (concat "\\(|\\)\\(" scala-syntax:after-reserved-symbol-re "\\)"))
-
-;; (defconst scala-syntax:reserved-symbols-looking-at-re
-;;   ;; reserved symbols. The regexp is safe for use with
-;;   ;; 'looking-at' function, if the point before is not opchar
-;;   (concat scala-syntax:reserved-symbols-unsafe-re
-;;           "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
-
-;; TODO: remove
-;; (defconst scala-syntax:reserved-re
-;;   (concat scala-syntax:keywords-re 
-;;           "\\|" scala-syntax:reserved-symbols-re 
-;;           "\\|" scala-syntax:reserved-symbol-underscore-re))
-
 (defconst scala-syntax:modifiers-re
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy" 
                 "private" "protected") 'words))
@@ -324,13 +300,6 @@
 (defconst scala-syntax:body-start-re 
   (concat "=" scala-syntax:end-of-code-line-re)
   "A regexp for detecting if a line ends with '='")
-;  "\\(=>?\\|\u21D2\\)\\([ ]\\|$\\)"
-;  "A regexp for detecting if a line ends with '=', '=>' or the
-;  unicode symbol 'double arrow'")
-
-;;(defconst scala-syntax:continue-body-keywords-re
-;;  (regexp-opt '("catch" "else" "finally" "forSome" "match" "yield") 'words)
-;;  "Keywords which continue a statement, but have their own body")
 
 (defconst scala-syntax:list-keywords-re
   (regexp-opt '("var" "val" "import") 'words)
@@ -351,9 +320,6 @@
 (defconst scala-syntax:class-or-object-re
   (regexp-opt '("class" "object") 'words))
 
-;; (defconst scala-syntax:case-end-unsafe-re
-;;   (concat scala-syntax:double-arrow-unsafe-re
-;;           "\\("  scala-syntax:after-reserved-symbol-re "\\)"))
 
 ;;;;
 ;;;; Character syntax table and related syntax-propertize functions
@@ -649,15 +615,13 @@ further than max-chars starting after skipping any ignorable."
     (let ((end (point))
           (limit (when max-chars (- (point) max-chars))))
       ;; skip back punctuation or ids (words and related symbols and delimiters)
-      (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group limit))
-          (/= 0 (skip-syntax-backward "." limit))
-          (/= 0 (skip-syntax-backward "(" limit))
-          (/= 0 (skip-syntax-backward ")" limit))
-          (/= 0 (skip-syntax-backward "w_'$" limit)))
-      ;; if we didn't move, then we didn't find anything
-      (if (= (point) end)
-          nil
-        (if (looking-at re) (point) nil)))))
+      (if (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group limit))
+              (/= 0 (skip-syntax-backward "." limit))
+              (/= 0 (skip-syntax-backward "(" limit))
+              (/= 0 (skip-syntax-backward ")" limit))
+              (/= 0 (skip-syntax-backward "w_'$" limit)))
+          (if (looking-at re) (point) nil)
+        nil))))
 
 (defun scala-syntax:backward-parameter-groups ()
   "Move back over all parameter groups to the start of the first

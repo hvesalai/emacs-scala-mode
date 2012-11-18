@@ -6,11 +6,11 @@
 
 (provide 'scala-mode)
 
-(require 'scala-mode-constants)
+(require 'scala-mode-lib)
 (require 'scala-mode-syntax)
 (require 'scala-mode-paragraph)
-(require 'scala-mode-fontlock)
 (require 'scala-mode-indent)
+(require 'scala-mode-fontlock)
 (require 'scala-mode-map)
 
 ;; Tested only for emacs 24
@@ -47,7 +47,6 @@ When started, runs `scala-mode-hook'.
 ;  :abbrev
 
   (scala-mode:make-local-variables
-   'scala-mode:debug-messages
    'post-self-insert-hook
    'syntax-propertize-function
    'font-lock-syntactic-face-function

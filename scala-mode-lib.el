@@ -4,6 +4,10 @@
 
 (provide 'scala-mode-lib)
 
+(defvar scala-mode:debug-messages 
+  "If true, some debug messages may be printed printed."
+  nil)
+
 (defmacro scala-lib:column-after (&rest body)
   `(save-excursion
      ,@body

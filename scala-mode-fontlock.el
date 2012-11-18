@@ -5,7 +5,6 @@
 (provide 'scala-mode-fontlock)
 
 (require 'scala-mode-syntax)
-(require 'scala-mode-constants)
 
 (defcustom scala-font-lock:constant-list '()
   "A list of strigs that should be fontified in constant
@@ -49,13 +48,14 @@ scala-mode has been reloaded."
                  (goto-char (match-end 0)))
                 ((or (scala-syntax:looking-at-reserved-symbol nil)
                      (looking-at scala-syntax:other-keywords-unsafe-re))
-;                 (messssage "saw reserved symbol or keyword"))
+;                 (messssage "saw reserved symbol or keyword")
+                 nil)
                 ((looking-at scala-syntax:id-re)
 ;                 (message "saw id-re %d" (match-beginning 0))
                  (goto-char (match-end 0)))
 ;                (t
 ;                 (message "nothing special here %s" (point)))
-                )))
+                ))
         (scala-syntax:skip-forward-ignorable)))
 ;    (message "limit at %s" (point))
     (point)))
