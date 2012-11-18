@@ -345,6 +345,15 @@ Does not continue past limit.
     ;; escapes inside strings
     (scala-font-lock:mark-string-escapes (0 font-lock-constant-face prepend nil))
 
+    ; package object name
+    (,(rx symbol-start
+        (group "package")
+        (1+ space)
+        (group "object")
+        (1+ space)
+        (group (and (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_.")))))
+     (1 font-lock-keyword-face) (2 font-lock-keyword-face) (3 font-lock-string-face))
+
     ;; object
     (,(concat "\\<object[ \t]+\\(" 
               scala-syntax:id-re 
