@@ -388,7 +388,7 @@ Does not continue past limit.
      (scala-font-lock:mark-pattern1-part (scala-font-lock:limit-pattern2-list
                                           (goto-char (match-beginning 1)))
                                          nil
-                                         (1 scala-font-lock:var-face t)
+                                         (1 scala-font-lock:var-face nil t)
                                          (2 font-lock-constant-face nil t)
                                          (3 font-lock-type-face nil t)
                                          ))
