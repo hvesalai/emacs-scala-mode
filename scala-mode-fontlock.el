@@ -97,7 +97,7 @@ Does not continue past limit.
     (while (not (or (eobp)
                     (scala-syntax:looking-at "[,);]")
                     (scala-syntax:looking-at-reserved-symbol "|")
-                    (scala-syntax:looking-at-reserved-symbol 
+                    (scala-syntax:looking-at-reserved-symbol
                      scala-syntax:double-arrow-unsafe-re)
                     (scala-syntax:looking-at-empty-line-p)))
       (scala-syntax:forward-sexp)
@@ -116,7 +116,7 @@ Does not continue past limit.
           (varid (scala-syntax:looking-at-varid-p)))
       (goto-char end)
       (let ((new-match-data
-             (cond 
+             (cond
               ((= (char-after end) ?\()
                ;; matched type
 ;               (message "it's a type")
@@ -133,7 +133,7 @@ Does not continue past limit.
                `(,beg ,end nil nil ,beg ,end nil nil)))))
         (goto-char end)
         (scala-syntax:skip-forward-ignorable)
-        (cond 
+        (cond
          ((and (not (or (scala-syntax:looking-at-reserved-symbol nil)
                         (scala-syntax:looking-at-reserved-symbol "|")))
                (scala-syntax:looking-at-stableIdOrPath))
@@ -159,8 +159,8 @@ Does not continue past limit.
    ;; else leave point at start of first element.
    ((= (char-after) ?\()
 ;    (message "(")
-    (let ((alternatives-p 
-           (save-excursion 
+    (let ((alternatives-p
+           (save-excursion
              (forward-char)
              (ignore-errors
                ;; forward-sexp will terminate the loop with error
@@ -186,25 +186,25 @@ Does not continue past limit.
     (set-match-data nil)
     t)
    ;; none of the above, just stop
-   (t 
-;    (message "Cannot continue Pattern1 at %d" (point)) 
+   (t
+;    (message "Cannot continue Pattern1 at %d" (point))
     nil)
 ))
 
 (defun scala-font-lock:limit-pattern (&optional start)
-  (save-excursion 
+  (save-excursion
     (goto-char (scala-font-lock:limit-pattern2 start))
 ;    (message "now at %d" (point))
     (when (scala-syntax:looking-at-reserved-symbol ":")
       (while (not (or (eobp)
                       (scala-syntax:looking-at-reserved-symbol "|")
-                      (scala-syntax:looking-at-reserved-symbol 
+                      (scala-syntax:looking-at-reserved-symbol
                        scala-syntax:double-arrow-unsafe-re)
                       (scala-syntax:looking-at-empty-line-p)))
         (scala-syntax:forward-sexp)
         (scala-syntax:skip-forward-ignorable)))
     (if (or (/= (char-after) ?|)
-            (scala-syntax:looking-at-reserved-symbol 
+            (scala-syntax:looking-at-reserved-symbol
              scala-syntax:double-arrow-unsafe-re))
         (point)
       (forward-char)
@@ -219,7 +219,7 @@ Does not continue past limit.
 
 (defun scala-font-lock:limit-type (&optional start)
   start)
-  
+
 
 (defun scala-font-lock:limit-simpleType (&optional start)
   (when start (goto-char start))
@@ -253,7 +253,7 @@ Does not continue past limit.
     t)
    ;; jump over blocks
    ((= (char-after) ?\{)
-    (ignore-errors 
+    (ignore-errors
       (forward-list)
       (set-match-data nil)
       t))
@@ -316,7 +316,7 @@ Does not continue past limit.
   (scala-font-lock:mark-numberLiteral
    scala-syntax:integerLiteral-re
    limit))
- 
+
 (defun scala-font-lock:keywords ()
   ;; chars, string, comments are handled acording to syntax and
   ;; syntax propertize
@@ -346,22 +346,22 @@ Does not continue past limit.
     (scala-font-lock:mark-string-escapes (0 font-lock-constant-face prepend nil))
 
     ;; object
-    (,(concat "\\<object[ \t]+\\(" 
-              scala-syntax:id-re 
-              "\\)") 
+    (,(concat "\\<object[ \t]+\\("
+              scala-syntax:id-re
+              "\\)")
      1 font-lock-constant-face)
 
     ;; class, trait, object
-    (,(concat "\\<\\(class\\|trait\\)[ \t]+\\(" 
-              scala-syntax:id-re 
-              "\\)") 
+    (,(concat "\\<\\(class\\|trait\\)[ \t]+\\("
+              scala-syntax:id-re
+              "\\)")
      2 font-lock-type-face)
 
     ;; ;; extends, with, new
-    ;; (,(concat "\\<\\(extends\\|with\\|new\\)[ \t]+\\([(" 
+    ;; (,(concat "\\<\\(extends\\|with\\|new\\)[ \t]+\\([("
     ;;           scala-syntax:id-first-char-group "]\\)")
-    ;;  (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType 
-    ;;                                    (goto-char (match-beginning 2))) 
+    ;;  (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType
+    ;;                                    (goto-char (match-beginning 2)))
     ;;                                   nil
     ;;                                   (0 font-lock-type-face nil t)))
 
@@ -376,13 +376,22 @@ Does not continue past limit.
     (,(concat "\\<def[ \t]+\\(" scala-syntax:id-re "\\)") 1 font-lock-function-name-face)
 
     ;; VarDcl
-    ("\\<va[rl][ \t]+\\([^:]\\)"
-     (scala-font-lock:mark-pattern1-part (scala-font-lock:limit-pattern2-list 
+    ("\\<val[ \t]+\\([^:]\\)"
+     (scala-font-lock:mark-pattern1-part (scala-font-lock:limit-pattern2-list
                                           (goto-char (match-beginning 1)))
                                          nil
                                          (1 font-lock-variable-name-face nil t)
                                          (2 font-lock-constant-face nil t)
                                          (3 font-lock-type-face nil t)))
+
+    ("\\<var[ \t]+\\([^:]\\)"
+     (scala-font-lock:mark-pattern1-part (scala-font-lock:limit-pattern2-list
+                                          (goto-char (match-beginning 1)))
+                                         nil
+                                         (1 scala-font-lock:var-face t)
+                                         (2 font-lock-constant-face nil t)
+                                         (3 font-lock-type-face nil t)
+                                         ))
 
     ;; case (but not case class|object)
     ("\\<case[ \t]+\\([^:]\\)"
@@ -394,7 +403,7 @@ Does not continue past limit.
                                         (3 font-lock-type-face nil t)))
 
     ;; type ascriptions (: followed by a type)
-    (,(rx 
+    (,(rx
        (or (not (in "!#%&*+-/:<=>?@\\^|~")) line-start)
        (group ":")
        (0+ space)
@@ -415,7 +424,7 @@ Does not continue past limit.
                         (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
                    (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
       (1 font-lock-keyword-face) (2 font-lock-type-face))
-    
+
     ;; with followed by type
     (,(rx symbol-start
           (group "with")
@@ -426,7 +435,7 @@ Does not continue past limit.
                         (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
                    (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
       (1 font-lock-keyword-face) (2 font-lock-type-face))
-    
+
     ;; new followed by type
     (,(rx symbol-start
           (group "new")
@@ -449,7 +458,7 @@ Does not continue past limit.
 
     ;; uppercase
     (,(rx symbol-start
-          (group 
+          (group
            (and (in "A-Z")
                 (0+ (in "a-zA-Z0-9_"))
                 (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))))
@@ -465,7 +474,7 @@ Does not continue past limit.
     ;; number literals (have to be here so that other rules take precedence)
     (scala-font-lock:mark-floatingPointLiteral . font-lock-constant-face)
     (scala-font-lock:mark-integerLiteral . font-lock-constant-face)
-    
+
 ))
 
 (defun scala-font-lock:syntactic-face-function (state)
@@ -476,3 +485,11 @@ Does not continue past limit.
              (looking-at "/\\*\\*\\($\\|[^*]\\)")))
       font-lock-doc-face
     (if (nth 3 state) font-lock-string-face font-lock-comment-face)))
+
+(defface scala-font-lock:var-face
+  '((t (:inherit font-lock-warning-face)))
+  "Font Lock mode face used to highlight scala variable names."
+  :group 'scala)
+
+(defvar scala-font-lock:var-face 'scala-font-lock:var-face
+  "Face for scala variable names.")
