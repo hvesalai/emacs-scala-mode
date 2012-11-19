@@ -14,7 +14,7 @@ standard emacs motions work ofcourse.
 
 ## Setting the mode up for use
 
-1. Make sure you have the latest version of **GNU Emacs** installed. 
+1. Make sure you have the latest version of **GNU Emacs** installed.
 The mode has been developed on 24.2 and uses features not available
 in emacs prior to version 24.
 
@@ -41,7 +41,7 @@ modified from the scala-mode customization menu.
 ## Indenting modes
 
 *Where four developers meet, there are four opinions on how code should
-be indented. Luckily scala-mode already supports 2^4 different ways of 
+be indented. Luckily scala-mode already supports 2^4 different ways of
 indenting.*
 
 ### Run-on lines (scala-indent:default-run-on-strategy)
@@ -63,7 +63,7 @@ The *operators* and *eager* modes will indent the second row in the
 following code, as the first line ends with an operator character.
 
 ```
-val x = 20 + 
+val x = 20 +
   21
 ```
 
@@ -234,7 +234,7 @@ or a mode-hook.
 
 ## Motion
 
-Basic emacs motion will work as expected. 
+Basic emacs motion will work as expected.
 
 Text paragraph motion (i.e. *forward-paragraph*, *backward-paragraph*)
 works inside comments and multi-line strings, and it respect scaladoc's
@@ -271,7 +271,7 @@ you may want to try. Just copy-paste it to your `.emacs` file.
 
   ;; Bind the backtab (shift tab) to
   ;; 'scala-indent:indent-with-reluctant-strategy command. This is usefull
-  ;; when using the 'eager' mode by default and you want to "outdent" a 
+  ;; when using the 'eager' mode by default and you want to "outdent" a
   ;; code line as a new statement.
   (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
 
@@ -309,7 +309,7 @@ can do so in the mode hook (set *indent-tabs-mode* to t).
 Highlighting code is still a work in progress. Feedback on how it
 should work is welcomed as issues to this github project.
 
-It may come as a suprice to some that scaladoc comments (comments that
+It may come as a surprise to some that scaladoc comments (comments that
 start with exactly `/** `) are highlighted in the same color as
 strings. This is because scaladoc comments get the font-lock-doc-face,
 which is usually an alias for font-lock-string-face (a heritage from
@@ -321,6 +321,17 @@ Free emacs tip: if you are using emacs from a text terminal with dark
 background and you are having trouble with colors, try setting the
 customization variable *frame-background-mode* to *dark* (use **M-x**
 *customize-variable*).
+
+### Highlighting of variable definitions
+The highlighting of variable definitions, such as
+
+```var test = "some mutable variable"```
+
+now result in the variable name ("test" above) to be highlighted using the variable
+scala-font-lock:var-face. Per default, the value of scala-font-lock:var-face
+is 'font-lock-warning-face. You can always change the highlighting of vars
+by changing scala-font-lock:var-face through the Emacs face customization
+(use **M-x** *customize-face*).
 
 ## Other features
 - highlights only properly formatted string and character constants
