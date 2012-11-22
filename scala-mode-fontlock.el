@@ -402,16 +402,22 @@ Does not continue past limit.
                                         (2 font-lock-constant-face nil t)
                                         (3 font-lock-type-face nil t)))
 
-    ;; type ascriptions (: followed by a type)
+    ;; type ascription (: followed by alpha type name)
     (,(rx
        (or (not (in "!#%&*+-/:<=>?@\\^|~")) line-start)
        (group ":")
        (0+ space)
-       (group (or
-               (and (in "a-zA-Z_")
-                    (0+ (in "a-zA-Z0-9_"))
-                    (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-               (and (in "!#%&*+-/<=>?@\\^|~") (0+ (in "!#%&*+-/:<=>?@\\^|~"))))))
+       (group (in "a-zA-Z_")
+              (0+ (in "a-zA-Z0-9_"))
+              (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~"))))))
+     (1 font-lock-keyword-face) (2 font-lock-type-face))
+
+    ;; type ascription (: followed by punctuation type name)
+    (,(rx
+       (or (not (in "!#%&*+-/:<=>?@\\^|~")) line-start)
+       (group ":")
+       (1+ space)
+       (group (1+ (in "-!#%&*+/:<=>?@\\^|~"))))
      (1 font-lock-keyword-face) (2 font-lock-type-face))
 
     ;; extends followed by type
