@@ -193,8 +193,8 @@ The start of a multi-line comment is indented to the same level with
 code.
 
 If a multi-line comment begins with `/**` it is considered to be a
-scaladoc comment. Scaladoc comments are indented acording to the
-scaladoc style guide.
+scaladoc comment. By default, Scaladoc comments are indented according
+to the scaladoc style guide.
 
 ```
 /** This is a scaladoc comment.
@@ -215,11 +215,16 @@ Other multi-line comments are indented under the first asterisk.
  */
 ```
 
+This default behavior is overridable via the
+*scala-indent:all-multiline-comments-under-first-asterisk* variable.
+When non-nil, all multi-line comments (including those considered
+to be scaladoc comments) will be indented under the first asterisk.
+
 Typing an asterisk in multi-line comment region, at the start of a
 line, will trigger indent. Furthermore, if the configurable variable
-*scala-indent:add-space-for-scaladoc-asterisk* is t (default) and the
-asterisk was the last character on the line, a space will be inserted
-after it.
+*scala-indent:add-space-for-multiline-comment-asterisk* is t (default)
+and the asterisk was the last character on the line, a space will be
+inserted after it.
 
 ## Filling (i.e. word wrap)
 
