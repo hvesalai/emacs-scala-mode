@@ -21,7 +21,7 @@
   (add-hook 'post-self-insert-hook
             'scala-indent:indent-on-special-words)
   (add-hook 'post-self-insert-hook
-            'scala-indent:indent-on-scaladoc-asterisk))
+            'scala-indent:indent-on-multiline-comment))
 
 (when (not scala-mode-map)
   (let ((keymap (make-sparse-keymap)))
@@ -31,4 +31,3 @@
 ;;      ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
       ))
      (setq scala-mode-map keymap)))
-  

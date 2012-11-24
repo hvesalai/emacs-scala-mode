@@ -114,9 +114,15 @@ are not ruled out by the language specification.
 
 (make-variable-buffer-local 'scala-indent:effective-run-on-strategy)
 
-(defcustom scala-indent:add-space-for-scaladoc-asterisk t
-  "When non-nil, a space will be added after a scaladoc asterisk,
-when it is added to an empty line."
+(defcustom scala-indent:add-space-for-multiline-comment-asterisk t
+  "When non-nil, a space will be added after a multiline comment
+asterisk, when it is added to an empty line."
+  :type 'boolean
+  :group 'scala)
+
+(defcustom scala-indent:all-multiline-comments-under-first-asterisk nil
+  "When non-nil, all multi-line comments (including those considered
+to be scaladoc comments) will be indented under the first asterisk."
   :type 'boolean
   :group 'scala)
 
@@ -775,7 +781,7 @@ strings"
         (scala-indent:indent-code-line strategy)
       (scala-indent:indent-line-to 
        (cond ((integerp (nth 4 state))    ;; 4 = nesting level of multi-line comment
-              (scala-indent:scaladoc-indent (nth 8 state)))
+              (scala-indent:multiline-comment-indent (nth 8 state)))
              ((eq t (nth 3 state))   ;; 3 = t for multi-line string
               (or (save-excursion
                     (beginning-of-line)
@@ -790,23 +796,23 @@ strings"
 (defun scala-indent:indent-with-reluctant-strategy ()
   (interactive)
   (scala-indent:indent-line scala-indent:reluctant-strategy))
-        
-(defun scala-indent:scaladoc-indent (comment-start-pos)
-  "Calculate indent for a multi-line comment. Scaladoc
-lines (starting with /**) are indented under the second
-aseterix. Other multi-line comment rows are indented undet the
-first asterisk.
 
-Note: start line is indented as code since the start of the
-comment is outside the comment region. "
-  (save-excursion 
+(defun scala-indent:multiline-comment-indent (comment-start-pos)
+  "Calculate indentation for a multi-line comment. If
+scala-indent:all-multiline-comments-under-first-asterisk is nil,
+Scaladoc lines (those in blocks starting with /**) are indented
+under the second asterisk. In all other cases, Other multi-line
+comment lines are indented under the first asterisk."
+  (save-excursion
     (goto-char comment-start-pos)
     (when (looking-at "/\\*+")
+
       (goto-char
-       (if (= (- (match-end 0) (match-beginning 0)) 3)
+       (if (and (not scala-indent:all-multiline-comments-under-first-asterisk)
+           (= (- (match-end 0) (match-beginning 0)) 3))
            (- (match-end 0) 1)
          (+ (match-beginning 0) 1)))
-        (current-column))))
+      (current-column))))
 
 (defun scala-indent:indent-on-parentheses ()
   (when (and (= (char-syntax (char-before)) ?\))
@@ -831,23 +837,23 @@ a word that needs to be indented specially."
              (not (nth 8 (syntax-ppss))))
     (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))))
 
-(defun scala-indent:indent-on-scaladoc-asterisk ()
+(defun scala-indent:indent-on-multiline-comment ()
   "This function is meant to be used with post-self-insert-hook.
 
-Indents the line if position is right after an asterisk in a
-multi-line comment block and there is only whitespace before the asterisk.
+Indents the line and inserts an asterisk if within a multi-line comment.
 
-If scala-indent:add-space-for-scaladoc-asterisk is t, also adds a
+If scala-indent:all-multiline-comments-under-first-asterisk is t, then
+
+If scala-indent:add-space-for-multiline-comment-asterisk is t, also adds a
 space after the asterisk if the asterisk is the last character on
 the line."
   (let ((state (syntax-ppss)))
     (when (and (integerp (nth 4 state))
-               (looking-back "^\\s *\\*" (line-beginning-position)))
-      (when (and scala-indent:add-space-for-scaladoc-asterisk
-                 (looking-at "\\s *$"))
+               (not (integerp (string-match-p "^\\s-*\\*+" (thing-at-point 'line)))))
+      (insert "*")
+      (when scala-indent:add-space-for-multiline-comment-asterisk
         (insert " "))
-      (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
+      (scala-indent:indent-line-to (scala-indent:multiline-comment-indent (nth 8 state))))))
 
 (defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
   (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
-
