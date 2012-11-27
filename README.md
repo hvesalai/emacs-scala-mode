@@ -192,17 +192,29 @@ val xs = for (i <- 1 to 10)
 The start of a multi-line comment is indented to the same level with
 code.
 
-If a multi-line comment begins with `/**` it is considered to be a
-scaladoc comment. Scaladoc comments are indented acording to the
-scaladoc style guide.
+By default, if a multi-line comment begins with `/**` it is considered
+to be a Scaladoc comment. Scaladoc comments are indented according to
+the Scaladoc style guide.
 
 ```
-/** This is a scaladoc comment.
+/** This is a Scaladoc comment.
   * 2nd line.
   */
 ```
 
-Other multi-line comments are indented under the first asterisk.
+Alternatively, if the configurable variable *scala-indent:use-javadoc-style*
+is set to `t`, multi-line comments beginning with `/**` will be indented
+according to the Javadoc style, wherein all following lines are indented
+under the first asterisk.
+
+```
+/**
+ * This is a Javadoc-style comment.
+ * 2nd line.
+ */
+```
+
+All other multi-line comments are indented under the first asterisk.
 
 ```
 /****
@@ -217,7 +229,7 @@ Other multi-line comments are indented under the first asterisk.
 
 Typing an asterisk in multi-line comment region, at the start of a
 line, will trigger indent. Furthermore, if the configurable variable
-*scala-indent:add-space-for-scaladoc-asterisk* is t (default) and the
+*scala-indent:add-space-for-scaladoc-asterisk* is `t` (default) and the
 asterisk was the last character on the line, a space will be inserted
 after it.
 
@@ -237,7 +249,7 @@ or a mode-hook.
 Basic emacs motion will work as expected.
 
 Text paragraph motion (i.e. *forward-paragraph*, *backward-paragraph*)
-works inside comments and multi-line strings, and it respect scaladoc's
+works inside comments and multi-line strings, and it respect Scaladoc's
 wiki-style markup.
 
 The commands *forward-sexp* and *backward-sexp* ( **M-C-f**, **M-C-b**
@@ -309,9 +321,9 @@ can do so in the mode hook (set *indent-tabs-mode* to t).
 Highlighting code is still a work in progress. Feedback on how it
 should work is welcomed as issues to this github project.
 
-It may come as a surprise to some that scaladoc comments (comments that
+It may come as a surprise to some that Scaladoc comments (comments that
 start with exactly `/** `) are highlighted in the same color as
-strings. This is because scaladoc comments get the font-lock-doc-face,
+strings. This is because Scaladoc comments get the font-lock-doc-face,
 which is usually an alias for font-lock-string-face (a heritage from
 lisp, the native language of emacs, where document comments are
 strings). If this really bothers you, you may customize the face (use
@@ -359,7 +371,7 @@ or put a blank line after it.
 - beginning-of-defun, end-of-defun
 - movement commands to move to previous or next definition (val,
   var, def, class, trait, object)
-- highlight headings and annotations inside scaladoc specially (use
+- highlight headings and annotations inside Scaladoc specially (use
   underline for headings)
 - highlight variables in string interpolation (scala 2.10)
 
