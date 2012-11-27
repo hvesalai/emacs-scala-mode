@@ -120,6 +120,13 @@ when it is added to an empty line."
   :type 'boolean
   :group 'scala)
 
+(defcustom scala-indent:use-javadoc-style nil
+  "When non-nil, multi-line comments are indented according to Javadoc
+style (i.e. indented to the first asterisk). This overrides the
+Scaladoc behavior of indenting comment lines to the second asterisk."
+  :type 'boolean
+  :group 'scala)
+
 (defun scala-indent:run-on-strategy ()
   "Returns the currently effecti run-on strategy"
   (or scala-indent:effective-run-on-strategy
@@ -803,10 +810,11 @@ comment is outside the comment region. "
     (goto-char comment-start-pos)
     (when (looking-at "/\\*+")
       (goto-char
-       (if (= (- (match-end 0) (match-beginning 0)) 3)
+       (if (and (not scala-indent:use-javadoc-style)
+                (= (- (match-end 0) (match-beginning 0)) 3))
            (- (match-end 0) 1)
          (+ (match-beginning 0) 1)))
-        (current-column))))
+      (current-column))))
 
 (defun scala-indent:indent-on-parentheses ()
   (when (and (= (char-syntax (char-before)) ?\))
