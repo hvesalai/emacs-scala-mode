@@ -278,10 +278,10 @@ you may want to try. Just copy-paste it to your `.emacs` file.
   ;; 'scala-indent:insert-asterisk-on-multiline-comment' to RET in
   ;; order to get indentation and asterisk-insertion within multi-line
   ;; comments.
-  (local-set-key (kbd "RET") '(lambda ()
-    (interactive)
-    (newline-and-indent)
-    (scala-indent:insert-asterisk-on-multiline-comment)))
+  ;; (local-set-key (kbd "RET") '(lambda ()
+  ;;   (interactive)
+  ;;   (newline-and-indent)
+  ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
 
   ;; Bind the 'join-line' command to C-M-j. This command is normally
   ;; bound to M-^ which is hard to access, especially on some European
