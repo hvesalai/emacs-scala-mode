@@ -856,6 +856,15 @@ the line."
         (insert " "))
       (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
 
+(defun scala-indent:insert-asterisk-on-multiline-comment ()
+  "Insert an asterisk at the end of the current line when at the beginning
+of a line inside a multi-line comment "
+  (let ((state (syntax-ppss)))
+    (when (and (integerp (nth 4 state))
+               (integerp (string-match-p "^\\s-*$" (thing-at-point 'line))))
+      (end-of-line)
+      (insert "*")
+      (scala-indent:indent-on-scaladoc-asterisk))))
+
 (defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
   (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
-
