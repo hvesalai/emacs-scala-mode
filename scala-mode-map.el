@@ -23,6 +23,10 @@
   (add-hook 'post-self-insert-hook
             'scala-indent:indent-on-scaladoc-asterisk))
 
+(defun scala-mode-map:add-remove-indent-hook ()
+  (add-hook 'post-command-hook
+            'scala-indent:remove-indent-from-previous-empty-line))
+
 (when (not scala-mode-map)
   (let ((keymap (make-sparse-keymap)))
     (scala-mode-map:define-keys

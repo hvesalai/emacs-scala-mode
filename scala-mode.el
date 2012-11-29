@@ -99,6 +99,7 @@ When started, runs `scala-mode-hook'.
   (turn-on-font-lock)
   ;; add indent functionality to some characters
   (scala-mode-map:add-self-insert-hooks)
+  (scala-mode-map:add-remove-indent-hook)
 )
 
 ;; Attach .scala files to the scala-mode

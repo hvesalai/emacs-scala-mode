@@ -761,6 +761,25 @@ column, if it was at the left margin."
         (indent-line-to column)
       (save-excursion (indent-line-to column)))))
 
+(make-variable-buffer-local 'scala-indent:previous-indent-pos)
+
+(defun scala-indent:remove-indent-from-previous-empty-line ()
+  "Handles removing of whitespace from a previosly indented code
+line that was left empty (i.e. whitespaces only). Also clears the
+scala-indent:previous-indent-pos variable that controls the process."
+  (when (and scala-indent:previous-indent-pos
+             (/= scala-indent:previous-indent-pos (point)))
+    (save-excursion
+      (beginning-of-line)
+      (if (= scala-indent:previous-indent-pos
+             (point))
+          (setq scala-indent:previous-indent-pos
+                (when (looking-at "^\\s +$") (point)))
+        (goto-char scala-indent:previous-indent-pos)
+        (when (looking-at "^\\s +$")
+          (delete-region (match-beginning 0) (match-end 0)))
+        (setq scala-indent:previous-indent-pos nil)))))
+
 (defun scala-indent:indent-code-line (&optional strategy)
   "Indent a line of code. Expect to be outside of any comments or
 strings"
@@ -772,7 +791,10 @@ strings"
 ;  (message "run-on-strategy is %s" (scala-indent:run-on-strategy))
   (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))
   (scala-lib:delete-trailing-whitespace)
-  )
+  (setq scala-indent:previous-indent-pos
+        (save-excursion
+          (beginning-of-line)
+          (when (looking-at "^\\s +$") (point)))))
 
 (defun scala-indent:indent-line (&optional strategy)
   "Indents the current line."
