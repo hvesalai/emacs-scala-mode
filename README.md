@@ -387,3 +387,4 @@ Contributors and valuable feedback:
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
 - Gary Pamparà
+- Evan Meagher
