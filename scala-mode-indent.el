@@ -861,7 +861,7 @@ the line."
 of a line inside a multi-line comment "
   (let ((state (syntax-ppss)))
     (when (and (integerp (nth 4 state))
-               (integerp (string-match-p "^\\s-*$" (thing-at-point 'line))))
+               (string-match-p "^\\s-*$" (thing-at-point 'line)))
       (end-of-line)
       (insert "*")
       (scala-indent:indent-on-scaladoc-asterisk))))
