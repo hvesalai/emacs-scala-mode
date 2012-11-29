@@ -274,6 +274,15 @@ you may want to try. Just copy-paste it to your `.emacs` file.
   ;; 'reindent-then-newline-and-indent' command.
   (local-set-key (kbd "RET") 'newline-and-indent)
 
+  ;; Alternatively, bind the 'newline-and-indent' command and
+  ;; 'scala-indent:insert-asterisk-on-multiline-comment' to RET in
+  ;; order to get indentation and asterisk-insertion within multi-line
+  ;; comments.
+  ;; (local-set-key (kbd "RET") '(lambda ()
+  ;;   (interactive)
+  ;;   (newline-and-indent)
+  ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
+
   ;; Bind the 'join-line' command to C-M-j. This command is normally
   ;; bound to M-^ which is hard to access, especially on some European
   ;; keyboards. The 'join-line' command has the effect or joining the
@@ -387,3 +396,4 @@ Contributors and valuable feedback:
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
 - Gary Pamparà
+- Evan Meagher
