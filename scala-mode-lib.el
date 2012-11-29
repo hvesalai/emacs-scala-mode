@@ -4,7 +4,7 @@
 
 (provide 'scala-mode-lib)
 
-(defvar scala-mode:debug-messages 
+(defvar scala-mode:debug-messages
   "If true, some debug messages may be printed printed."
   nil)
 
@@ -22,5 +22,5 @@
   (save-excursion
     (end-of-line)
     (skip-syntax-backward " ")
-    (unless (bolp) 
+    (unless (bolp)
       (delete-char (- (line-end-position) (point))))))

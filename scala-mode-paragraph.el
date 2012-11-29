@@ -1,6 +1,6 @@
 ;;; scala-mode-paragraph.el - Major mode for editing scala, paragraph
 ;;; detection and fill
-;;; Copyright (c) 2012 Heikki Vesalainen For information on the License, 
+;;; Copyright (c) 2012 Heikki Vesalainen For information on the License,
 ;;; see the LICENSE file
 
 ;;; Based on Scala Language Specification (SLS) Version 2.9
@@ -42,7 +42,7 @@
           ))
 
 (defconst scala-paragraph:paragraph-separate-re
-  (concat scala-paragraph:paragraph-line-start-re 
+  (concat scala-paragraph:paragraph-line-start-re
           "\\(?:$"
           "\\|=[^=\n]+=[ ]*$"     ; heading 1
           "\\|==[^=\n]+==[ ]*$"   ; heading 2
@@ -62,13 +62,13 @@
         (widen)
         (beginning-of-line)
         (cond ((looking-at "\\s */?\\*+\\s *")
-               (setq fill (replace-regexp-in-string 
-                           "/\\*+" 
+               (setq fill (replace-regexp-in-string
+                           "/\\*+"
                            (lambda (str) (if (= (length str) 3) "  *" " *"))
                            (match-string-no-properties 0)))
                (goto-char (match-end 0))
                (when (looking-at scala-paragraph:scaladoc-list-start-re)
-                 (setq fill 
+                 (setq fill
                        (concat fill (make-string (- (match-end 0)
                                                     (match-beginning 0)) ?\s)))))
               ((or (re-search-forward "\"\"\"|" (line-end-position) t)
@@ -77,7 +77,7 @@
                (setq fill (concat (make-string (- (current-column) 1) ?\s) "|"))
                (setq fill (concat fill (make-string (skip-syntax-forward " ") ?\s)))
                (when (looking-at scala-paragraph:scaladoc-list-start-re)
-                 (setq fill 
+                 (setq fill
                        (concat fill (make-string (- (match-end 0)
                                                     (match-beginning 0)) ?\s))))))))
     fill))
