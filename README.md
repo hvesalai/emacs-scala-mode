@@ -18,20 +18,59 @@ standard emacs motions work ofcourse.
 The mode has been developed on 24.2 and uses features not available
 in emacs prior to version 24.
 
-2. Download the files to a local directory. You can use the *git clone*
-command, this will create a new directory called scala-mode2.
-```
-git clone git://github.com/hvesalai/scala-mode2.git
-```
+2. There are two mechanisms that can be used for the installation of
+the mode into Emacs. The preferred manner is to use the built-in
+package manager of Emacs 24 (i.e. `package.el`) and
+the other is to manually clone the git repository, add the path to the mode
+to the load-path and then to require it. For more information regarding
+`package.el` please refer to the [EmacsWiki](http://emacswiki.org/emacs/ELPA).
 
-3. Include the following in your `.emacs`  file. If you have been
-using the old scala-mode, make sure it is no longer in *load-path*.
-```
-(add-to-list 'load-path "/path/to/scala-mode2/")
-(require 'scala-mode)
-```
+    1. Package.el:
+        Using the package.el within Emacs installation is the recommended
+        manner to install scala-mode2 as it allows for continuous, easy
+        updating from within Emacs itself. Adding the MELPA
+        repository to your emacs initialization will be required to locate
+        the packages.
+       
+        Add the following to your emacs config (.emacs, init.el, etc),
+        if such a definition already exists, ensure that it contains
+        the MELPA declaration
 
-4. That's it. Next you can start emacs and take a look at the
+        ```
+        (add-to-list 'package-archives
+                     '("melpa" . "http://melpa.milkbox.net/packages/") t)
+        ```
+
+        Once the location of the package repository has been added to your
+        Emacs config, simply navigate to the package view within Emacs, or use
+        `M-x package-list-packages` to list the available packages.
+        Mark the package `scala-mode2` and execute the actions (`X`) to install
+        the mode.
+
+        The remaining config that is required is to edit the Emacs config
+        to activate the mode:
+
+        ```
+        (require 'scala-mode2)
+        ```
+
+    2. Manual:
+        Download the files to a local directory. You can use the *git clone*
+        command, this will create a new directory called scala-mode2.
+
+        ```
+        git clone git://github.com/hvesalai/scala-mode2.git
+        ```
+
+        Include the following in your Emacs config file. If you have been
+        using the old scala-mode, make sure it is no longer in *load-path*.
+
+        ```
+        (add-to-list 'load-path "/path/to/scala-mode2/")
+        (require 'scala-mode2)
+        ```
+
+3. That's it. Next you can start emacs and take a look at the
 customization menu for scala-mode (use **M-x** *customize-mode* when
 in scala-mode or use **M-x** *customize-variable* to customize one
 variable). Also be sure to check the customization tips on various
@@ -395,6 +434,6 @@ Contributors and valuable feedback:
 - Ray Racine
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
-- Gary Pamparà 
+- Gary Pamparà
 - Evan Meagher
 - Andrew Jones

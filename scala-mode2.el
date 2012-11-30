@@ -1,22 +1,23 @@
-;;; scala-mode.el - Major mode for editing scala
-;;; Copyright (c) 2012 Heikki Vesalainen
-;;; For information on the License, see the LICENSE file
+;;; scala-mode2.el --- Major mode for editing scala
 
-;;; Based on Scala Language Specification (SLS) Version 2.9
+;; Copyright (c) 2012 Heikki Vesalainen
+;; For information on the License, see the LICENSE file
+;; URL: http://github.com/hvesalai/scala-mode2
+;; Based on Scala Language Specification (SLS) Version 2.9
 
-(provide 'scala-mode)
+(provide 'scala-mode2)
 
-(require 'scala-mode-lib)
-(require 'scala-mode-syntax)
-(require 'scala-mode-paragraph)
-(require 'scala-mode-indent)
-(require 'scala-mode-fontlock)
-(require 'scala-mode-map)
+(require 'scala-mode2-lib)
+(require 'scala-mode2-syntax)
+(require 'scala-mode2-paragraph)
+(require 'scala-mode2-indent)
+(require 'scala-mode2-fontlock)
+(require 'scala-mode2-map)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
   (error
-   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"
+   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"  
            emacs-major-version  emacs-minor-version)))
 
 (defgroup scala nil
@@ -39,11 +40,11 @@
 (define-derived-mode scala-mode prog-mode "Scala"
   "Major mode for editing scala code.
 
-When started, runs `scala-mode-hook'.
+When started, runs `scala-mode-hook'. 
 
-\\{scala-mode-map}"
+\\{scala-mode-map}" 
   :syntax-table scala-syntax:syntax-table
-;  :group
+;  :group                               
 ;  :abbrev
 
   (scala-mode:make-local-variables
@@ -99,7 +100,6 @@ When started, runs `scala-mode-hook'.
   (turn-on-font-lock)
   ;; add indent functionality to some characters
   (scala-mode-map:add-self-insert-hooks)
-  (scala-mode-map:add-remove-indent-hook)
 )
 
 ;; Attach .scala files to the scala-mode
@@ -108,3 +108,5 @@ When started, runs `scala-mode-hook'.
 
 (add-to-list 'auto-mode-alist '("\\.scala\\'" . scala-mode))
 (modify-coding-system-alist 'file "\\.scala\\'" 'utf-8)
+
+;;; scala-mode2.el ends here
