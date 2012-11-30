@@ -2,10 +2,10 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(provide 'scala-mode-indent)
+(provide 'scala-mode2-indent)
 
-(require 'scala-mode-syntax)
-(require 'scala-mode-lib)
+(require 'scala-mode2-syntax)
+(require 'scala-mode2-lib)
 
 (defcustom scala-indent:step 2
   "The number of spaces an indentation step should be. The actual

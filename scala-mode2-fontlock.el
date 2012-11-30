@@ -2,9 +2,9 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(provide 'scala-mode-fontlock)
+(provide 'scala-mode2-fontlock)
 
-(require 'scala-mode-syntax)
+(require 'scala-mode2-syntax)
 
 (defcustom scala-font-lock:constant-list '()
   "A list of strigs that should be fontified in constant
