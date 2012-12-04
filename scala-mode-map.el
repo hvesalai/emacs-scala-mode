@@ -7,7 +7,7 @@
 (require 'scala-mode-indent)
 
 (defmacro scala-mode-map:define-keys (key-map key-funcs)
-  (cons 'progn (mapcar 
+  (cons 'progn (mapcar
    #'(lambda (key-func)
        `(define-key ,key-map ,(car key-func) ,(cadr key-func)))
    key-funcs)))
@@ -25,10 +25,10 @@
 
 (when (not scala-mode-map)
   (let ((keymap (make-sparse-keymap)))
-    (scala-mode-map:define-keys 
+    (scala-mode-map:define-keys
      keymap
      (
 ;;      ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
       ))
      (setq scala-mode-map keymap)))
-  
+

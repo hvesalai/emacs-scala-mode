@@ -16,7 +16,7 @@
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
   (error
-   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"  
+   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"
            emacs-major-version  emacs-minor-version)))
 
 (defgroup scala nil
@@ -39,11 +39,11 @@
 (define-derived-mode scala-mode prog-mode "Scala"
   "Major mode for editing scala code.
 
-When started, runs `scala-mode-hook'. 
+When started, runs `scala-mode-hook'.
 
-\\{scala-mode-map}" 
+\\{scala-mode-map}"
   :syntax-table scala-syntax:syntax-table
-;  :group                               
+;  :group
 ;  :abbrev
 
   (scala-mode:make-local-variables

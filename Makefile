@@ -18,7 +18,7 @@ SOURCE_DIR		 = $(ROOT)
 # Emacs Lisp
 ELISP_COMMAND		?= emacs
 ELISP_OPTIONS		+= -batch -no-site-file
-ELISP_OPTIONS           += -L $(ROOT) 
+ELISP_OPTIONS           += -L $(ROOT)
 ELISP_OPTIONS		+= -f batch-byte-compile
 
 
