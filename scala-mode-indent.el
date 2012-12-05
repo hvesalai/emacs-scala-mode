@@ -292,7 +292,7 @@ and are infact a sign of run-on. Reserved-symbols not included.")
          scala-indent:mustBeContinued-line-end-re)
         t)
        ;; YES: this line starts with type param
-       ((= (char-after) ?[)
+       ((= (char-after) ?\[)
         t)
        ;; YES: this line starts with open paren and the expression
        ;; after all parens is a run-on
