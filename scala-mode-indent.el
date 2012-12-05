@@ -281,7 +281,7 @@ and are infact a sign of run-on. Reserved-symbols not included.")
         nil)
        ;; YES: eager strategy can stop here, everything is a run-on if no
        ;; counter evidence
-       ((= strategy scala-indent:eager-strategy)
+       ((= strategyp scala-indent:eager-strategy)
         t)
        ;; YES: this line must not terminate because it starts with a
        ;; middle of expression keyword
@@ -325,7 +325,7 @@ and are infact a sign of run-on. Reserved-symbols not included.")
           (> 0 (skip-chars-backward scala-syntax:opchar-group)))
         t)
        ;; NO: else nil (only operator strategy should reach here)
-       (t nil)))))
+       (t nil))))))
 
 (defun scala-indent:run-on-line-p (&optional point strategy)
   "Returns t if the current point (or point at 'point) is on a
