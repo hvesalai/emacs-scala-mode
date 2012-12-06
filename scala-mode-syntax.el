@@ -91,8 +91,13 @@
   (concat "\\(" "[^\n\"\\\\]"
           "\\|" scala-syntax:string-escape-re  "\\)"))
 (defconst scala-syntax:oneLineStringLiteral-re (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
+(defconst scala-syntax:multiLineStringLiteral-start-re
+  "\\(\"\\)\"\"\\(\"?\"?[^\"]\\)*")
+(defconst scala-syntax:multiLineStringLiteral-end-re
+  "\"\"+\\(\"\\)")
 (defconst scala-syntax:multiLineStringLiteral-re
-  "\\(\"\\)\\(\"\"\\(\"?\"?[^\"]\\)*\"\"+\\)\\(\"\\)")
+  (concat scala-syntax:multiLineStringLiteral-start-re
+          scala-syntax:multiLineStringLiteral-end-re))
 (defconst scala-syntax:stringLiteral-re
   (concat "\\(" scala-syntax:multiLineStringLiteral-re
           "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
@@ -100,11 +105,12 @@
 ;; If you change this or any of the used regex, be sure to
 ;; maintain this or update propertize function acordingly:
 ;; group 1 = char start, 3 = char end
-;; group 4 = multi-line string start, 7 = end
-;; group 8 = string start, 11 = end
+;; group 4 = multi-line string start, 6 = end
+;; group 7 = string start, 9 = end
 (defconst scala-syntax:relaxed-char-and-string-literal-re
   (concat scala-syntax:characterLiteral-re
-          "\\|" scala-syntax:multiLineStringLiteral-re
+          "\\|" scala-syntax:multiLineStringLiteral-start-re
+          "\\(?:" scala-syntax:multiLineStringLiteral-end-re "\\)?"
           "\\|\\(\"\\)" "\\(\\\\.\\|[^\"\n\\]\\)*" "\\(\"\\)"))
 
 ;; Identifiers (Chapter 1.1)
@@ -305,9 +311,6 @@
   (regexp-opt '("var" "val" "import") 'words)
   ("Keywords that can start a list"))
 
-(defconst scala-syntax:multiLineStringLiteral-start-re
-  "\\(\"\\)\"\"")
-
 (defconst scala-syntax:multiLineStringLiteral-end-re
   "\"\"+\\(\"\\)")
 
@@ -442,34 +445,33 @@ characters and one-line strings will not be fontified."
                   scala-syntax:relaxed-char-and-string-literal-re end t)
             ;; Expects the following groups:
             ;; group 1 = char start, 3 = char end
-            ;; group 4 = multi-line string start, 7 = end
-            ;; group 8 = string start, 10 = end
+            ;; group 4 = multi-line string start, 6 = end
+            ;; group 7 = string start, 9 = end
             (cond
              ((match-beginning 1)
               (scala-syntax:put-syntax-table-property 1 '(7 . nil))
               (scala-syntax:put-syntax-table-property 3 '(7 . nil)))
-             ((match-beginning 4) ;; balanced multi-line literal
+             ((match-beginning 4) ;; start of multi-line literal
               (scala-syntax:put-syntax-table-property 4 '(15 . nil))
-              (scala-syntax:put-syntax-table-property 7 '(15 . nil)))
+              (if (match-beginning 6)
+                  ;; balanced multi-line
+                  (scala-syntax:put-syntax-table-property 6 '(15 . nil))
+                ;; un-balanced multi-line
+                (throw 'break nil)))
              ((or
                ;; normal string, content is not empty
-               (match-beginning 9)
+               (match-beginning 8)
                ;; empty string at line end
-               (= (match-end 10) (line-end-position))
+               (= (match-end 9) (line-end-position))
                ;; no " after empty string
                (not (= (char-after (match-end 10)) ?\")))
               (when (save-excursion
-                      (goto-char (match-beginning 8))
+                      (goto-char (match-beginning 7))
                       ;; really valid?
                       (looking-at-p scala-syntax:oneLineStringLiteral-re))
-                (scala-syntax:put-syntax-table-property 8 '(7 . nil))
-                (scala-syntax:put-syntax-table-property 10 '(7 . nil))))
-             (t ;; backtrack and continue to next while loop
-              (goto-char (match-beginning 0))
-              (throw 'break nil)))))
-        ;; match any start of multi-line literals that are not yet balanced
-        (when (re-search-forward scala-syntax:multiLineStringLiteral-start-re end t)
-          (scala-syntax:put-syntax-table-property 1 '(15 . nil)))))))
+                (scala-syntax:put-syntax-table-property 7 '(7 . nil))
+                (scala-syntax:put-syntax-table-property 9 '(7 . nil))))
+             (t (throw 'break nil)))))))))
 
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
   "Mark all underscores (_) as symbol constituents (syntax 3) or
