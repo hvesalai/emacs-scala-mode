@@ -874,7 +874,7 @@ the line."
     (when (and (integerp (nth 4 state))
                (looking-back "^\\s *\\*" (line-beginning-position)))
       (when (and scala-indent:add-space-for-scaladoc-asterisk
-                 (looking-at "\\s *$"))
+                 (looking-at "\\s *[^ ]*$"))
         (insert " "))
       (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
 
@@ -884,7 +884,7 @@ of a line inside a multi-line comment "
   (let ((state (syntax-ppss)))
     (when (and (integerp (nth 4 state))
                (string-match-p "^\\s-*$" (thing-at-point 'line)))
-      (end-of-line)
+      (skip-syntax-forward " ")
       (insert "*")
       (scala-indent:indent-on-scaladoc-asterisk))))
 
