@@ -873,8 +873,7 @@ the line."
   (let ((state (syntax-ppss)))
     (when (and (integerp (nth 4 state))
                (looking-back "^\\s *\\*" (line-beginning-position)))
-      (when (and scala-indent:add-space-for-scaladoc-asterisk
-                 (looking-at "\\s *[^ ]*$"))
+      (when scala-indent:add-space-for-scaladoc-asterisk
         (insert " "))
       (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
 
