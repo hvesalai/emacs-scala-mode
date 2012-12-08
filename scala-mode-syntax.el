@@ -400,8 +400,13 @@
     ;; the `n' means that comments can be nested
     (modify-syntax-entry ?\/  ". 124b" syntab)
     (modify-syntax-entry ?\*  ". 23n"   syntab)
+
     (modify-syntax-entry ?\n  "> b" syntab)
     (modify-syntax-entry ?\r  "> b" syntab)
+
+    ;; consider the #!/!# bash header a non-nested comment
+    (modify-syntax-entry ?\#  ". 124c" syntab)
+    (modify-syntax-entry ?\!  ". 23"   syntab)
 
     (setq scala-syntax:syntax-table syntab)))
 
