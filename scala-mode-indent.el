@@ -880,9 +880,21 @@ the line."
 (defun scala-indent:insert-asterisk-on-multiline-comment ()
   "Insert an asterisk at the end of the current line when at the beginning
 of a line inside a multi-line comment "
-  (let ((state (syntax-ppss)))
+  (let ((state (syntax-ppss))
+        (comment-start-pos (nth 8 (syntax-ppss))))
     (when (and (integerp (nth 4 state))
-               (string-match-p "^\\s-*$" (thing-at-point 'line)))
+               ; Ensure that we're inside a scaladoc comment
+               (string-match-p "^/\\*\\*[^\\*]"
+                               (buffer-substring-no-properties
+                                comment-start-pos
+                                (+ comment-start-pos 4)))
+               ; Ensure that the previous line had a leading asterisk or was the comment start.
+               (let ((prev-line (buffer-substring-no-properties
+                                 (line-beginning-position 0)
+                                 (line-end-position 0))))
+                 (or
+                  (string-match-p "^\\s-*\\*" prev-line)
+                  (string-match-p "\\s-*/\\*\\*" prev-line))))
       (skip-syntax-forward " ")
       (insert "*")
       (scala-indent:indent-on-scaladoc-asterisk))))
