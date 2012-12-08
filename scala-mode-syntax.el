@@ -218,6 +218,12 @@
 ;;; Other regular expressions
 ;;;
 
+(defconst scala-syntax:preamble-start-re
+  "\#\!")
+
+(defconst scala-syntax:preamble-end-re
+  "\!\\(\#\\)[ \t]*$")
+
 (defconst scala-syntax:empty-line-re
   "^\\s *$")
 
@@ -473,6 +479,21 @@ characters and one-line strings will not be fontified."
                 (scala-syntax:put-syntax-table-property 9 '(7 . nil))))
              (t (throw 'break nil)))))))))
 
+(defun scala-syntax:propertize-shell-preamble (start end)
+  "Mark a shell preamble pair (#!/!#) at the beginning of a script as a comment."
+  (save-excursion
+    (let ((comment-start (nth 8 (syntax-ppss))))
+      (goto-char start)
+      (when (and (= start 1)
+                 (looking-at scala-syntax:preamble-start-re))
+        (scala-syntax:put-syntax-table-property 0 '(11 . nil))
+        (setq comment-start 1))
+      (when (and (eq comment-start 1)
+                 (goto-char comment-start)
+                 (looking-at scala-syntax:preamble-start-re)
+                 (re-search-forward scala-syntax:preamble-end-re end t))
+        (scala-syntax:put-syntax-table-property 1 '(12 . nil))))))
+
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
   "Mark all underscores (_) as symbol constituents (syntax 3) or
 upper case letter (syntax 2). Also mark opchars in idrest as
@@ -502,6 +523,7 @@ symbol constituents (syntax 3)"
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function"
   (scala-syntax:propertize-char-and-string-literals start end)
+  (scala-syntax:propertize-shell-preamble start end)
   (scala-syntax:propertize-underscore-and-idrest start end))
 
 

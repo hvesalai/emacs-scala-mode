@@ -395,5 +395,6 @@ Contributors and valuable feedback:
 - Ray Racine
 - Eiríkr Åsheim (aka Erik Osheim)
 - Seth Tisue
-- Gary Pamparà
+- Gary Pamparà 
 - Evan Meagher
+- Andrew Jones
