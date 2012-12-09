@@ -218,6 +218,12 @@
 ;;; Other regular expressions
 ;;;
 
+(defconst scala-syntax:preamble-start-re
+  "\#\!")
+
+(defconst scala-syntax:preamble-end-re
+  "\!\\(\#\\)[ \t]*$")
+
 (defconst scala-syntax:empty-line-re
   "^\\s *$")
 
@@ -400,13 +406,8 @@
     ;; the `n' means that comments can be nested
     (modify-syntax-entry ?\/  ". 124b" syntab)
     (modify-syntax-entry ?\*  ". 23n"   syntab)
-
     (modify-syntax-entry ?\n  "> b" syntab)
     (modify-syntax-entry ?\r  "> b" syntab)
-
-    ;; consider the #!/!# bash header a non-nested comment
-    (modify-syntax-entry ?\#  ". 124c" syntab)
-    (modify-syntax-entry ?\!  ". 23"   syntab)
 
     (setq scala-syntax:syntax-table syntab)))
 
@@ -478,6 +479,16 @@ characters and one-line strings will not be fontified."
                 (scala-syntax:put-syntax-table-property 9 '(7 . nil))))
              (t (throw 'break nil)))))))))
 
+(defun scala-syntax:propertize-shell-preamble (start end)
+  "Mark a shell preamble pair (#!/!#) at the beginning of a script as a comment."
+  (save-excursion
+    (goto-char 1)
+    (when (and (re-search-forward scala-syntax:preamble-start-re end t)
+	       (= (match-beginning 0) 1))
+      (scala-syntax:put-syntax-table-property 0 '(11 . nil))
+      (when (re-search-forward scala-syntax:preamble-end-re end t)
+	(scala-syntax:put-syntax-table-property 1 '(12 . nil))))))
+
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
   "Mark all underscores (_) as symbol constituents (syntax 3) or
 upper case letter (syntax 2). Also mark opchars in idrest as
@@ -507,6 +518,7 @@ symbol constituents (syntax 3)"
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function"
   (scala-syntax:propertize-char-and-string-literals start end)
+  (scala-syntax:propertize-shell-preamble start end)
   (scala-syntax:propertize-underscore-and-idrest start end))
 
 
