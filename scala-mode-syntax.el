@@ -482,12 +482,12 @@ characters and one-line strings will not be fontified."
 (defun scala-syntax:propertize-shell-preamble (start end)
   "Mark a shell preamble pair (#!/!#) at the beginning of a script as a comment."
   (save-excursion
-    (goto-char 1)
-    (when (and (re-search-forward scala-syntax:preamble-start-re end t)
-	       (= (match-beginning 0) 1))
-      (scala-syntax:put-syntax-table-property 0 '(11 . nil))
-      (when (re-search-forward scala-syntax:preamble-end-re end t)
-	(scala-syntax:put-syntax-table-property 1 '(12 . nil))))))
+    (goto-char start)
+    (when (and (= start 1)
+	       (looking-at scala-syntax:preamble-start-re))
+      (scala-syntax:put-syntax-table-property 0 '(11 . nil)))
+    (when (re-search-forward scala-syntax:preamble-end-re end t)
+      (scala-syntax:put-syntax-table-property 1 '(12 . nil)))))
 
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
   "Mark all underscores (_) as symbol constituents (syntax 3) or
