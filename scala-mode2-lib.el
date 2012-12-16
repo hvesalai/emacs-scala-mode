@@ -2,7 +2,7 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(provide 'scala-mode-lib)
+(provide 'scala-mode2-lib)
 
 (defvar scala-mode:debug-messages
   "If true, some debug messages may be printed printed."

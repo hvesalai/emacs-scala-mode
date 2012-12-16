@@ -22,13 +22,14 @@ ELISP_OPTIONS           += -L $(ROOT)
 ELISP_OPTIONS		+= -f batch-byte-compile
 
 
-ELISP_FILES		+= scala-mode-lib
-ELISP_FILES		+= scala-mode
-ELISP_FILES		+= scala-mode-syntax
-ELISP_FILES		+= scala-mode-indent
-ELISP_FILES		+= scala-mode-paragraph
-ELISP_FILES		+= scala-mode-fontlock
-ELISP_FILES		+= scala-mode-map
+ELISP_FILES		+= scala-mode2-lib
+ELISP_FILES		+= scala-mode2
+ELISP_FILES		+= scala-mode2-syntax
+ELISP_FILES		+= scala-mode2-indent
+ELISP_FILES		+= scala-mode2-paragraph
+ELISP_FILES		+= scala-mode2-fontlock
+ELISP_FILES		+= scala-mode2-map
+ELISP_FILES		+= scala-mode2-pkg
 
 ELISP_SOURCES		+= $(ELISP_FILES:%=$(SOURCE_DIR)/%.el)
 

@@ -4,7 +4,7 @@
 
 ;;; Based on Scala Language Specification (SLS) Version 2.9
 
-(provide 'scala-mode-syntax)
+(provide 'scala-mode2-syntax)
 
 ;;;;
 ;;;; Scala syntax regular expressions
