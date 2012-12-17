@@ -2,8 +2,6 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(provide 'scala-mode2-indent)
-
 (require 'scala-mode2-syntax)
 (require 'scala-mode2-lib)
 
@@ -901,3 +899,5 @@ of a line inside a multi-line comment "
 
 (defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
   (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
+
+(provide 'scala-mode2-indent)

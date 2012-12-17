@@ -4,8 +4,6 @@
 
 ;;; Based on Scala Language Specification (SLS) Version 2.9
 
-(provide 'scala-mode2-syntax)
-
 ;;;;
 ;;;; Scala syntax regular expressions
 ;;;;
@@ -806,3 +804,5 @@ not. A list must be either enclosed in parentheses or start with
               (scala-syntax:backward-sexp)))
           (when (looking-at scala-syntax:list-keywords-re)
             (goto-char (match-end 0))))))))
+
+(provide 'scala-mode2-syntax)

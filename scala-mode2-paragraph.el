@@ -8,8 +8,6 @@
 ;;; Provides paragraph navigation and fill for scaladocs and
 ;;; multi-line strings.
 
-(provide 'scala-mode2-paragraph)
-
 (defconst scala-paragraph:paragraph-line-start-re
   (concat "\\(?:\\s *"                 ; whitespace
           "\\(?://+\\|\\*\\|/\\*+"     ; comment start
@@ -119,3 +117,5 @@
           ;; TODO: fill lists
           ;; the rest should not be filled (code, etc)
           (t t))))
+
+(provide 'scala-mode2-paragraph)

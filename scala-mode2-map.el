@@ -2,8 +2,6 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(provide 'scala-mode2-map)
-
 (require 'scala-mode2-indent)
 
 (defmacro scala-mode-map:define-keys (key-map key-funcs)
@@ -36,3 +34,4 @@
       ))
      (setq scala-mode-map keymap)))
 
+(provide 'scala-mode2-map)

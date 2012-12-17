@@ -5,8 +5,6 @@
 ;; URL: http://github.com/hvesalai/scala-mode2
 ;; Based on Scala Language Specification (SLS) Version 2.9
 
-(provide 'scala-mode2)
-
 (require 'scala-mode2-lib)
 (require 'scala-mode2-syntax)
 (require 'scala-mode2-paragraph)
@@ -109,4 +107,5 @@ When started, runs `scala-mode-hook'.
 (add-to-list 'auto-mode-alist '("\\.scala\\'" . scala-mode))
 (modify-coding-system-alist 'file "\\.scala\\'" 'utf-8)
 
+(provide 'scala-mode2)
 ;;; scala-mode2.el ends here

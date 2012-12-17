@@ -2,8 +2,6 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(provide 'scala-mode2-fontlock)
-
 (require 'scala-mode2-syntax)
 
 (defcustom scala-font-lock:constant-list '()
@@ -499,3 +497,6 @@ Does not continue past limit.
 
 (defvar scala-font-lock:var-face 'scala-font-lock:var-face
   "Face for scala variable names.")
+
+
+(provide 'scala-mode2-fontlock)
