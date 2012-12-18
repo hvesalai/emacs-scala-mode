@@ -97,6 +97,7 @@ When started, runs `scala-mode-hook'.
   (use-local-map scala-mode-map)
   (turn-on-font-lock)
   ;; add indent functionality to some characters
+  (scala-mode-map:add-remove-indent-hook)
   (scala-mode-map:add-self-insert-hooks)
 )
 
