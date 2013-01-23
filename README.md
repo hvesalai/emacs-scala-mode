@@ -37,6 +37,7 @@ to the load-path and then to require it. For more information regarding
         the MELPA declaration
 
         ```
+        (require 'package)
         (add-to-list 'package-archives
                      '("melpa" . "http://melpa.milkbox.net/packages/") t)
         ```
