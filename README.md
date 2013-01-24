@@ -438,3 +438,4 @@ Contributors and valuable feedback:
 - Gary Pamparà
 - Evan Meagher
 - Andrew Jones
+- Vasya Novikov
