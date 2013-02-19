@@ -439,3 +439,4 @@ Contributors and valuable feedback:
 - Evan Meagher
 - Andrew Jones
 - Vasya Novikov
+- Hugh Giddens
