@@ -52,7 +52,10 @@ to the load-path and then to require it. For more information regarding
         to activate the mode:
 
         ```
-        (require 'scala-mode2)
+        (add-to-list 'auto-mode-alist
+             '("\\.scala" . scala-mode2)
+             '("\\.sbt\\'" . scala-mode2)
+             )
         ```
 
     2. Manual:
