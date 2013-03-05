@@ -5,6 +5,10 @@
 (require 'scala-mode2-syntax)
 (require 'scala-mode2-lib)
 
+(eval-when-compile
+  (defvar scala-indent:effective-run-on-strategy)
+  (defvar scala-indent:previous-indent-pos))
+
 (defcustom scala-indent:step 2
   "The number of spaces an indentation step should be. The actual
 indentation will be one or two steps depending on context."

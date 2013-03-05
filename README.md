@@ -40,22 +40,9 @@ to the load-path and then to require it. For more information regarding
         (require 'package)
         (add-to-list 'package-archives
                      '("melpa" . "http://melpa.milkbox.net/packages/") t)
-        ```
-
-        Once the location of the package repository has been added to your
-        Emacs config, simply navigate to the package view within Emacs, or use
-        `M-x package-list-packages` to list the available packages.
-        Mark the package `scala-mode2` and execute the actions (`X`) to install
-        the mode.
-
-        The remaining config that is required is to edit the Emacs config
-        to activate the mode:
-
-        ```
-        (add-to-list 'auto-mode-alist
-             '("\\.scala" . scala-mode2)
-             '("\\.sbt\\'" . scala-mode2)
-             )
+        (package-initialize)
+        (unless (package-installed-p 'scala-mode2)
+          (package-refresh-contents) (package-install 'scala-mode2))
         ```
 
     2. Manual:

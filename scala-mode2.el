@@ -101,11 +101,11 @@ When started, runs `scala-mode-hook'.
 )
 
 ;; Attach .scala files to the scala-mode
-(add-to-list 'auto-mode-alist '("\\.sbt\\'" . scala-mode))
-(modify-coding-system-alist 'file "\\.sbt\\'" 'utf-8)
-
-(add-to-list 'auto-mode-alist '("\\.scala\\'" . scala-mode))
-(modify-coding-system-alist 'file "\\.scala\\'" 'utf-8)
+;;;###autoload
+(progn
+  (add-to-list 'auto-mode-alist
+               '("\\.\\(scala\\|sbt\\)\\'" . scala-mode))
+  (modify-coding-system-alist 'file "\\.\\(scala\\|sbt\\)\\'" 'utf-8))
 
 (provide 'scala-mode2)
 ;;; scala-mode2.el ends here
