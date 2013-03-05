@@ -53,8 +53,8 @@ to the load-path and then to require it. For more information regarding
 
         ```
         (add-to-list 'auto-mode-alist
-             '("\\.scala" . scala-mode2)
-             '("\\.sbt\\'" . scala-mode2)
+             '("\\.scala" . scala-mode)
+             '("\\.sbt\\'" . scala-mode)
              )
         ```
 
