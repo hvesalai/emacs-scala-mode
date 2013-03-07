@@ -36,7 +36,7 @@ to the load-path and then to require it. For more information regarding
         if such a definition already exists, ensure that it contains
         the MELPA declaration
 
-        ```
+        ```lisp
         (require 'package)
         (add-to-list 'package-archives
                      '("melpa" . "http://melpa.milkbox.net/packages/") t)
@@ -56,7 +56,7 @@ to the load-path and then to require it. For more information regarding
         Include the following in your Emacs config file. If you have been
         using the old scala-mode, make sure it is no longer in *load-path*.
 
-        ```
+        ```lisp
         (add-to-list 'load-path "/path/to/scala-mode2/")
         (require 'scala-mode2)
         ```
@@ -84,7 +84,7 @@ and the **eager** for strictly functional style. A third mode called
 The difference between the modes is how they treat run-on lines. For
 example, the *eager* mode will indent *map* in the following code
 
-```
+```scala
 val x = List(1, 2, 3)
   map(x => x + 1)
 ```
@@ -92,7 +92,7 @@ val x = List(1, 2, 3)
 The *operators* and *eager* modes will indent the second row in the
 following code, as the first line ends with an operator character.
 
-```
+```scala
 val x = 20 +
   21
 ```
@@ -102,7 +102,7 @@ case. However, all three modes will indent the second line in these
 examples as it is clear that the first line cannot terminate a statement
 (see the *Scala Language Specification 2.9*, section 1.2).
 
-```
+```scala
 val x = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).
   map (x => x + 1) // last token of previous line cannot terminate a statement
 
@@ -113,7 +113,7 @@ val y = (List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 You can use empty lines in the *eager* mode to stop it from indenting a
 line. For example
 
-```
+```scala
 val x = foo("bar")
            ("zot", "kala") // indented as curry
 
@@ -130,7 +130,7 @@ line will toggle between the modes.
 When this variable is set to *nil* (default), body of a value
 expressions will be indented in the traditional way.
 
-```
+```scala
 val x = try {
   some()
 } catch {
@@ -144,7 +144,7 @@ However, when the variable is set to *t*, the body will be indented
 one extra step to make the *val*, *var* or *def* stand out. For
 example:
 
-```
+```scala
 val x = try {
     some()
   } catch {
@@ -160,7 +160,7 @@ When this variable is set to *nil* (default), parameters and run-on
 lines in parameter lists will not align under or acording to the
 first parameter.
 
-```
+```scala
 val y = List( "Alpha", "Bravo",
   "Charlie" )
 
@@ -170,7 +170,7 @@ val x = equals(List(1,2,3) map (x =>
 
 When the variable is set to *t*, the same will be indented as:
 
-```
+```scala
 val y = List( "Alpha", "Bravo",
               "Charlie" )
 
@@ -183,7 +183,7 @@ val x = equals(List(1,2,3) map (x =>
 When this variable is set to *nil* (default), *if*, *for* and *try*
 forms are not aligned specially.
 
-```
+```scala
 val x = if (kala)
   foo
 else if (koira)
@@ -201,7 +201,7 @@ yield i
 
 When the variable is set to *t*, the same will be indented as:
 
-```
+```scala
 val x = if (kala)
           foo
         else if (koira)
