@@ -74,14 +74,19 @@
 ;; Escape Sequences (Chapter 1.3.6)
 (defconst scala-syntax:escapeSequence-re "\\\\['btnfr\"\\\\]")
 
+;; Octal Escape Sequences (Chapter 1.3.6)
+(defconst scala-syntax:octalEscape-re (concat "\\\\[" scala-syntax:octalDigit-group "\\]\\{1,3\\}"))
+
 ;; Character Literals (Chapter 1.3.4)
 (defconst scala-syntax:characterLiteral-re
   (concat "\\('\\)\\(" "[^\\\\]" ;; should be just printable char, but this is faster
           "\\|" scala-syntax:escapeSequence-re
+          "\\|" scala-syntax:octalEscape-re
           "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
 
 (defconst scala-syntax:string-escape-re
   (concat scala-syntax:escapeSequence-re
+          "\\|" scala-syntax:octalEscape-re
           "\\|" scala-syntax:UnicodeEscape-re))
 
 ;; String Literals (Chapter 1.3.5)
