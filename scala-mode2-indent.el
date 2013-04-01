@@ -618,6 +618,7 @@ anchor for calculating block indent for current point (or point
         (goto-char (1+ (or (nth 1 (syntax-ppss start)) 0)))
         (forward-comment (buffer-size))
         (and (scala-syntax:looking-at-case-p)
+             (> (line-number-at-pos) (line-number-at-pos anchor))
              (> start (match-beginning 0))))
       (+ (* 2 scala-indent:step) lead))
      ;; normal block line
