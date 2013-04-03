@@ -487,6 +487,7 @@ Does not continue past limit.
            (save-excursion
              (goto-char (nth 8 state))
              (looking-at "/\\*\\*\\($\\|[^*]\\)")))
+      ;; scaladoc (starts with /** only)
       font-lock-doc-face
     (if (nth 3 state) font-lock-string-face font-lock-comment-face)))
 

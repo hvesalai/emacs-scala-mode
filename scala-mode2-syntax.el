@@ -126,8 +126,9 @@
           "\\(" "_+" scala-syntax:op-re "\\|" "_" "\\)?"))
 (defconst scala-syntax:varid-re (concat "[" scala-syntax:lower-group "]" scala-syntax:idrest-re))
 (defconst scala-syntax:capitalid-re (concat "[" scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re))
-(defconst scala-syntax:plainid-re (concat "\\(" "[" scala-syntax:lower-group scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re
-                                          "\\|" scala-syntax:op-re "\\)"))
+;; alphaid introduce by SIP11
+(defconst scala-syntax:alphaid-re (concat "\\(" "[" scala-syntax:lower-group scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re "\\)"))
+(defconst scala-syntax:plainid-re (concat "\\(" scala-syntax:alphaid-re "\\|" scala-syntax:op-re "\\)"))
 ;; stringlit is referred to, but not defined Scala Language Specification 2.9
 ;; we define it as consisting of anything but '`' and newline
 (defconst scala-syntax:stringlit-re "[^`\n\r]")
