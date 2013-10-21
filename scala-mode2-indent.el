@@ -642,7 +642,7 @@ with an opening parentheses, or nil if not."
 anchor for calculating opening parenthesis indent for the current
 point (or point 'point'). Returns point or nil, if line does not
 start with opening parenthesis."
-  ;; There are four cases we need to consider:
+  ;; There are five cases we need to consider:
   ;; 1. curry parentheses, i.e. 2..n parentheses groups.
   ;; 2. value body parentheses (follows '=').
   ;; 3. parameters, etc on separate line (who would be so mad?)
@@ -883,8 +883,8 @@ the line."
 (defun scala-indent:insert-asterisk-on-multiline-comment ()
   "Insert an asterisk at the end of the current line when at the beginning
 of a line inside a multi-line comment "
-  (let ((state (syntax-ppss))
-        (comment-start-pos (nth 8 (syntax-ppss))))
+  (let* ((state (syntax-ppss))
+         (comment-start-pos (nth 8 state)))
     (when (and (integerp (nth 4 state))
                ; Ensure that we're inside a scaladoc comment
                (string-match-p "^/\\*\\*[^\\*]"
@@ -904,5 +904,27 @@ of a line inside a multi-line comment "
 
 (defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
   (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
+
+(defun scala-indent:join-line ()
+  (interactive)
+  (join-line)
+  (let ((state (syntax-ppss)))
+    (cond 
+     ((and (integerp (nth 4 state)) ; nestable comment (i.e. with *)
+           (looking-at " \\*")
+           (save-excursion (goto-char (max (nth 8 state) (line-beginning-position)))
+                           (looking-at "\\s */?\\*")))
+      (delete-forward-char 2)
+      (delete-horizontal-space)
+      (insert " "))
+     ((and (nth 4 state) ; row comment (i.e. with //)
+           (looking-at " //"))
+      (delete-forward-char 3)
+      (delete-horizontal-space)
+      (insert " "))
+     ((and (not (nth 8 (syntax-ppss))) ; not in comment or string
+           (= (char-before) ?.))
+      (delete-horizontal-space)
+      ))))
 
 (provide 'scala-mode2-indent)

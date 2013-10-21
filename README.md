@@ -274,6 +274,13 @@ To re-fill a paragraph, use the *fill-paragraph* command ( **M-q**
 command. To set the default, you use the *customize-variable* command
 or a mode-hook.
 
+## Joinin lines
+
+Scala-mode defines its own join-line function. Besides doing what the
+normal join-line function does, it also removes comment marks
+(asterisks and slashes) when comment lines are joined and space when
+code lines are joined and the uppper line ended with a dot.
+
 ## Motion
 
 Basic emacs motion will work as expected.
@@ -313,12 +320,12 @@ you may want to try. Just copy-paste it to your `.emacs` file.
   ;;   (newline-and-indent)
   ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
 
-  ;; Bind the 'join-line' command to C-M-j. This command is normally
+  ;; Bind the 'join-line' command to M-RET. This command is normally
   ;; bound to M-^ which is hard to access, especially on some European
   ;; keyboards. The 'join-line' command has the effect or joining the
   ;; current line with the previous while fixing whitespace at the
-  ;; joint.
-  (local-set-key (kbd "C-M-j") 'join-line)
+  ;; joint. 
+  (local-set-key (kbd "M-RET") 'join-line)
 
   ;; Bind the backtab (shift tab) to
   ;; 'scala-indent:indent-with-reluctant-strategy command. This is usefull
