@@ -11,6 +11,7 @@
 (require 'scala-mode2-indent)
 (require 'scala-mode2-fontlock)
 (require 'scala-mode2-map)
+(require 'scala-mode2-sbt)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
