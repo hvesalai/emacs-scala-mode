@@ -305,13 +305,13 @@ Before you can compile using sbt, you must start it with the
 *scala-sbt:start* command. For this to work, run the command from a
 buffer that is within your project tree.
 
-After you have your sbt running, you can either switch to the `*sbt*`
+After you have your sbt running, you can either switch to the \*sbt\*
 buffer to interact with it, or send compile commands using the
-*scala-sbt:command* command. The latter will always clear the `*sbt*`
+*scala-sbt:command* command. The latter will always clear the \*sbt\*
 buffer and reset errors before running the command.
 
 In you scala buffer, you can use the normal error-navigation commands
-(*next-error*, **C-x \`**, *previous-error*) and in the *sbt* buffer
+(*next-error*, **C-x \`**, *previous-error*) and in the \*sbt\* buffer
 you can use the commands from the *compilation-mode* (see **C-h-f
 compilation-mode** for help).
 
