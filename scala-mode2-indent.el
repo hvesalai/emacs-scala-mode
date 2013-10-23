@@ -923,7 +923,9 @@ of a line inside a multi-line comment "
       (delete-horizontal-space)
       (insert " "))
      ((and (not (nth 8 (syntax-ppss))) ; not in comment or string
-           (= (char-before) ?.))
+           (or (= (char-before) ?.)
+               (= (char-after (1+ (point))) ?.)
+               (= (char-after (1+ (point))) ?:)))
       (delete-horizontal-space)
       ))))
 
