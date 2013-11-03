@@ -218,6 +218,17 @@
       (looking-at scala-syntax:literal-re)
       (scala-syntax:looking-at-stableIdOrPath)))
 
+
+
+(defun scala-syntax:regexp-for-id (id)
+  (let ((prefix-regex 
+         (if (string-match scala-syntax:alphaid-re id)
+             "\\b" (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)")))
+        (suffix-regex
+         (if (string-match scala-syntax:op-re (substring id -1 nil))
+             (concat "\\([^" scala-syntax:opchar-group "]\\|$\\)") "\\b")))
+    (concat prefix-regex id suffix-regex)))
+
 ;;;
 ;;; Other regular expressions
 ;;;

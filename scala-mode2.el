@@ -26,6 +26,32 @@
 (defmacro scala-mode:make-local-variables (&rest quoted-names)
   (cons 'progn (mapcar #'(lambda (quoted-name) `(make-local-variable ,quoted-name)) quoted-names)))
 
+(defun scala-mode:find-tag ()
+  "Determine default tag to search for, based on text at point.
+If there is no plausible default, return nil."
+  (let (from to)
+    (when (and (progn
+                 ;; Look at text around `point'.
+                 (save-excursion
+                   (if (< 0 (skip-chars-backward scala-syntax:opchar-group))
+                       (if (= (char-before) ?_)
+                           (skip-syntax-backward "w_"))
+                     (skip-syntax-backward "w_"))
+                   (setq from (point)))
+                 (save-excursion
+                   (skip-syntax-forward "w_.") (setq to (point)))
+                 (save-excursion
+                   (ignore-errors (scala-syntax:backward-sexp)) (setq from (max from (point))))
+                 (save-excursion
+                   (goto-char from)
+                   (ignore-errors (scala-syntax:forward-sexp)) (setq to (min to (point))))
+                 (> to from))
+               (save-excursion
+                 (goto-char from)
+                 (and (looking-at scala-syntax:id-re)
+                      (not (looking-at scala-syntax:keywords-unsafe-re)))))
+      (buffer-substring-no-properties from to))))
+
 
 (defun scala-mode:forward-sexp-function (&optional count)
   (unless count (setq count 1))
@@ -62,6 +88,7 @@ When started, runs `scala-mode-hook'.
    'comment-column
    'comment-multi-line
    'forward-sexp-function
+   'find-tag-default-function
    'indent-line-function
    'indent-tabs-mode
    'join-line)
@@ -93,6 +120,7 @@ When started, runs `scala-mode-hook'.
         comment-multi-line              t
 
         forward-sexp-function           'scala-mode:forward-sexp-function
+        find-tag-default-function       'scala-mode:find-tag
         indent-line-function            'scala-indent:indent-line
         indent-tabs-mode                nil
         join-line                       'scala-indent:join-line
