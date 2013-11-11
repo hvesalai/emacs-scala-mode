@@ -106,8 +106,7 @@ When started, runs `scala-mode-hook'.
    'forward-sexp-function
    'find-tag-default-function
    'indent-line-function
-   'indent-tabs-mode
-   'join-line)
+   'indent-tabs-mode)
 
   (add-hook 'syntax-propertize-extend-region-functions
             'scala-syntax:propertize-extend-region)
@@ -139,7 +138,6 @@ When started, runs `scala-mode-hook'.
         find-tag-default-function       'scala-mode:find-tag
         indent-line-function            'scala-indent:indent-line
         indent-tabs-mode                nil
-        join-line                       'scala-indent:join-line
         )
   (use-local-map scala-mode-map)
   ;; add indent functionality to some characters

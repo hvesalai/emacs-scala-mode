@@ -4,13 +4,11 @@
 
 (require 'scala-mode2-indent)
 
-(defmacro scala-mode-map:define-keys (key-map key-funcs)
-  (cons 'progn (mapcar
-   #'(lambda (key-func)
-       `(define-key ,key-map ,(car key-func) ,(cadr key-func)))
-   key-funcs)))
-
-(defvar scala-mode-map nil
+(defvar scala-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map prog-mode-map)
+    (substitute-key-definition 'delete-indentation 'scala-ident:join-line map global-map)
+    map)
   "Local key map used for scala mode")
 
 (defun scala-mode-map:add-self-insert-hooks ()
@@ -24,14 +22,5 @@
 (defun scala-mode-map:add-remove-indent-hook ()
   (add-hook 'post-command-hook
             'scala-indent:remove-indent-from-previous-empty-line))
-
-(when (not scala-mode-map)
-  (let ((keymap (make-sparse-keymap)))
-    (scala-mode-map:define-keys
-     keymap
-     (
-;;      ([(control c)(control r)]   'scala-indent:rotate-run-on-strategy)
-      ))
-     (setq scala-mode-map keymap)))
 
 (provide 'scala-mode2-map)
