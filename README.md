@@ -432,6 +432,11 @@ The indenter thinks the second occurrence of `foo` is the body of the while.
 To work around this, terminate the while with a semicolon,
 or put a blank line after it.
 
+## Sbt support
+
+scala-mode2 does not provide support for interacting with sbt. For sbt
+support, see [sbt-mode](https://github.com/hvesalai/sbt-mode).
+
 ## Future work
 
 - syntax-begin-function for reliably fontifying elements which span
