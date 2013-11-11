@@ -62,6 +62,21 @@ If there is no plausible default, return nil."
       (scala-syntax:forward-sexp))))
 
 ;;;###autoload
+(defun scala-mode:set-scala-syntax-mode ()
+  "Sets the syntax-table and other realted variables for the current buffer to those of scala-mode. Can be used to make some other major mode (such as sbt-mode) use scala syntax-table."
+  (set-syntax-table scala-syntax:syntax-table)
+  (scala-mode:make-local-variables
+   'syntax-propertize-function
+   'parse-sexp-lookup-properties
+   'forward-sexp-function)  
+
+  (add-hook 'syntax-propertize-extend-region-functions
+            'scala-syntax:propertize-extend-region)
+  (setq syntax-propertize-function      'scala-syntax:propertize
+        parse-sexp-lookup-properties    t
+        forward-sexp-function           'scala-mode:forward-sexp-function))
+
+;;;###autoload
 (define-derived-mode scala-mode prog-mode "Scala"
   "Major mode for editing scala code.
 
@@ -79,6 +94,7 @@ When started, runs `scala-mode-hook'.
    'font-lock-defaults
    'paragraph-start
    'paragraph-separate
+   'parse-sexp-lookup-properties
    'fill-paragraph-function
    'adaptive-fill-function
    'adaptive-fill-first-line-regexp

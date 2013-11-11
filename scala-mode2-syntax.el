@@ -219,7 +219,6 @@
       (scala-syntax:looking-at-stableIdOrPath)))
 
 
-
 (defun scala-syntax:regexp-for-id (id)
   (let ((prefix-regex 
          (if (string-match scala-syntax:alphaid-re id)
@@ -743,6 +742,7 @@ id, reserved symbol, keyword, block, or literal. Delimiters (.,;)
 and comments are skipped silently. Position is placed at the
 beginning of the skipped expression."
   (interactive)
+  (syntax-propertize (point-max))
   ;; emacs knows how to properly skip: lists, varid, capitalid,
   ;; strings, symbols, chars, quotedid. What we have to handle here is
   ;; most of all ids made of op chars
@@ -764,6 +764,7 @@ beginning of the skipped expression."
   silently. Position is placed at the beginning of the skipped
   expression."
   (interactive)
+  (syntax-propertize (point))
   ;; for implementation comments, see scala-syntax:forward-sexp
   (forward-comment (- (buffer-size)))
   (while (> 0 (+ (skip-syntax-backward " ")
