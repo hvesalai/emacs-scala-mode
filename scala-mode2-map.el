@@ -7,7 +7,7 @@
 (defvar scala-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map prog-mode-map)
-    (substitute-key-definition 'delete-indentation 'scala-ident:join-line map global-map)
+    (substitute-key-definition 'delete-indentation 'scala-indent:join-line map global-map)
     map)
   "Local key map used for scala mode")
 
