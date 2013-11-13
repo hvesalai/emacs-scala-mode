@@ -32,9 +32,9 @@ to the load-path and then to require it. For more information regarding
         repository to your emacs initialization will be required to locate
         the packages.
        
-        Add the following to your emacs config (.emacs, init.el, etc),
+        Add the following to your emacs config (.emacs, init.el, etc), and
         if such a definition already exists, ensure that it contains
-        the MELPA declaration
+        the MELPA declaration.
 
         ```lisp
         (require 'package)
