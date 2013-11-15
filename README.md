@@ -68,6 +68,9 @@ variable). Also be sure to check the customization tips on various
 keyboard commands and general emacs parameters which cannot be
 modified from the scala-mode customization menu.
 
+    For scala console (aka *REPL*) or **sbt** support, see
+    [sbt-mode](https://github.com/hvesalai/sbt-mode).
+
 ## Indenting modes
 
 *Where four developers meet, there are four opinions on how code should
@@ -298,28 +301,6 @@ The commands *forward-sexp* and *backward-sexp* ( **M-C-f**, **M-C-b**
 ) motion commands will move over reserved words, literals, ids and
 lists.
 
-# sbt support
-
-To compile your code using sbt, you can use the sbt support.
-
-To begin with, configure *scala-sbt:sbt-command*. The default is
-`sbt`, which is expected to be found on PATH or in your sbt project
-root.
-
-Before you can compile using sbt, you must start it with the
-*scala-sbt:start* command. For this to work, run the command from a
-buffer that is within your project tree.
-
-After you have your sbt running, you can either switch to the \*sbt\*
-buffer to interact with it, or send compile commands using the
-*scala-sbt:command* command. The latter will always clear the \*sbt\*
-buffer and reset errors before running the command.
-
-In you scala buffer, you can use the normal error-navigation commands
-(*next-error*, **C-x \`**, *previous-error*) and in the \*sbt\* buffer
-you can use the commands from the *compilation-mode* (see **C-h-f
-compilation-mode** for help).
-
 ## Keymap and other commands
 
 For the sake of customizability, scala-mode does not alter the default
@@ -429,11 +410,6 @@ while (bar)
 The indenter thinks the second occurrence of `foo` is the body of the while.
 To work around this, terminate the while with a semicolon,
 or put a blank line after it.
-
-## Sbt support
-
-scala-mode2 does not provide support for interacting with sbt. For sbt
-support, see [sbt-mode](https://github.com/hvesalai/sbt-mode).
 
 ## Future work
 
