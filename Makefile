@@ -29,6 +29,7 @@ ELISP_FILES		+= scala-mode2-indent
 ELISP_FILES		+= scala-mode2-paragraph
 ELISP_FILES		+= scala-mode2-fontlock
 ELISP_FILES		+= scala-mode2-map
+ELISP_FILES		+= scala-mode2-sbt
 ELISP_FILES		+= scala-mode2-pkg
 
 ELISP_SOURCES		+= $(ELISP_FILES:%=$(SOURCE_DIR)/%.el)
@@ -36,7 +37,12 @@ ELISP_SOURCES		+= $(ELISP_FILES:%=$(SOURCE_DIR)/%.el)
 ##############################################################################
 
 RM			?= rm -f
+RMDIR			?= rmdir
 TOUCH			?= touch
+EMACSBIN                ?= ~/emacs/bin/emacs
+
+# Strip the version out of the pkg file
+VERSION                 = $(shell [ -x ${EMACSBIN} ] && ${EMACSBIN} --batch --eval '(princ (format "%s\n" (car (cddr (read (find-file "scala-mode2-pkg.el"))))))' | grep -v Loading)
 
 ##############################################################################
 # Commands
@@ -44,7 +50,9 @@ TOUCH			?= touch
 all: .latest-build
 
 clean:
-	$(RM) *.elc .latest-* autoloads.el
+	$(RM) *.elc .latest-* autoloads.el scala-mode2-$(VERSION).tar
+	[ -d scala-mode2-$(VERSION) ] && $(RM) scala-mode2-$(VERSION)/*
+	[ -d scala-mode2-$(VERSION) ] && $(RMDIR) scala-mode2-$(VERSION)
 
 .PHONY: all
 .PHONY: clean
@@ -61,6 +69,10 @@ clean:
 autoloads: $(ELISP_SOURCES)
 	emacs -batch -q --no-site-file --eval "(setq make-backup-files nil)" --eval "(setq generated-autoload-file (expand-file-name \"autoloads.el\"))" -f batch-update-autoloads `pwd`
 
+package:
+	mkdir -p scala-mode2-$(VERSION)
+	cp $(ELISP_SOURCES) scala-mode2-$(VERSION)
+	tar cf scala-mode2-$(VERSION).tar scala-mode2-$(VERSION)
 
 
 ## SCALA LICENSE
