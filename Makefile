@@ -41,7 +41,7 @@ RMDIR			?= rmdir
 TOUCH			?= touch
 
 # Strip the version out of the pkg file
-VERSION                 = $(shell [ -x ${ELISP_COMMAND} ] && ${ELISP_COMMAND} --batch --eval '(princ (format "%s\n" (car (cddr (read (find-file "scala-mode2-pkg.el"))))))' | grep -v Loading)
+VERSION                 = $(shell ${ELISP_COMMAND} --batch --eval '(princ (format "%s\n" (car (cddr (read (find-file "scala-mode2-pkg.el"))))))' | grep -v Loading)
 
 ##############################################################################
 # Commands
