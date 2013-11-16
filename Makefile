@@ -39,10 +39,9 @@ ELISP_SOURCES		+= $(ELISP_FILES:%=$(SOURCE_DIR)/%.el)
 RM			?= rm -f
 RMDIR			?= rmdir
 TOUCH			?= touch
-EMACSBIN                ?= ~/emacs/bin/emacs
 
 # Strip the version out of the pkg file
-VERSION                 = $(shell [ -x ${EMACSBIN} ] && ${EMACSBIN} --batch --eval '(princ (format "%s\n" (car (cddr (read (find-file "scala-mode2-pkg.el"))))))' | grep -v Loading)
+VERSION                 = $(shell [ -x ${ELISP_COMMAND} ] && ${ELISP_COMMAND} --batch --eval '(princ (format "%s\n" (car (cddr (read (find-file "scala-mode2-pkg.el"))))))' | grep -v Loading)
 
 ##############################################################################
 # Commands
@@ -67,7 +66,7 @@ clean:
 ##############################################################################
 
 autoloads: $(ELISP_SOURCES)
-	emacs -batch -q --no-site-file --eval "(setq make-backup-files nil)" --eval "(setq generated-autoload-file (expand-file-name \"autoloads.el\"))" -f batch-update-autoloads `pwd`
+	$(ELISP_COMMAND) -batch -q --no-site-file --eval "(setq make-backup-files nil)" --eval "(setq generated-autoload-file (expand-file-name \"autoloads.el\"))" -f batch-update-autoloads `pwd`
 
 package:
 	mkdir -p scala-mode2-$(VERSION)
