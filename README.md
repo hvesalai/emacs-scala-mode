@@ -28,13 +28,14 @@ to the load-path and then to require it. For more information regarding
     1. Package.el:
         Using the package.el within Emacs installation is the recommended
         manner to install scala-mode2 as it allows for continuous, easy
-        updating from within Emacs itself. Adding the MELPA
-        repository to your emacs initialization will be required to locate
-        the packages.
+        updating from within Emacs itself. 
+        
+        Adding the MELPA or Marmalade repository to your emacs
+        initialization will be required to locate the packages.
        
         Add the following to your emacs config (.emacs, init.el, etc), and
         if such a definition already exists, ensure that it contains
-        the MELPA declaration.
+        the MELPA or Marmalade declaration, for example:
 
         ```lisp
         (require 'package)
@@ -44,6 +45,25 @@ to the load-path and then to require it. For more information regarding
         (unless (package-installed-p 'scala-mode2)
           (package-refresh-contents) (package-install 'scala-mode2))
         ```
+        
+        or you could use ```customize``` to add a repository:
+        
+        ```
+        M-x customize-variable [RET] package-archives
+        ```
+        
+        and add MELPA or Marmalade, for example:
+        
+        ```
+        marmalade   http://marmalade-repo.org/packages/
+        ```
+        
+        and then use package install to install it:
+        
+        ```
+        M-x package-install [RET] scala-mode2 [RET]
+        ```
+        
 
     2. Manual:
         Download the files to a local directory. You can use the *git clone*
@@ -438,3 +458,4 @@ Contributors and valuable feedback:
 - Andrew Jones
 - Vasya Novikov
 - Hugh Giddens
+- Nic Ferrier
