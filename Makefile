@@ -15,23 +15,25 @@ SOURCE_DIR		 = $(ROOT)
 ##############################################################################
 # Variables
 
+MODE_NAME               = scala-mode2
+
 # Emacs Lisp
 ELISP_COMMAND		?= emacs
 ELISP_OPTIONS		+= -batch -no-site-file -q
 ELISP_OPTIONS           += -L $(ROOT)
 
 
-ELISP_FILES		+= scala-mode2-lib
-ELISP_FILES		+= scala-mode2
-ELISP_FILES		+= scala-mode2-syntax
-ELISP_FILES		+= scala-mode2-indent
-ELISP_FILES		+= scala-mode2-paragraph
-ELISP_FILES		+= scala-mode2-fontlock
-ELISP_FILES		+= scala-mode2-map
-ELISP_FILES		+= scala-mode2-sbt
+ELISP_FILES		+= $(MODE_NAME)-lib
+ELISP_FILES		+= $(MODE_NAME)
+ELISP_FILES		+= $(MODE_NAME)-syntax
+ELISP_FILES		+= $(MODE_NAME)-indent
+ELISP_FILES		+= $(MODE_NAME)-paragraph
+ELISP_FILES		+= $(MODE_NAME)-fontlock
+ELISP_FILES		+= $(MODE_NAME)-map
+ELISP_FILES		+= $(MODE_NAME)-sbt
 ELISP_SOURCES		+= $(ELISP_FILES:%=$(SOURCE_DIR)/%.el)
 
-PKG_FILE		+= scala-mode2-pkg.el
+PKG_FILE		+= $(SOURCE_DIR)/$(MODE_NAME)-pkg.el
 
 ##############################################################################
 
@@ -40,7 +42,8 @@ RMDIR			?= rmdir
 TOUCH			?= touch
 
 # Strip the version out of the pkg file
-VERSION                 := $(shell ${ELISP_COMMAND} $(ELISP_OPTIONS) --eval '(princ (format "%s\n" (nth 2 (read (find-file "scala-mode2-pkg.el")))))')
+VERSION                 := $(shell ${ELISP_COMMAND} $(ELISP_OPTIONS) --eval '(princ (format "%s\n" (nth 2 (read (find-file "$(PKG_FILE)")))))')
+MODE_NAME_VERSION       = $(MODE_NAME)-$(VERSION)
 
 ##############################################################################
 # Commands
@@ -48,9 +51,9 @@ VERSION                 := $(shell ${ELISP_COMMAND} $(ELISP_OPTIONS) --eval '(pr
 all: .latest-build
 
 clean:
-	$(RM) *.elc .latest-* autoloads.el scala-mode2-$(VERSION).tar
-	[ ! -d scala-mode2-$(VERSION) ] || $(RM) scala-mode2-$(VERSION)/*
-	[ ! -d scala-mode2-$(VERSION) ] || $(RMDIR) scala-mode2-$(VERSION)
+	$(RM) *.elc .latest-* autoloads.el $(MODE_NAME_VERSION).tar
+	[ ! -d $(MODE_NAME_VERSION) ] || $(RM) $(MODE_NAME_VERSION)/*
+	[ ! -d $(MODE_NAME_VERSION) ] || $(RMDIR) $(MODE_NAME_VERSION)
 
 .PHONY: all
 .PHONY: clean
@@ -68,9 +71,9 @@ autoloads: $(ELISP_SOURCES)
 	$(ELISP_COMMAND) $(ELISP_OPTIONS) --eval "(setq make-backup-files nil)" --eval "(setq generated-autoload-file (expand-file-name \"autoloads.el\"))" -f batch-update-autoloads `pwd`
 
 package:
-	mkdir -p scala-mode2-$(VERSION)
-	cp $(ELISP_SOURCES) $(PKG_FILE) scala-mode2-$(VERSION)
-	tar cf scala-mode2-$(VERSION).tar scala-mode2-$(VERSION)
+	mkdir -p $(MODE_NAME_VERSION)
+	cp $(ELISP_SOURCES) $(PKG_FILE) $(MODE_NAME_VERSION)
+	tar cf $(MODE_NAME_VERSION).tar $(MODE_NAME_VERSION)
 
 
 ## SCALA LICENSE
