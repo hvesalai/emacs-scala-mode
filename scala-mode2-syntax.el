@@ -319,9 +319,60 @@
           "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
 
 
-(defconst scala-syntax:modifiers-re
+(defconst scala-syntax:override-unsafe-re
+  (regexp-opt '("override") 'words))
+
+(defconst scala-syntax:override-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:override-unsafe-re "\\)"))
+
+(defconst scala-syntax:abstract-unsafe-re
+  (regexp-opt '("abstract") 'words))
+
+(defconst scala-syntax:abstract-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:abstract-unsafe-re "\\)"))
+
+(defconst scala-syntax:final-unsafe-re
+  (regexp-opt '("final") 'words))
+
+(defconst scala-syntax:final-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:final-unsafe-re "\\)"))
+
+(defconst scala-syntax:sealed-unsafe-re
+  (regexp-opt '("sealed") 'words))
+
+(defconst scala-syntax:sealed-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:sealed-unsafe-re "\\)"))
+
+(defconst scala-syntax:implicit-unsafe-re
+  (regexp-opt '("implicit") 'words))
+
+(defconst scala-syntax:implicit-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:implicit-unsafe-re "\\)"))
+
+(defconst scala-syntax:lazy-unsafe-re
+  (regexp-opt '("lazy") 'words))
+
+(defconst scala-syntax:lazy-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:lazy-unsafe-re "\\)"))
+
+(defconst scala-syntax:private-unsafe-re
+  (regexp-opt '("private") 'words))
+
+(defconst scala-syntax:private-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:private-unsafe-re "\\)"))
+
+(defconst scala-syntax:protected-unsafe-re
+  (regexp-opt '("protected") 'words))
+
+(defconst scala-syntax:protected-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:protected-unsafe-re "\\)"))
+
+(defconst scala-syntax:modifiers-unsafe-re
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
                 "private" "protected") 'words))
+
+(defconst scala-syntax:modifiers-re
+  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:modifiers-unsafe-re "\\)"))
 
 (defconst scala-syntax:body-start-re
   (concat "=" scala-syntax:end-of-code-line-re)

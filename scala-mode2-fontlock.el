@@ -320,6 +320,14 @@ Does not continue past limit.
   ;; syntax propertize
 
   `(;; keywords
+    (,scala-syntax:override-re 2 scala-font-lock:override-face)
+    (,scala-syntax:abstract-re 2 scala-font-lock:abstract-face)
+    (,scala-syntax:final-re 2 scala-font-lock:final-face)
+    (,scala-syntax:sealed-re 2 scala-font-lock:sealed-face)
+    (,scala-syntax:implicit-re 2 scala-font-lock:implicit-face)
+    (,scala-syntax:lazy-re 2 scala-font-lock:lazy-face)
+    (,scala-syntax:private-re 2 scala-font-lock:private-face)
+    (,scala-syntax:protected-re 2 scala-font-lock:protected-face)
     (,scala-syntax:other-keywords-re 2 font-lock-keyword-face)
     (,scala-syntax:value-keywords-re 2 font-lock-constant-face)
     (,scala-syntax:path-keywords-re 2 font-lock-keyword-face)
@@ -329,7 +337,7 @@ Does not continue past limit.
 
     ;; Annotations
     (, (rx (and "@" (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_."))))
-     . font-lock-preprocessor-face)
+       . font-lock-preprocessor-face)
 
     ;; reserved symbols
     (scala-font-lock:mark-reserved-symbols 2 font-lock-keyword-face)
@@ -423,70 +431,70 @@ Does not continue past limit.
           (group "extends")
           (1+ space)
           (group (or
-                   (and (in "a-zA-Z_")
-                        (0+ (in "a-zA-Z0-9_"))
-                        (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-                   (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-      (1 font-lock-keyword-face) (2 font-lock-type-face))
+                  (and (in "a-zA-Z_")
+                     (0+ (in "a-zA-Z0-9_"))
+                     (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                  (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+     (1 font-lock-keyword-face) (2 font-lock-type-face))
 
     ;; with followed by type
     (,(rx symbol-start
           (group "with")
           (1+ space)
           (group (or
-                   (and (in "a-zA-Z_")
-                        (0+ (in "a-zA-Z0-9_"))
-                        (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-                   (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-      (1 font-lock-keyword-face) (2 font-lock-type-face))
+                  (and (in "a-zA-Z_")
+                     (0+ (in "a-zA-Z0-9_"))
+                     (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                  (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+     (1 font-lock-keyword-face) (2 font-lock-type-face))
 
     ;; new followed by type
     (,(rx symbol-start
           (group "new")
           (1+ space)
           (group (or
-                   (and (in "a-zA-Z_")
-                        (0+ (in "a-zA-Z0-9_"))
-                        (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-                   (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
-      (1 font-lock-keyword-face) (2 font-lock-type-face))
+                  (and (in "a-zA-Z_")
+                     (0+ (in "a-zA-Z0-9_"))
+                     (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+                  (1+ (in "!#%&*+-/:<=>?@\\^|~")))))
+     (1 font-lock-keyword-face) (2 font-lock-type-face))
 
     ;; uppercase means a type or object
     (,(rx symbol-start
-        (and (in "A-Z")
+          (and (in "A-Z")
              (0+ (in "a-zA-Z0-9_"))
              (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~"))))))
      . font-lock-constant-face)
     ;; . font-lock-type-face)
-    ; uncomment this to go back to highlighting objects as types
+                                        ; uncomment this to go back to highlighting objects as types
 
     ;; uppercase
     (,(rx symbol-start
           (group
            (and (in "A-Z")
-                (0+ (in "a-zA-Z0-9_"))
-                (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))))
+              (0+ (in "a-zA-Z0-9_"))
+              (\? (and "_" (1+ (in "!#%&*+-/:<=>?@\\^|~")))))))
      . font-lock-constant-face)
 
     ;; package name
     (,(rx symbol-start
-        (group "package")
-        (1+ space)
-        (group (and (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_.")))))
+          (group "package")
+          (1+ space)
+          (group (and (in "a-zA-Z_.") (0+ (in "a-zA-Z0-9_.")))))
      (1 font-lock-keyword-face) (2 font-lock-string-face))
 
     ;; number literals (have to be here so that other rules take precedence)
     (scala-font-lock:mark-floatingPointLiteral . font-lock-constant-face)
     (scala-font-lock:mark-integerLiteral . font-lock-constant-face)
 
-))
+    ))
 
 (defun scala-font-lock:syntactic-face-function (state)
   "Return correct face for string or comment"
   (if (and (integerp (nth 4 state))
-           (save-excursion
-             (goto-char (nth 8 state))
-             (looking-at "/\\*\\*\\($\\|[^*]\\)")))
+         (save-excursion
+           (goto-char (nth 8 state))
+           (looking-at "/\\*\\*\\($\\|[^*]\\)")))
       ;; scaladoc (starts with /** only)
       font-lock-doc-face
     (if (nth 3 state) font-lock-string-face font-lock-comment-face)))
@@ -499,5 +507,76 @@ Does not continue past limit.
 (defvar scala-font-lock:var-face 'scala-font-lock:var-face
   "Face for scala variable names.")
 
+(defface scala-font-lock:private-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the private keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:private-face 'scala-font-lock:private-face
+  "Face for the scala private keyword.")
+
+(defface scala-font-lock:protected-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the protected keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:protected-face 'scala-font-lock:protected-face
+  "Face for the scala protected keyword.")
+
+(defface scala-font-lock:override-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the override keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:override-face 'scala-font-lock:override-face
+  "Face for the scala override keyword.")
+
+(defface scala-font-lock:sealed-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the sealed keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:sealed-face 'scala-font-lock:sealed-face
+  "Face for the scala sealed keyword.")
+
+(defface scala-font-lock:abstract-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the abstract keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:abstract-face 'scala-font-lock:abstract-face
+  "Face for the scala abstract keyword.")
+
+(defface scala-font-lock:final-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the final keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:final-face 'scala-font-lock:final-face
+  "Face for the scala final keyword.")
+
+(defface scala-font-lock:implicit-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the implicit keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:implicit-face 'scala-font-lock:implicit-face
+  "Face for the scala implicit keyword.")
+
+(defface scala-font-lock:lazy-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Font Lock mode face used for the lazy keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:lazy-face 'scala-font-lock:lazy-face
+  "Face for the scala lazy keyword.")
+
+(defface scala-font-lock:var-keyword-face
+  '((t (:inherit font-lock-keyword-face)))
+  "Font Lock mode face used for the var keyword."
+  :group 'scala)
+
+(defvar scala-font-lock:var-keyword-face 'scala-font-lock:var-keyword-face
+  "Face for the scala var keyword.")
 
 (provide 'scala-mode2-fontlock)
