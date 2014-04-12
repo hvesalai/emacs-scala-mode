@@ -880,6 +880,18 @@ the line."
         (insert " "))
       (scala-indent:indent-line-to (scala-indent:scaladoc-indent (nth 8 state))))))
 
+(defun scala-indent:fix-scaladoc-close ()
+  "This function is meant to be used with post-self-insert-hook.
+
+Changes 'asterisk space slash' to 'asterisk slash' in a
+multi-line comment if position is right after that slash and
+scala-indent:add-space-for-scaladoc-asterisk is t."
+  (let ((state (syntax-ppss)))
+    (when (and scala-indent:add-space-for-scaladoc-asterisk
+               (integerp (nth 4 state))
+               (looking-back "^\\s *\\*\\s /" (line-beginning-position)))
+      (delete-region (- (point) 2) (- (point) 1)))))
+
 (defun scala-indent:insert-asterisk-on-multiline-comment ()
   "Insert an asterisk at the end of the current line when at the beginning
 of a line inside a multi-line comment "
