@@ -17,7 +17,9 @@
   (add-hook 'post-self-insert-hook
             'scala-indent:indent-on-special-words)
   (add-hook 'post-self-insert-hook
-            'scala-indent:indent-on-scaladoc-asterisk))
+            'scala-indent:indent-on-scaladoc-asterisk)
+  (add-hook 'post-self-insert-hook
+            'scala-indent:fix-scaladoc-close))
 
 (defun scala-mode-map:add-remove-indent-hook ()
   (add-hook 'post-command-hook
