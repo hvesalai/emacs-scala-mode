@@ -284,7 +284,9 @@ Typing an asterisk in multi-line comment region, at the start of a
 line, will trigger indent. Furthermore, if the configurable variable
 *scala-indent:add-space-for-scaladoc-asterisk* is `t` (default) and the
 asterisk was the last character on the line, a space will be inserted
-after it.
+after it. If you type a forward slash after the automatically inserted
+space, the space is deleted again so that you can end the comment
+without deleting the space manually.
 
 ## Filling (i.e. word wrap)
 
