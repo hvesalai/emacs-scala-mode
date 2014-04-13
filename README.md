@@ -461,3 +461,4 @@ Contributors and valuable feedback:
 - Vasya Novikov
 - Hugh Giddens
 - Nic Ferrier
+- Tillmann Rendel
