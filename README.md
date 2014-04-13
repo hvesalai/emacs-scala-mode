@@ -462,3 +462,4 @@ Contributors and valuable feedback:
 - Hugh Giddens
 - Nic Ferrier
 - Tillmann Rendel
+- Jim Powers
