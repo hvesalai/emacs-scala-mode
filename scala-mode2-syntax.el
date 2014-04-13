@@ -254,13 +254,13 @@
   (regexp-opt '("super" "this") 'words))
 
 (defconst scala-syntax:path-keywords-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:path-keywords-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:path-keywords-unsafe-re "\\)"))
 
 (defconst scala-syntax:value-keywords-unsafe-re
   (regexp-opt '("false" "null" "true") 'words))
 
 (defconst scala-syntax:value-keywords-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:value-keywords-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:value-keywords-unsafe-re "\\)"))
 
 (defconst scala-syntax:other-keywords-unsafe-re
   (regexp-opt '("abstract" "case" "catch" "class" "def" "do" "else" "extends"
@@ -270,7 +270,7 @@
                 "val" "var" "while" "with" "yield") 'words))
 
 (defconst scala-syntax:other-keywords-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:other-keywords-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:other-keywords-unsafe-re "\\)"))
 
 (defconst scala-syntax:keywords-unsafe-re
   (concat "\\(" scala-syntax:path-keywords-unsafe-re
@@ -280,7 +280,7 @@
 
 ;; TODO: remove
 ;; (defconst scala-syntax:keywords-re
-;;   (concat "\\(^\\|[^`]\\)\\(" scala-syntax:value-keywords-unsafe-re
+;;   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:value-keywords-unsafe-re
 ;;           "\\|" scala-syntax:path-keywords-unsafe-re
 ;;           "\\|" scala-syntax:other-keywords-unsafe-re "\\)"))
 
@@ -323,56 +323,56 @@
   (regexp-opt '("override") 'words))
 
 (defconst scala-syntax:override-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:override-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:override-unsafe-re "\\)"))
 
 (defconst scala-syntax:abstract-unsafe-re
   (regexp-opt '("abstract") 'words))
 
 (defconst scala-syntax:abstract-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:abstract-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:abstract-unsafe-re "\\)"))
 
 (defconst scala-syntax:final-unsafe-re
   (regexp-opt '("final") 'words))
 
 (defconst scala-syntax:final-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:final-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:final-unsafe-re "\\)"))
 
 (defconst scala-syntax:sealed-unsafe-re
   (regexp-opt '("sealed") 'words))
 
 (defconst scala-syntax:sealed-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:sealed-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:sealed-unsafe-re "\\)"))
 
 (defconst scala-syntax:implicit-unsafe-re
   (regexp-opt '("implicit") 'words))
 
 (defconst scala-syntax:implicit-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:implicit-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:implicit-unsafe-re "\\)"))
 
 (defconst scala-syntax:lazy-unsafe-re
   (regexp-opt '("lazy") 'words))
 
 (defconst scala-syntax:lazy-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:lazy-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:lazy-unsafe-re "\\)"))
 
 (defconst scala-syntax:private-unsafe-re
   (regexp-opt '("private") 'words))
 
 (defconst scala-syntax:private-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:private-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:private-unsafe-re "\\)"))
 
 (defconst scala-syntax:protected-unsafe-re
   (regexp-opt '("protected") 'words))
 
 (defconst scala-syntax:protected-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:protected-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:protected-unsafe-re "\\)"))
 
 (defconst scala-syntax:modifiers-unsafe-re
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
                 "private" "protected") 'words))
 
 (defconst scala-syntax:modifiers-re
-  (concat "\\(^\\|[^`]\\)\\(" scala-syntax:modifiers-unsafe-re "\\)"))
+  (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:modifiers-unsafe-re "\\)"))
 
 (defconst scala-syntax:body-start-re
   (concat "=" scala-syntax:end-of-code-line-re)
