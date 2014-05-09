@@ -30,12 +30,12 @@ to the load-path and then to require it. For more information regarding
         manner to install scala-mode2 as it allows for continuous, easy
         updating from within Emacs itself. 
         
-        Adding the MELPA or Marmalade repository to your emacs
+        Adding the MELPA repository to your emacs
         initialization will be required to locate the packages.
        
         Add the following to your emacs config (.emacs, init.el, etc), and
         if such a definition already exists, ensure that it contains
-        the MELPA or Marmalade declaration, for example:
+        the MELPA declaration, for example:
 
         ```lisp
         (require 'package)
@@ -52,10 +52,10 @@ to the load-path and then to require it. For more information regarding
         M-x customize-variable [RET] package-archives
         ```
         
-        and add MELPA or Marmalade, for example:
+        and add MELPA, for example:
         
         ```
-        marmalade   http://marmalade-repo.org/packages/
+        melpa   http://melpa.milkbox.net/packages/
         ```
         
         and then use package install to install it:
