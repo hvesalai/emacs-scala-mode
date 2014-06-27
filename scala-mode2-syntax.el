@@ -220,7 +220,7 @@
 
 
 (defun scala-syntax:regexp-for-id (id)
-  (let ((prefix-regex 
+  (let ((prefix-regex
          (if (string-match scala-syntax:alphaid-re id)
              "\\b" (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)")))
         (suffix-regex
@@ -555,7 +555,7 @@ characters and one-line strings will not be fontified."
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
   "Mark all underscores (_) as symbol constituents (syntax 3) or
 upper case letter (syntax 2). Also mark opchars in idrest as
-symbol constituents (syntax 3)"
+symbol constituents (syntax 3)."
   (save-excursion
     (goto-char start)
     (while (re-search-forward "_" end t)
@@ -577,13 +577,11 @@ symbol constituents (syntax 3)"
                  (scala-syntax:put-syntax-table-property 0 '(3 . nil)))
                '(3 . nil))))))))) ;; symbol constituent syntax (3) also for the '_'
 
-
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function"
   (scala-syntax:propertize-char-and-string-literals start end)
   (scala-syntax:propertize-shell-preamble start end)
   (scala-syntax:propertize-underscore-and-idrest start end))
-
 
 ;;;;
 ;;;; Syntax navigation functions
@@ -781,10 +779,10 @@ point 'point') as specified by SLS chapter 1.2"
                              (not (looking-at scala-syntax:class-or-object-re)))))))))))))
 
 (defun scala-syntax:forward-sexp ()
-  "Move forward one scala expression. It can be: paramter list (value or type),
-id, reserved symbol, keyword, block, or literal. Delimiters (.,;)
+  "Move forward one scala expression. It can be: parameter list (value or type),
+id, reserved symbol, keyword, block, or literal. Punctuation (.,;)
 and comments are skipped silently. Position is placed at the
-beginning of the skipped expression."
+end of the skipped expression."
   (interactive)
   (syntax-propertize (point-max))
   ;; emacs knows how to properly skip: lists, varid, capitalid,
@@ -800,6 +798,40 @@ beginning of the skipped expression."
   ;; emacs can handle everything but opchars
   (when (= (skip-syntax-forward ".") 0)
     (goto-char (or (scan-sexps (point) 1) (buffer-end 1)))))
+
+(defun scala-syntax:forward-token ()
+  "Move forward one scala token, comment word or string word. It
+can be: start or end of list (value or type), id, reserved
+symbol, keyword, block, or literal. Punctuation (.,;), comment
+delimiters and string delimiters are skipped silently. Position
+is placed at the end of the skipped token."
+  (interactive)
+  (syntax-propertize (point-max))
+  (skip-syntax-forward " >" (point-max))
+  (when (looking-at
+         (concat "\\([#@:]\\|" scala-syntax:double-arrow-unsafe-re
+                 "\\|:>\\|<:\\)" scala-syntax:after-reserved-symbol-re))
+    (goto-char (match-end 1)))
+  (let ((syntax (char-syntax (char-after)))
+        (state (syntax-ppss)))
+    (cond
+     ((or (nth 4 state) (nth 3 state))
+      ;; inside a string or comment, skip words as normal unless that
+      ;; would end up outside the string. Then leave point at end of
+      ;; string delimiter.
+      (let ((start (nth 8 state))
+            (end (save-excursion (forward-word) (point))))
+        (if (eq (nth 8 (save-excursion (syntax-ppss end))) start)
+            (goto-char end)
+          (while (eq (nth 8 (syntax-ppss)) start)
+            (forward-char)))))
+     ;; list start or end
+     ((or (= syntax ?\)) (= syntax ?\()) (forward-char))
+     ;; comment or string start is skipped
+     ((looking-at "\\(//\\|/\\*+\\|\"\\(\"\"\\)?\\)")
+      (goto-char (match-end 1)))
+     ;; otherwise forward-sexp
+     (t (forward-sexp)))))
 
 (defun scala-syntax:backward-sexp ()
   "Move backward one scala expression. It can be: parameter
