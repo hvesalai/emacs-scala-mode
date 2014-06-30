@@ -414,6 +414,14 @@ is 'font-lock-warning-face. You can always change the highlighting of vars
 by changing scala-font-lock:var-face through the Emacs face customization
 (use **M-x** *customize-face*).
 
+Very complex scala files may need the following in your emacs init (.emacs, etc):
+
+```lisp
+;; For complex scala files
+(setq max-lisp-eval-depth 50000)
+(setq max-specpdl-size 5000)
+```
+
 ## Other features
 - highlights only properly formatted string and character constants
 - indenting a code line removes trailing whitespace
