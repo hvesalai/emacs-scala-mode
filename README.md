@@ -299,17 +299,19 @@ To re-fill a paragraph, use the *fill-paragraph* command ( **M-q**
 command. To set the default, you use the *customize-variable* command
 or a mode-hook.
 
-## Joinin lines (delete indentation)
+## Joinin lines (delete indentation) and removing horizontal whitespace
 
-Scala-mode defines its own *scala-indent:join-line' function.  Besides
-doing what the normal *join-line* (aka *delete-indentation*) function
-does, it also removes comment marks (asterisks and slashes) when
-comment lines are joined and space when code lines are joined and the
-uppper line ended with a dot.
+Scala-mode defines its own *scala-indent:join-line* and
+*scala-indent:fixup-whitespace* functions.
 
-In scala-mode2 buffers *scala-indent:join-line* replaces
-*delete-indentation* in your key bindings. The default binding is
-**M-^**.
+Unlike the normal *join-line* (aka *delete-indentation*),
+*scala-indent:join-line* detects the comment fill-prefix and removes
+it.
+
+The *scala-indent:fixup-whitespace* first removes all horizontal
+whitespace, then adds one space the context requires none to be
+present (before semicolon, around dot, after '(' or '[', before ')' or
+']', etc).
 
 ## Motion
 

@@ -106,6 +106,8 @@ When started, runs `scala-mode-hook'.
    'forward-sexp-function
    'find-tag-default-function
    'indent-line-function
+   'fixup-whitespace
+   'delete-indentation
    'indent-tabs-mode)
 
   (add-hook 'syntax-propertize-extend-region-functions
@@ -137,6 +139,8 @@ When started, runs `scala-mode-hook'.
         forward-sexp-function           'scala-mode:forward-sexp-function
         find-tag-default-function       'scala-mode:find-tag
         indent-line-function            'scala-indent:indent-line
+        fixup-whitespace                'scala-indent:fixup-whitespace
+        delete-indentation              'scala-indent:join-line
         indent-tabs-mode                nil
         )
   (use-local-map scala-mode-map)

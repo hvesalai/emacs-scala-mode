@@ -801,7 +801,7 @@ strings"
 
 (defun scala-indent:indent-line (&optional strategy)
   "Indents the current line."
-  (interactive)
+  (interactive "*")
   (let ((state (save-excursion (syntax-ppss (line-beginning-position)))))
     (if (not (nth 8 state)) ;; 8 = start pos of comment or string, nil if none
         (scala-indent:indent-code-line strategy)
@@ -820,7 +820,7 @@ strings"
              (t (current-indentation)))))))
 
 (defun scala-indent:indent-with-reluctant-strategy ()
-  (interactive)
+  (interactive "*")
   (scala-indent:indent-line scala-indent:reluctant-strategy))
 
 (defun scala-indent:scaladoc-indent (comment-start-pos)
@@ -917,28 +917,39 @@ of a line inside a multi-line comment "
 (defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
   (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
 
-(defun scala-indent:join-line ()
-  (interactive)
-  (join-line)
-  (let ((state (syntax-ppss)))
-    (cond 
-     ((and (integerp (nth 4 state)) ; nestable comment (i.e. with *)
-           (looking-at " \\*")
-           (save-excursion (goto-char (max (nth 8 state) (line-beginning-position)))
-                           (looking-at "\\s */?\\*")))
-      (delete-forward-char 2)
-      (delete-horizontal-space)
-      (insert " "))
-     ((and (nth 4 state) ; row comment (i.e. with //)
-           (looking-at " //"))
-      (delete-forward-char 3)
-      (delete-horizontal-space)
-      (insert " "))
-     ((and (not (nth 8 (syntax-ppss))) ; not in comment or string
-           (or (= (char-before) ?.)
-               (= (char-after (1+ (point))) ?.)
-               (= (char-after (1+ (point))) ?:)))
-      (delete-horizontal-space)
-      ))))
+
+(defun scala-indent:fixup-whitespace ()
+  "scala-mode2 version of `fixup-whitespace'"
+  (interactive "*")
+  (save-excursion
+    (delete-horizontal-space)
+    (if (or (looking-at "^\\|[]):.]")
+	    (save-excursion (forward-char -1)
+                            (if (nth 4 (syntax-ppss))
+                                (looking-at "$\\|\\s(")
+                              (looking-at "$\\|[[(.]")))
+            (and (= (char-before) ?{) (= (char-after) ?})))
+	nil
+      (insert ?\s))))
+
+(defun scala-indent:join-line (&optional arg)
+  "scala-mode2 version of `join-line', i.e. `delete-indentation'"
+  (interactive "*P")
+  (beginning-of-line)
+  (if arg (forward-line 1))
+  (when (= (preceding-char) ?\n)
+    (delete-region (point) (1- (point)))
+    (delete-horizontal-space)
+    (let ((state (syntax-ppss)))
+      (cond
+       ((and (integerp (nth 4 state)) ; nestable comment (i.e. with *)
+             (looking-at " *\\*\\($\\|[^/]\\)")
+             (save-excursion (goto-char (max (nth 8 state) (line-beginning-position)))
+                             (looking-at "\\s */?\\*")))
+        (delete-forward-char 2))
+       ((and (nth 4 state) ; row comment (i.e. with //)
+             (looking-at " //"))
+        (delete-forward-char 3))))
+    (scala-indent:fixup-whitespace)))
 
 (provide 'scala-mode2-indent)
