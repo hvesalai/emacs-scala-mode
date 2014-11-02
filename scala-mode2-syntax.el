@@ -18,6 +18,10 @@
 ;;; regular expressions, but can be used in declaring one.
 
 ;; single letter matching groups (Chapter 1)
+
+(defun scala-syntax:regexp-or (regexps)
+  (concat "\\(?:" (mapconcat 'identity regexps "\\|")  "\\)"))
+
 (defconst scala-syntax:hexDigit-group "0-9A-Fa-f")
 (defconst scala-syntax:UnicodeEscape-re (concat "\\\\u[" scala-syntax:hexDigit-group "]\\{4\\}"))
 
@@ -27,13 +31,13 @@
 (defconst scala-syntax:letter-group (concat scala-syntax:lower-group scala-syntax:upper-group)) ;; TODO: add Lt, Lo, Nl
 (defconst scala-syntax:digit-group "0-9")
 (defconst scala-syntax:letterOrDigit-group (concat
-                                            scala-syntax:upperAndUnderscore-group
-                                            scala-syntax:lower-group
-                                            scala-syntax:digit-group))
+					    scala-syntax:upperAndUnderscore-group
+					    scala-syntax:lower-group
+					    scala-syntax:digit-group))
 (defconst scala-syntax:opchar-safe-group "!%&*+/?\\\\^|~-") ;; TODO: Sm, So
 (defconst scala-syntax:opchar-unsafe-group "#:<=>@")
 (defconst scala-syntax:opchar-group (concat scala-syntax:opchar-unsafe-group
-                                            scala-syntax:opchar-safe-group))
+					    scala-syntax:opchar-safe-group))
 
 ;; Scala delimiters (Chapter 1), but no quotes
 (defconst scala-syntax:delimiter-group ".,;")
@@ -43,14 +47,14 @@
 (defconst scala-syntax:octalDigit-group "0-7")
 (defconst scala-syntax:decimalNumeral-re
   (concat "0"
-          "\\|[" scala-syntax:nonZeroDigit-group "][" scala-syntax:digit-group "]*"))
+	  "\\|[" scala-syntax:nonZeroDigit-group "][" scala-syntax:digit-group "]*"))
 (defconst scala-syntax:hexNumeral-re (concat "0x[" scala-syntax:hexDigit-group "]+"))
 (defconst scala-syntax:octalNumeral-re (concat "0[" scala-syntax:octalDigit-group "]+"))
 (defconst scala-syntax:integerLiteral-re (concat "-?" ;; added from definition of literal
-                                                 "\\(" scala-syntax:hexNumeral-re
-                                                 "\\|" scala-syntax:octalNumeral-re
-                                                 "\\|" scala-syntax:decimalNumeral-re
-                                                 "\\)[Ll]?"))
+						 "\\(" scala-syntax:hexNumeral-re
+						 "\\|" scala-syntax:octalNumeral-re
+						 "\\|" scala-syntax:decimalNumeral-re
+						 "\\)[Ll]?"))
 
 
 ;; Floating Point Literal (Chapter 1.3.2)
@@ -58,12 +62,12 @@
 (defconst scala-syntax:floatType-re "[fFdD]")
 (defconst scala-syntax:floatingPointLiteral-re
   (concat "-?" ;; added from definition of literal
-          "\\([" scala-syntax:digit-group "]+\\.[" scala-syntax:digit-group "]*"
-          scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
-          "\\|" "\\.[" scala-syntax:digit-group "]+"
-          scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
-          "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:exponentPart-re
-          "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:floatType-re "\\)"))
+	  "\\([" scala-syntax:digit-group "]+\\.[" scala-syntax:digit-group "]*"
+	  scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
+	  "\\|" "\\.[" scala-syntax:digit-group "]+"
+	  scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
+	  "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:exponentPart-re
+	  "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:floatType-re "\\)"))
 
 (defconst scala-syntax:number-safe-start-re
   (concat "[^_" scala-syntax:letter-group "]"))
@@ -80,19 +84,19 @@
 ;; Character Literals (Chapter 1.3.4)
 (defconst scala-syntax:characterLiteral-re
   (concat "\\('\\)\\(" "[^\\\\]" ;; should be just printable char, but this is faster
-          "\\|" scala-syntax:escapeSequence-re
-          "\\|" scala-syntax:octalEscape-re
-          "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
+	  "\\|" scala-syntax:escapeSequence-re
+	  "\\|" scala-syntax:octalEscape-re
+	  "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
 
 (defconst scala-syntax:string-escape-re
   (concat scala-syntax:escapeSequence-re
-          "\\|" scala-syntax:octalEscape-re
-          "\\|" scala-syntax:UnicodeEscape-re))
+	  "\\|" scala-syntax:octalEscape-re
+	  "\\|" scala-syntax:UnicodeEscape-re))
 
 ;; String Literals (Chapter 1.3.5)
 (defconst scala-syntax:stringElement-re
   (concat "\\(" "[^\n\"\\\\]"
-          "\\|" scala-syntax:string-escape-re  "\\)"))
+	  "\\|" scala-syntax:string-escape-re  "\\)"))
 (defconst scala-syntax:oneLineStringLiteral-re (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
 (defconst scala-syntax:multiLineStringLiteral-start-re
   "\\(\"\\)\"\"\\(\"?\"?[^\"]\\)*")
@@ -100,10 +104,10 @@
   "\"\"+\\(\"\\)")
 (defconst scala-syntax:multiLineStringLiteral-re
   (concat scala-syntax:multiLineStringLiteral-start-re
-          scala-syntax:multiLineStringLiteral-end-re))
+	  scala-syntax:multiLineStringLiteral-end-re))
 (defconst scala-syntax:stringLiteral-re
   (concat "\\(" scala-syntax:multiLineStringLiteral-re
-          "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
+	  "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
 
 ;; If you change this or any of the used regex, be sure to
 ;; maintain this or update propertize function acordingly:
@@ -112,9 +116,9 @@
 ;; group 7 = string start, 9 = end
 (defconst scala-syntax:relaxed-char-and-string-literal-re
   (concat scala-syntax:characterLiteral-re
-          "\\|" scala-syntax:multiLineStringLiteral-start-re
-          "\\(?:" scala-syntax:multiLineStringLiteral-end-re "\\)?"
-          "\\|\\(\"\\)" "\\(\\\\.\\|[^\"\n\\]\\)*" "\\(\"\\)"))
+	  "\\|" scala-syntax:multiLineStringLiteral-start-re
+	  "\\(?:" scala-syntax:multiLineStringLiteral-end-re "\\)?"
+	  "\\|\\(\"\\)" "\\(\\\\.\\|[^\"\n\\]\\)*" "\\(\"\\)"))
 
 ;; Identifiers (Chapter 1.1)
 (defconst scala-syntax:op-re
@@ -122,23 +126,23 @@
 (defconst scala-syntax:idrest-re
   ;; Eagerness of regexp causes problems with _. The following is a workaround,
   ;; but the resulting regexp matches only what SLS demands.
-  (concat "\\(" "[_]??" "[" scala-syntax:letter-group scala-syntax:digit-group "]+" "\\)*"
-          "\\(" "_+" scala-syntax:op-re "\\|" "_" "\\)?"))
+  (concat "\\(?:" "[_]??" "[" scala-syntax:letter-group scala-syntax:digit-group "]+" "\\)*"
+	  "\\(?:" "_+" scala-syntax:op-re "\\|" "_" "\\)?"))
 (defconst scala-syntax:varid-re (concat "[" scala-syntax:lower-group "]" scala-syntax:idrest-re))
 (defconst scala-syntax:capitalid-re (concat "[" scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re))
 ;; alphaid introduce by SIP11
-(defconst scala-syntax:alphaid-re (concat "\\(" "[" scala-syntax:lower-group scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re "\\)"))
-(defconst scala-syntax:plainid-re (concat "\\(" scala-syntax:alphaid-re "\\|" scala-syntax:op-re "\\)"))
+(defconst scala-syntax:alphaid-re (concat "\\(?:" "[" scala-syntax:lower-group scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re "\\)"))
+(defconst scala-syntax:plainid-re (concat "\\(?:" scala-syntax:alphaid-re "\\|" scala-syntax:op-re "\\)"))
 ;; stringlit is referred to, but not defined Scala Language Specification 2.9
 ;; we define it as consisting of anything but '`' and newline
 (defconst scala-syntax:stringlit-re "[^`\n\r]")
 (defconst scala-syntax:quotedid-re (concat "`" scala-syntax:stringlit-re "`"))
-(defconst scala-syntax:id-re (concat "\\(" scala-syntax:plainid-re
-                              "\\|" scala-syntax:quotedid-re "\\)"))
+(defconst scala-syntax:id-re (concat "\\(?:" scala-syntax:plainid-re
+				     "\\|" scala-syntax:quotedid-re "\\)"))
 (defconst scala-syntax:id-first-char-group
   (concat scala-syntax:lower-group
-          scala-syntax:upperAndUnderscore-group
-          scala-syntax:opchar-group))
+	  scala-syntax:upperAndUnderscore-group
+	  scala-syntax:opchar-group))
 
 ;; Symbol literals (Chapter 1.3.7)
 (defconst scala-syntax:symbolLiteral-re
@@ -148,12 +152,12 @@
 ;; Literals (Chapter 1.3)
 (defconst scala-syntax:literal-re
   (concat "\\(" scala-syntax:integerLiteral-re
-          "\\|" scala-syntax:floatingPointLiteral-re
-          "\\|" scala-syntax:booleanLiteral-re
-          "\\|" scala-syntax:characterLiteral-re
-          "\\|" scala-syntax:stringLiteral-re
-          "\\|" scala-syntax:symbolLiteral-re
-          "\\|" "null" "\\)"))
+	  "\\|" scala-syntax:floatingPointLiteral-re
+	  "\\|" scala-syntax:booleanLiteral-re
+	  "\\|" scala-syntax:characterLiteral-re
+	  "\\|" scala-syntax:stringLiteral-re
+	  "\\|" scala-syntax:symbolLiteral-re
+	  "\\|" "null" "\\)"))
 
 ;; Paths (Chapter 3.1)
 ;; emacs has a problem with these regex, don't use them
@@ -172,46 +176,46 @@
   (save-excursion
     (when (looking-at "\\<super\\>")
       (let ((beg (match-beginning 0)))
-        (when (and (goto-char (match-end 0))
-                   (or (when (= (char-after) ?.)
-                         (forward-char)
-                         t)
-                       (and (when (and (not (eobp)) (= (char-after) ?\[))
-                              (forward-char)
-                              t)
-                            (progn (scala-syntax:skip-forward-ignorable)
-                                   (looking-at scala-syntax:id-re))
-                            (progn (goto-char (match-end 0))
-                                   (scala-syntax:skip-forward-ignorable)
-                                   (when (and (not (eobp)) (= (char-after) ?\]))
-                                     (forward-char)
-                                     t))
-                            (when (and (not (eobp)) (= (char-after) ?.))
-                              (forward-char)
-                              t)))
-                   (looking-at scala-syntax:id-re))
-          (set-match-data `(,beg ,(match-end 0)))
-          t)))))
+	(when (and (goto-char (match-end 0))
+		   (or (when (= (char-after) ?.)
+			 (forward-char)
+			 t)
+		       (and (when (and (not (eobp)) (= (char-after) ?\[))
+			      (forward-char)
+			      t)
+			    (progn (scala-syntax:skip-forward-ignorable)
+				   (looking-at scala-syntax:id-re))
+			    (progn (goto-char (match-end 0))
+				   (scala-syntax:skip-forward-ignorable)
+				   (when (and (not (eobp)) (= (char-after) ?\]))
+				     (forward-char)
+				     t))
+			    (when (and (not (eobp)) (= (char-after) ?.))
+			      (forward-char)
+			      t)))
+		   (looking-at scala-syntax:id-re))
+	  (set-match-data `(,beg ,(match-end 0)))
+	  t)))))
 
 (defun scala-syntax:looking-at-stableIdOrPath (&optional path-p beg)
   (unless beg (setq beg (point)))
   (save-excursion
     (cond ((looking-at "\\<this\\>")
-           (goto-char (match-end 0))
-           (if (and (not (eobp)) (= (char-after) ?.))
-               (progn (forward-char)
-                      (scala-syntax:looking-at-stableIdOrPath path-p beg))
-             path-p))
-          ((or (scala-syntax:looking-at-super)
-               (and (not (or (looking-at scala-syntax:keywords-unsafe-re)
-                             (scala-syntax:looking-at-reserved-symbol nil)))
-                    (looking-at scala-syntax:id-re)))
-           (goto-char (match-end 0))
-           (if (and (not (eobp)) (= (char-after) ?.))
-               (progn (forward-char)
-                      (scala-syntax:looking-at-stableIdOrPath path-p beg))
-             (set-match-data `(,beg ,(match-end 0)))
-             (point))))))
+	   (goto-char (match-end 0))
+	   (if (and (not (eobp)) (= (char-after) ?.))
+	       (progn (forward-char)
+		      (scala-syntax:looking-at-stableIdOrPath path-p beg))
+	     path-p))
+	  ((or (scala-syntax:looking-at-super)
+	       (and (not (or (looking-at scala-syntax:keywords-unsafe-re)
+			     (scala-syntax:looking-at-reserved-symbol nil)))
+		    (looking-at scala-syntax:id-re)))
+	   (goto-char (match-end 0))
+	   (if (and (not (eobp)) (= (char-after) ?.))
+	       (progn (forward-char)
+		      (scala-syntax:looking-at-stableIdOrPath path-p beg))
+	     (set-match-data `(,beg ,(match-end 0)))
+	     (point))))))
 
 (defun scala-syntax:looking-at-simplePattern-beginning ()
   (or (looking-at "[_(]")
@@ -221,11 +225,11 @@
 
 (defun scala-syntax:regexp-for-id (id)
   (let ((prefix-regex
-         (if (string-match scala-syntax:alphaid-re id)
-             "\\b" (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)")))
-        (suffix-regex
-         (if (string-match scala-syntax:op-re (substring id -1 nil))
-             (concat "\\([^" scala-syntax:opchar-group "]\\|$\\)") "\\b")))
+	 (if (string-match scala-syntax:alphaid-re id)
+	     "\\b" (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)")))
+	(suffix-regex
+	 (if (string-match scala-syntax:op-re (substring id -1 nil))
+	     (concat "\\([^" scala-syntax:opchar-group "]\\|$\\)") "\\b")))
     (concat prefix-regex id suffix-regex)))
 
 ;;;
@@ -261,8 +265,8 @@
 
 (defconst scala-syntax:other-keywords-unsafe-re
   (regexp-opt '("abstract" "case" "catch" "class" "def" "do" "else" "extends"
-                "final" "finally" "for" "forSome" "if" "implicit" "import"
-                "lazy" "match" "new" "object" "override" "package" "private"
+		"final" "finally" "for" "forSome" "if" "implicit" "import"
+		"lazy" "match" "new" "object" "override" "package" "private"
                 "protected" "return" "sealed" "throw" "trait" "try" "type"
                 "val" "var" "while" "with" "yield") 'words))
 
@@ -314,7 +318,6 @@
   (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)"
           "\\(:\\)"
           "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
-
 
 (defconst scala-syntax:override-unsafe-re
   (regexp-opt '("override") 'words))
@@ -371,6 +374,9 @@
 (defconst scala-syntax:modifiers-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:modifiers-unsafe-re "\\)"))
 
+(defconst scala-syntax:whitespace-delimeted-modifiers-re
+  (concat " *\\(?:" scala-syntax:modifiers-unsafe-re "\\(?: *\\)" "\\)*"))
+
 (defconst scala-syntax:body-start-re
   (concat "=" scala-syntax:end-of-code-line-re)
   "A regexp for detecting if a line ends with '='")
@@ -391,6 +397,31 @@
 (defconst scala-syntax:class-or-object-re
   (regexp-opt '("class" "object") 'words))
 
+(defconst scala-syntax:top-level-definition-words-re
+  (regexp-opt '("class" "object" "trait") 'words))
+
+(defconst scala-syntax:member-definition-words-re
+  (regexp-opt '("val" "var" "def" "type") 'words))
+
+(defconst scala-syntax:definition-words-re
+  (regexp-opt '("class" "object" "trait" "val" "var" "def" "type") 'words))
+
+(defun scala-syntax:build-definition-re (words-re)
+  (concat scala-syntax:whitespace-delimeted-modifiers-re
+	  words-re
+	  "\\(?: *\\)"
+	  "\\(?2:"
+	  scala-syntax:id-re
+	  "\\)"))
+
+(defconst scala-syntax:top-level-definition-re
+  (scala-syntax:build-definition-re scala-syntax:top-level-definition-words-re))
+
+(defconst scala-syntax:member-definition-re
+  (scala-syntax:build-definition-re scala-syntax:member-definition-words-re))
+
+(defconst scala-syntax:all-definition-re
+  (scala-syntax:build-definition-re scala-syntax:definition-words-re))
 
 ;;;;
 ;;;; Character syntax table and related syntax-propertize functions
@@ -799,6 +830,53 @@ end of the skipped expression."
   (when (= (skip-syntax-forward ".") 0)
     (goto-char (or (scan-sexps (point) 1) (buffer-end 1)))))
 
+(defun backward-sexp-forcing ()
+  (condition-case ex (backward-sexp) ('error (backward-char))))
+
+(defun scala-syntax:beginning-of-definition ()
+  "This function is not totally correct. Scala syntax is hard."
+  (interactive)
+  (let ((found-position
+	 (save-excursion
+	   (funcall 'backward-sexp-forcing)
+	   (scala-syntax:search-re-movement-function scala-syntax:all-definition-re
+						     'backward-sexp-forcing))))
+    (when found-position (goto-char found-position))))
+
+(defun scala-syntax:end-of-definition ()
+  "This function is not totally correct. Scala syntax is hard."
+  (interactive)
+  (re-search-forward scala-syntax:all-definition-re)
+  (let ((found-position
+	 (scala-syntax:search-re-movement-function scala-syntax:top-level-definition-re
+						   #'backward-sexp)))
+    (when found-position (goto-char found-position))))
+
+(defun find-brace-equals-or-next ()
+  (interactive)
+  (let ((found-position
+	 (scala-syntax:search-re-movement-function
+	  (scala-syntax:regexp-or
+	   `(,scala-syntax:all-definition-re "=" "{"))
+	  #'forward-sexp)))
+    (when found-position (goto-char found-position))))
+    
+
+(setq beginning-of-defun-function 'scala-syntax:beginning-of-defun)
+(setq end-of-defun-function 'scala-syntax:end-of-defun)
+
+(defun scala-syntax:search-re-movement-function (re movement-function)
+    "Applies movement-function until something matching re is matched by
+looking-at-p or the end/beginning of the buffer is reached.
+
+The position is returned if something is found, nil is returned if not.
+"
+    (save-excursion
+      (progn
+	(while (not (or (bobp) (eobp) (looking-at re)))
+	       (funcall movement-function))
+	     (if (looking-at re) (point) nil))))
+
 (defun scala-syntax:forward-token ()
   "Move forward one scala token, comment word or string word. It
 can be: start or end of list (value or type), id, reserved
@@ -833,46 +911,46 @@ is placed at the end of the skipped token."
      ;; otherwise forward-sexp
      (t (forward-sexp)))))
 
-(defun scala-syntax:backward-sexp ()
-  "Move backward one scala expression. It can be: parameter
+  (defun scala-syntax:backward-sexp ()
+    "Move backward one scala expression. It can be: parameter
   list (value or type), id, reserved symbol, keyword, block, or
   literal. Delimiters (.,;) and comments are skipped
   silently. Position is placed at the beginning of the skipped
   expression."
-  (interactive)
-  (syntax-propertize (point))
-  ;; for implementation comments, see scala-syntax:forward-sexp
-  (forward-comment (- (buffer-size)))
-  (while (> 0 (+ (skip-syntax-backward " ")
-                 (skip-chars-backward scala-syntax:delimiter-group))))
+    (interactive)
+    (syntax-propertize (point))
+    ;; for implementation comments, see scala-syntax:forward-sexp
+    (forward-comment (- (buffer-size)))
+    (while (> 0 (+ (skip-syntax-backward " ")
+		   (skip-chars-backward scala-syntax:delimiter-group))))
 
-  (when (= (skip-syntax-backward ".") 0)
-    (goto-char (or (scan-sexps (point) -1) (buffer-end -1)))
-    (backward-prefix-chars)))
+    (when (= (skip-syntax-backward ".") 0)
+      (goto-char (or (scan-sexps (point) -1) (buffer-end -1)))
+      (backward-prefix-chars)))
 
-(defun scala-syntax:has-char-before (char end)
-  (save-excursion
-    (while (and (< (point) end)
-                (or (bobp)
-                    (/= (char-before) char)))
-      (scala-syntax:forward-sexp))
-    (when (= (char-before) char)
-      (scala-syntax:skip-forward-ignorable)
-      (> end (point)))))
+  (defun scala-syntax:has-char-before (char end)
+    (save-excursion
+      (while (and (< (point) end)
+		  (or (bobp)
+		      (/= (char-before) char)))
+	(scala-syntax:forward-sexp))
+      (when (= (char-before) char)
+	(scala-syntax:skip-forward-ignorable)
+	(> end (point)))))
 
-(defun scala-syntax:search-backward-sexp (re)
-  "Searches backward sexps until it reaches re, empty line or ;.
+  (defun scala-syntax:search-backward-sexp (re)
+    "Searches backward sexps until it reaches re, empty line or ;.
 If re is found, point is set to beginning of re and the position
 is returned, otherwise nil is returned"
-  (let ((found (save-excursion
-                 (while (not (or (bobp)
-                                 (scala-syntax:looking-back-empty-line-p)
-                                 (scala-syntax:looking-back-token "[;,]")
-                                 (looking-at re)))
-                   (scala-syntax:backward-sexp))
-                 (if (looking-at re)
-                     (point)
-                   nil))))
+    (let ((found (save-excursion
+		   (while (not (or (bobp)
+				   (scala-syntax:looking-back-empty-line-p)
+				   (scala-syntax:looking-back-token "[;,]")
+				   (looking-at re)))
+		     (scala-syntax:backward-sexp))
+		   (if (looking-at re)
+		       (point)
+		     nil))))
     (when found (goto-char found))))
 
 (defun scala-syntax:list-p (&optional point)
