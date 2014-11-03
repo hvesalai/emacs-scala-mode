@@ -4,13 +4,16 @@
 
 (require 'scala-mode2-syntax)
 
+(defcustom scala-imenu:should-flatten-index nil
+  "Controls whether or not the imenu index is flattened or hierarchical.")
+
 (defun scala-imenu:create-index ()
   (interactive)
   (let ((class nil) (index nil))
     (goto-char (point-max))
     (while (setq class (scala-imenu:previous-class))
       (setq index (cons class index)))
-    index))
+    (if scala-imenu:should-flatten-index (scala-imenu:flatten-index index) index)))
 
 (defun scala-imenu:previous-class ()
   (interactive)
@@ -40,6 +43,14 @@
 	  (cons `(,member-name . ,marker)
 		(scala-imenu:get-class-members stop-at-point)))
       nil)))
+
+(defun scala-imenu:flatten-index (index)
+  (reduce #'append
+	  (mapcar (lambda (class-info)
+		    (let ((class-name (car class-info)))
+		      (mapcar (lambda (member-info) `(,(concat class-name "." (car member-info)) .
+						      ,(cdr member-info)))
+			      (cdr class-info)))) index)))
 
 
 (provide 'scala-mode2-imenu)

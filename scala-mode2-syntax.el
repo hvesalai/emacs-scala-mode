@@ -901,14 +901,18 @@ not. A list must be either enclosed in parentheses or start with
 
 ;; Functions to help with finding the beginning and end of scala definitions.
 
+(defconst scala-syntax:modifiers-re 
+  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
+                "private" "protected" "case") 'words))
+
 (defconst scala-syntax:whitespace-delimeted-modifiers-re
-  (concat "\\(?:" scala-syntax:modifiers-unsafe-re "\\(?: *\\)" "\\)*"))
+  (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
 (defconst scala-syntax:definition-words-re
   (regexp-opt '("class" "object" "trait" "val" "var" "def" "type") 'words))
 
 (defun scala-syntax:build-definition-re (words-re)
-  (concat "[:space:]*"
+  (concat " *"
 	  scala-syntax:whitespace-delimeted-modifiers-re
 	  words-re
 	  "\\(?1: *\\)"
@@ -920,6 +924,7 @@ not. A list must be either enclosed in parentheses or start with
   (scala-syntax:build-definition-re scala-syntax:definition-words-re))
 
 ;; Functions to help with beginning and end of definitions.
+
 (defun scala-syntax:backward-sexp-forcing ()
   (condition-case ex (backward-sexp) ('error (backward-char))))
 
@@ -929,26 +934,31 @@ not. A list must be either enclosed in parentheses or start with
 	(t (forward-sexp))))
 
 (defun scala-syntax:beginning-of-definition ()
-  "This function is not totally correct. Scala syntax is hard."
+  "This function may not work properly with certain types of scala definitions.
+For example, no care has been taken to support multiple assignments to vals such as
+
+val a, b = (1, 2)
+"
   (interactive)
   (let ((found-position
 	 (save-excursion
-	   (funcall 'scala-syntax:backward-sexp-forcing)
+	   (scala-syntax:backward-sexp-forcing)
 	   (scala-syntax:movement-function-until-re scala-syntax:all-definition-re
-						     'scala-syntax:backward-sexp-forcing))))
+						    'scala-syntax:backward-sexp-forcing))))
     (when found-position (progn (goto-char found-position) (back-to-indentation)))))
 
 (defun scala-syntax:end-of-definition ()
-  "This function is not totally correct. Scala syntax is hard.
-According to the documentation of end-of-defun it should be assumed that
-beginning-of-defun was executed prior to the execution of this function."
+  "This function may not work properly with certain types of scala definitions.
+For example, no care has been taken to support multiple assignments to vals such as
+
+val a, b = (1, 2)
+"
   (interactive)
   (re-search-forward scala-syntax:all-definition-re)
   (scala-syntax:find-brace-equals-or-next)
   (scala-syntax:handle-brace-equals-or-next))
 
 (defun scala-syntax:find-brace-equals-or-next ()
-  (interactive)
   (scala-syntax:go-to-pos
    (save-excursion
      (scala-syntax:movement-function-until-cond-function
@@ -957,7 +967,6 @@ beginning-of-defun was executed prior to the execution of this function."
       (lambda () (condition-case ex (scala-syntax:forward-sexp-or-next-line) ('error nil)))))))
 
 (defun scala-syntax:handle-brace-equals-or-next ()
-  (interactive)
   (cond ((looking-at " *{") (forward-sexp))
 	((looking-at " *=") (scala-syntax:forward-sexp-or-next-line)
 	 (scala-syntax:handle-brace-equals-or-next))
