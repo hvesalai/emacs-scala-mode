@@ -6,6 +6,8 @@
 
 (defcustom scala-imenu:should-flatten-index nil
   "Controls whether or not the imenu index is flattened or hierarchical.")
+(defcustom scala-imenu:should-show-type t
+  "Controls whether or not the imenu index has definition type information.")
 
 (defun scala-imenu:create-index ()
   (interactive)
@@ -22,9 +24,14 @@
     (if (eq (point) last-point) nil
       (progn (save-excursion (re-search-forward scala-syntax:all-definition-re)
 		      
-			     (setq class-name (match-string-no-properties 2)))
+			     (setq class-name (scala-imenu:get-tag-from-last-match)))
 	     `(,class-name . ,(cons `("<class>" . ,(point-marker))
 				    (scala-imenu:class-members)))))))
+
+(defun scala-imenu:get-tag-from-last-match ()
+  (if scala-imenu:should-show-type (concat (match-string-no-properties 1)
+					   ":" (match-string-no-properties 2))
+    (match-string-no-properties 2)))
 
 (defun scala-imenu:class-members ()
   (interactive)
@@ -39,7 +46,7 @@
     (if (< stop-at-point (point))
 	(let ((member-name (save-excursion
 			     (re-search-forward scala-syntax:all-definition-re)
-			     (match-string-no-properties 2))))
+			     (scala-imenu:get-tag-from-last-match))))
 	  (cons `(,member-name . ,marker)
 		(scala-imenu:get-class-members stop-at-point)))
       nil)))

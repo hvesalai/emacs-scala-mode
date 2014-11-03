@@ -908,20 +908,21 @@ not. A list must be either enclosed in parentheses or start with
 (defconst scala-syntax:whitespace-delimeted-modifiers-re
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
-(defconst scala-syntax:definition-words-re
-  (regexp-opt '("class" "object" "trait" "val" "var" "def" "type") 'words))
+(defconst scala-syntax:definition-words-re 
+  (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type") "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)
   (concat " *"
 	  scala-syntax:whitespace-delimeted-modifiers-re
 	  words-re
-	  "\\(?1: *\\)"
+	  "\\(?: *\\)"
 	  "\\(?2:"
 	  scala-syntax:id-re
 	  "\\)"))
 
 (defconst scala-syntax:all-definition-re
-  (scala-syntax:build-definition-re scala-syntax:definition-words-re))
+  (scala-syntax:build-definition-re
+   (concat "\\(?1:" scala-syntax:definition-words-re "\\)")))
 
 ;; Functions to help with beginning and end of definitions.
 
