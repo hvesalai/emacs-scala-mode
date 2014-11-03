@@ -522,3 +522,4 @@ Contributors and valuable feedback:
 - Nic Ferrier
 - Tillmann Rendel
 - Jim Powers
+- Ivan Malison
