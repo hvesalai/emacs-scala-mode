@@ -85,8 +85,8 @@ When started, runs `scala-mode-hook'.
 
 \\{scala-mode-map}" 
   :syntax-table scala-syntax:syntax-table
-					;  :group                               
-					;  :abbrev
+;  :group                               
+;  :abbrev
 
   (scala-mode:make-local-variables
    'post-self-insert-hook
@@ -152,8 +152,7 @@ When started, runs `scala-mode-hook'.
   (use-local-map scala-mode-map)
   ;; add indent functionality to some characters
   (scala-mode-map:add-remove-indent-hook)
-  (scala-mode-map:add-self-insert-hooks)
-  )
+  (scala-mode-map:add-self-insert-hooks))
 
 ;; Attach .scala files to the scala-mode
 ;;;###autoload
