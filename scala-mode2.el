@@ -89,8 +89,8 @@ When started, runs `scala-mode-hook'.
 
 \\{scala-mode-map}" 
   :syntax-table scala-syntax:syntax-table
-;  :group                               
-;  :abbrev
+					;  :group                               
+					;  :abbrev
 
   (scala-mode:make-local-variables
    'post-self-insert-hook
@@ -147,13 +147,13 @@ When started, runs `scala-mode-hook'.
         indent-line-function            'scala-indent:indent-line
         fixup-whitespace                'scala-indent:fixup-whitespace
         delete-indentation              'scala-indent:join-line
-        indent-tabs-mode                nil
-	imenu-create-index-function      'scala-imenu:create-index)
+        indent-tabs-mode                nil)
+  (set (make-local-variable 'imenu-create-index-function) #'scala-imenu:create-index)
   (use-local-map scala-mode-map)
   ;; add indent functionality to some characters
   (scala-mode-map:add-remove-indent-hook)
   (scala-mode-map:add-self-insert-hooks)
-)
+  )
 
 ;; Attach .scala files to the scala-mode
 ;;;###autoload
