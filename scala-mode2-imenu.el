@@ -1,5 +1,5 @@
-;;; scala-mode-lib.el - Major mode for editing scala, common functions
-;;; Copyright (c) 2012 Heikki Vesalainen
+;;; scala-mode-imenu.el - Major mode for editing scala, common functions
+;;; Copyright (c) 2014 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
 (require 'scala-mode2-syntax)
@@ -10,7 +10,6 @@
   "Controls whether or not the imenu index has definition type information.")
 
 (defun scala-imenu:create-index ()
-  (interactive)
   (let ((class nil) (index nil))
     (goto-char (point-max))
     (while (setq class (scala-imenu:previous-class))
@@ -18,7 +17,6 @@
     (if scala-imenu:should-flatten-index (scala-imenu:flatten-index index) index)))
 
 (defun scala-imenu:previous-class ()
-  (interactive)
   (let ((last-point (point)) (class-name nil))
     (scala-syntax:beginning-of-definition)
     (if (eq (point) last-point) nil
@@ -34,7 +32,6 @@
     (match-string-no-properties 2)))
 
 (defun scala-imenu:class-members ()
-  (interactive)
   (let ((start-point (point)))
     (save-excursion (scala-syntax:end-of-definition)
 		    (backward-char)
