@@ -432,13 +432,12 @@ Very complex scala files may need the following in your emacs init (.emacs, etc)
 
 scala-mode2 defines `scala-syntax:beginning-of-definition` and
 `scala-syntax:end-of-definition` which move the cursor forward and
-backward over class, trait, object, def, val, var, and type. These
+backward over class, trait, object, def, val, var, and type definitions. These
 functions are assigned to the buffer local variables
 `beginning-of-defun-function` and `end-of-defun-function` which makes
 it so that the `beginning-of-defun` and `end-of-defun` functions behave
-in a way that is appropriate to scala. Because of the relatively complex
-nature of scala definitions, these functions are not currently able to
-support some of the more advanced scala definition types. 
+in a way that is appropriate to scala. These functions are not currently able to
+support some of the more advanced scala definition types.
 Multiple assignment to variables e.g.
 
 ```scala
