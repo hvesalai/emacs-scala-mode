@@ -19,9 +19,6 @@
 
 ;; single letter matching groups (Chapter 1)
 
-(defun scala-syntax:regexp-or (regexps)
-  (concat "\\(?:" (mapconcat 'identity regexps "\\|")  "\\)"))
-
 (defconst scala-syntax:hexDigit-group "0-9A-Fa-f")
 (defconst scala-syntax:UnicodeEscape-re (concat "\\\\u[" scala-syntax:hexDigit-group "]\\{4\\}"))
 
@@ -375,7 +372,7 @@
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:modifiers-unsafe-re "\\)"))
 
 (defconst scala-syntax:whitespace-delimeted-modifiers-re
-  (concat " *\\(?:" scala-syntax:modifiers-unsafe-re "\\(?: *\\)" "\\)*"))
+  (concat "\\(?:" scala-syntax:modifiers-unsafe-re "\\(?: *\\)" "\\)*"))
 
 (defconst scala-syntax:body-start-re
   (concat "=" scala-syntax:end-of-code-line-re)
@@ -385,8 +382,7 @@
   (regexp-opt '("var" "val" "import") 'words)
   ("Keywords that can start a list"))
 
-(defconst scala-syntax:multiLineStringLiteral-end-re
-  "\"\"+\\(\"\\)")
+(defconst scala-syntax:multiLineStringLiteral-end-re "\"\"+\\(\"\\)")
 
 (defconst scala-syntax:case-re
   "\\<case\\>")
@@ -407,7 +403,8 @@
   (regexp-opt '("class" "object" "trait" "val" "var" "def" "type") 'words))
 
 (defun scala-syntax:build-definition-re (words-re)
-  (concat scala-syntax:whitespace-delimeted-modifiers-re
+  (concat "[:space:]*"
+	  scala-syntax:whitespace-delimeted-modifiers-re
 	  words-re
 	  "\\(?: *\\)"
 	  "\\(?2:"
@@ -830,53 +827,6 @@ end of the skipped expression."
   (when (= (skip-syntax-forward ".") 0)
     (goto-char (or (scan-sexps (point) 1) (buffer-end 1)))))
 
-(defun backward-sexp-forcing ()
-  (condition-case ex (backward-sexp) ('error (backward-char))))
-
-(defun scala-syntax:beginning-of-definition ()
-  "This function is not totally correct. Scala syntax is hard."
-  (interactive)
-  (let ((found-position
-	 (save-excursion
-	   (funcall 'backward-sexp-forcing)
-	   (scala-syntax:search-re-movement-function scala-syntax:all-definition-re
-						     'backward-sexp-forcing))))
-    (when found-position (goto-char found-position))))
-
-(defun scala-syntax:end-of-definition ()
-  "This function is not totally correct. Scala syntax is hard."
-  (interactive)
-  (re-search-forward scala-syntax:all-definition-re)
-  (let ((found-position
-	 (scala-syntax:search-re-movement-function scala-syntax:top-level-definition-re
-						   #'backward-sexp)))
-    (when found-position (goto-char found-position))))
-
-(defun find-brace-equals-or-next ()
-  (interactive)
-  (let ((found-position
-	 (scala-syntax:search-re-movement-function
-	  (scala-syntax:regexp-or
-	   `(,scala-syntax:all-definition-re "=" "{"))
-	  #'forward-sexp)))
-    (when found-position (goto-char found-position))))
-    
-
-(setq beginning-of-defun-function 'scala-syntax:beginning-of-defun)
-(setq end-of-defun-function 'scala-syntax:end-of-defun)
-
-(defun scala-syntax:search-re-movement-function (re movement-function)
-    "Applies movement-function until something matching re is matched by
-looking-at-p or the end/beginning of the buffer is reached.
-
-The position is returned if something is found, nil is returned if not.
-"
-    (save-excursion
-      (progn
-	(while (not (or (bobp) (eobp) (looking-at re)))
-	       (funcall movement-function))
-	     (if (looking-at re) (point) nil))))
-
 (defun scala-syntax:forward-token ()
   "Move forward one scala token, comment word or string word. It
 can be: start or end of list (value or type), id, reserved
@@ -976,5 +926,67 @@ not. A list must be either enclosed in parentheses or start with
               (scala-syntax:backward-sexp)))
           (when (looking-at scala-syntax:list-keywords-re)
             (goto-char (match-end 0))))))))
+
+;; Functions to help with beginning and end of definitions.
+
+(defun scala-syntax:backward-sexp-forcing ()
+  (condition-case ex (backward-sexp) ('error (backward-char))))
+
+(defun scala-syntax:forward-sexp-or-next-line ()
+  (interactive)
+  (cond ((looking-at "\n") (next-line) (beginning-of-line))
+	(t (forward-sexp))))
+
+(defun scala-syntax:beginning-of-definition ()
+  "This function is not totally correct. Scala syntax is hard."
+  (interactive)
+  (let ((found-position
+	 (save-excursion
+	   (funcall 'scala-syntax:backward-sexp-forcing)
+	   (scala-syntax:movement-function-until-re scala-syntax:all-definition-re
+						     'scala-syntax:backward-sexp-forcing))))
+    (when found-position (progn (goto-char found-position) (back-to-indentation)))))
+
+(defun scala-syntax:end-of-definition ()
+  "This function is not totally correct. Scala syntax is hard.
+According to the documentation of end-of-defun it should be assumed that
+beginning-of-defun was executed prior to the execution of this function."
+  (interactive)
+  (re-search-forward scala-syntax:all-definition-re)
+  (scala-syntax:find-brace-equals-or-next)
+  (scala-syntax:handle-brace-equals-or-next))
+
+(defun scala-syntax:find-brace-equals-or-next ()
+  (interactive)
+  (scala-syntax:go-to-pos
+   (save-excursion
+     (scala-syntax:movement-function-until-cond-function
+      (lambda () (or (looking-at " *[{=]")
+		     (looking-at scala-syntax:all-definition-re)))
+      (lambda () (condition-case ex (scala-syntax:forward-sexp-or-next-line) ('error nil)))))))
+
+(defun scala-syntax:handle-brace-equals-or-next ()
+  (interactive)
+  (cond ((looking-at " *{") (forward-sexp))
+	((looking-at " *=") (scala-syntax:forward-sexp-or-next-line)
+	 (scala-syntax:handle-brace-equals-or-next))
+	((looking-at scala-syntax:all-definition-re) nil)
+	(t (scala-syntax:forward-sexp-or-next-line)
+	   (scala-syntax:handle-brace-equals-or-next))))
+
+(defun scala-syntax:movement-function-until-re (re movement-function)
+  (save-excursion
+    (scala-syntax:movement-function-until-cond-function
+     (lambda () (looking-at re)) movement-function)))
+
+(defun scala-syntax:movement-function-until-cond-function (cond-function movement-function)
+  (let ((last-point (point)))
+    (if (not (funcall cond-function))
+	(progn (funcall movement-function)
+	       (if (equal last-point (point)) nil
+		 (scala-syntax:movement-function-until-cond-function
+		  cond-function movement-function))) last-point)))
+
+(defun scala-syntax:go-to-pos (pos) (when pos (goto-char pos)))
 
 (provide 'scala-mode2-syntax)

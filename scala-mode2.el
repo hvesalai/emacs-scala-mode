@@ -12,6 +12,7 @@
 (require 'scala-mode2-fontlock)
 (require 'scala-mode2-map)
 (require 'scala-mode2-sbt)
+(require 'scala-mode2-imenu)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
@@ -68,13 +69,17 @@ If there is no plausible default, return nil."
   (scala-mode:make-local-variables
    'syntax-propertize-function
    'parse-sexp-lookup-properties
-   'forward-sexp-function)  
+   'forward-sexp-function
+   'beginning-of-defun-function
+   'end-of-defun-function)  
 
   (add-hook 'syntax-propertize-extend-region-functions
             'scala-syntax:propertize-extend-region)
   (setq syntax-propertize-function      'scala-syntax:propertize
         parse-sexp-lookup-properties    t
-        forward-sexp-function           'scala-mode:forward-sexp-function))
+        forward-sexp-function           'scala-mode:forward-sexp-function
+	beginning-of-defun-function     'scala-syntax:beginning-of-definition
+	end-of-defun-function           'scala-syntax:end-of-definition))
 
 ;;;###autoload
 (define-derived-mode scala-mode prog-mode "Scala"
@@ -108,7 +113,8 @@ When started, runs `scala-mode-hook'.
    'indent-line-function
    'fixup-whitespace
    'delete-indentation
-   'indent-tabs-mode)
+   'indent-tabs-mode
+   'imenu-create-index-function)
 
   (add-hook 'syntax-propertize-extend-region-functions
             'scala-syntax:propertize-extend-region)
@@ -142,7 +148,7 @@ When started, runs `scala-mode-hook'.
         fixup-whitespace                'scala-indent:fixup-whitespace
         delete-indentation              'scala-indent:join-line
         indent-tabs-mode                nil
-        )
+	imenu-create-index-function      'scala-imenu:create-index)
   (use-local-map scala-mode-map)
   ;; add indent functionality to some characters
   (scala-mode-map:add-remove-indent-hook)
