@@ -146,9 +146,9 @@ When started, runs `scala-mode-hook'.
         fixup-whitespace                'scala-indent:fixup-whitespace
         delete-indentation              'scala-indent:join-line
         indent-tabs-mode                nil
-	beginning-of-defun-function     'scala-syntax:beginning-of-definition
-	end-of-defun-function           'scala-syntax:end-of-definition)
-  (set (make-local-variable 'imenu-create-index-function) #'scala-imenu:create-index)
+	beginning-of-defun-function     #'scala-syntax:beginning-of-definition
+	end-of-defun-function           #'scala-syntax:end-of-definition
+	imenu-create-index-function     #'scala-imenu:create-index)
   (use-local-map scala-mode-map)
   ;; add indent functionality to some characters
   (scala-mode-map:add-remove-indent-hook)
