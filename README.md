@@ -445,7 +445,10 @@ Multiple assignment to variables e.g.
 val a, b = (1, 2)
 ```
 
-are among the assignment types that are not currently supported.
+are among the assignment types that are not currently supported. In general
+the only types of definition that these functions are likely to support
+are ones that use only a single, simple (but possibly generic) identifier as 
+its identifer.
 
 ## imenu
 
@@ -460,7 +463,6 @@ functions, and as such, it shares their limitations.
 ## Other features
 - highlights only properly formatted string and character constants
 - indenting a code line removes trailing whitespace
-- imenu compatibility 
 
 ## Known issues
 
@@ -477,7 +479,18 @@ The indenter thinks the second occurrence of `foo` is the body of the while.
 To work around this, terminate the while with a semicolon,
 or put a blank line after it.
 
-`scala-syntax:end-of-definition` `scala-syntax:beginning-of-definition` 
+As mentioned above,
+`scala-syntax:end-of-definition` `scala-syntax:beginning-of-definition`
+don't properly handle any defintions that don't have a simple, single 
+identifier.
+Its likely that they will stumble when presented with some of the more advanced
+and obscure scala definitions out there.
+
+There also seems to be a strange bug with scala-modes2's `end-of-defun` integration
+where two functions are skipped instead of just one. `scala-syntax:end-of-definition`
+does not have this problem, so if you find this bug bothering you a lot
+you can bind whatever you normally bind to `end-of-defun` to
+`scala-syntax:end-of-definition` in scala mode to alleviate the issue.
 
 ## Future work
 
