@@ -1,60 +1,123 @@
-;;; scala-mode-imenu.el - Major mode for editing scala, common functions
+;;; scala-mode-imenu.el - Major mode for editing scala
 ;;; Copyright (c) 2014 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
+;;; Code:
+
 (require 'scala-mode2-syntax)
+(make-local-variable 'lexical-binding)
+(setq lexical-binding t)
 
 (defcustom scala-imenu:should-flatten-index nil
   "Controls whether or not the imenu index is flattened or hierarchical.")
-(defcustom scala-imenu:should-show-type t
+(defcustom scala-imenu:build-imenu-candidate
+  'scala-imenu:default-build-imenu-candidate
   "Controls whether or not the imenu index has definition type information.")
+
+(if scala-imenu:should-flatten-index (scala-imenu:flatten-index index) index)
+
+(defun scala-imenu:flatten-list (list)
+  (mapcan (lambda (x)
+	    (if (listp x)
+		(ensime-flatten-list x)
+	      (list x))) list))
+
+(defun scala-imenu:create-imenu-index ()
+  (mapcar 'scala-imenu:build-imenu-candidates (scala-imenu:create-index)))
+
+(defun scala-imenu:build-imenu-candidates (member-info &optional parents)
+  (if (listp (car member-info))
+      (let* ((current-member-info (car member-info))
+	     (child-member-infos (cdr member-info))
+	     (current-member-result 
+	      (scala-imenu:destructure-for-build-imenu-candidate
+	       current-member-info parents))
+	     (current-member-name (car current-member-result)))
+	(if child-member-infos
+	    (let ((current-member-members 
+		   (scala-imenu:build-child-members 
+		    (append parents `(,current-member-info))
+		    (cdr member-info))))
+	      `(,current-member-name . 
+	        ,(cons current-member-result current-member-members)))
+	  current-member-result))
+    (scala-imenu:destructure-for-build-imenu-candidate member-info parents)))
+
+(defun scala-imenu:build-child-members (parents child-members)
+  (mapcar (lambda (child) (scala-imenu:build-imenu-candidates
+			   child parents)) child-members))
+
+(defun scala-imenu:destructure-for-build-imenu-candidate (member-info parents)
+  (cl-destructuring-bind (member-name definition-type marker) 
+      member-info (funcall scala-imenu:build-imenu-candidate 
+		   member-name definition-type marker parents)))
+
+(defun scala-imenu:default-build-imenu-candidate (member-name definition-type
+							      marker parents)
+  (let* ((all-names (append (mapcar (lambda (parent) (car parent)) parents)
+			    `(,member-name)))
+	 (member-string (mapconcat 'identity all-names ".")))
+    `(,(format "(%s)%s" definition-type member-string) . ,marker)))
 
 (defun scala-imenu:create-index ()
   (let ((class nil) (index nil))
     (goto-char (point-max))
-    (while (setq class (scala-imenu:previous-class))
+    (while (setq class (scala-imenu:parse-nested-from-end))
       (setq index (cons class index)))
-    (if scala-imenu:should-flatten-index (scala-imenu:flatten-index index) index)))
+    index))
 
-(defun scala-imenu:previous-class ()
-  (let ((last-point (point)) (class-name nil))
+(defun scala-imenu:parse-nested-from-end ()
+  (let ((last-point (point)) (class-name nil) (definition-type nil))
     (scala-syntax:beginning-of-definition)
+    ;; We're done if scala-syntax:beginning-of-definition has no effect.
     (if (eq (point) last-point) nil
-      (progn (save-excursion (re-search-forward scala-syntax:all-definition-re)
-		      
-			     (setq class-name (scala-imenu:get-tag-from-last-match)))
-	     `(,class-name . ,(cons `("<class>" . ,(point-marker))
-				    (scala-imenu:class-members)))))))
+      (progn (looking-at scala-syntax:all-definition-re)
+	     (setq class-name (match-string-no-properties 2))
+	     (setq definition-type (match-string-no-properties 1)))
+      `(,`(,class-name ,definition-type ,(point-marker)) . 
+	,(scala-imenu:nested-members)))))
 
-(defun scala-imenu:get-tag-from-last-match ()
-  (if scala-imenu:should-show-type (concat (match-string-no-properties 1)
-					   ":" (match-string-no-properties 2))
-    (match-string-no-properties 2)))
+(defun scala-imenu:parse-nested-from-beginning ()
+  (scala-syntax:end-of-definition)
+  (scala-imenu:parse-nested-from-end))
 
-(defun scala-imenu:class-members ()
+(defun scala-imenu:nested-members ()
   (let ((start-point (point)))
     (save-excursion (scala-syntax:end-of-definition)
+		    ;; This gets us inside of the class definition
+		    ;; It seems like there should be a better way
+		    ;; to do this.
 		    (backward-char)
-		    (scala-imenu:get-class-members start-point))))
+		    (scala-imenu:get-nested-members start-point))))
 
-(defun scala-imenu:get-class-members (stop-at-point)
+(defvar scala-imenu:nested-definition-types '("class" "object" "trait"))
+
+(defun scala-imenu:get-nested-members (parent-start-point)
   (scala-syntax:beginning-of-definition)
-  (let ((marker (point-marker)))
-    (if (< stop-at-point (point))
-	(let ((member-name (save-excursion
-			     (re-search-forward scala-syntax:all-definition-re)
-			     (scala-imenu:get-tag-from-last-match))))
-	  (cons `(,member-name . ,marker)
-		(scala-imenu:get-class-members stop-at-point)))
-      nil)))
+  (if (< parent-start-point (point))
+      (cons (scala-imenu:get-member-info-at-point)
+	    (scala-imenu:get-nested-members parent-start-point))
+      nil))
+
+(defun scala-imenu:get-member-info-at-point ()
+  (looking-at scala-syntax:all-definition-re)
+  (let* ((member-name (match-string-no-properties 2))
+	 (definition-type (match-string-no-properties 1)))
+    (if (member definition-type scala-imenu:nested-definition-types) 
+	(save-excursion (scala-imenu:parse-nested-from-beginning))
+      `(,member-name ,definition-type ,(point-marker)))))
 
 (defun scala-imenu:flatten-index (index)
   (reduce #'append
-	  (mapcar (lambda (class-info)
-		    (let ((class-name (car class-info)))
-		      (mapcar (lambda (member-info) `(,(concat class-name "." (car member-info)) .
-						      ,(cdr member-info)))
-			      (cdr class-info)))) index)))
+	  (mapcar 
+	   (lambda (class-info)
+	     (let ((class-name (car class-info)))
+	       (mapcar (lambda (member-info) 
+			 `(,(concat class-name "." (car member-info)) .
+			   ,(cdr member-info)))
+		       (cdr class-info)))) index)))
 
 
 (provide 'scala-mode2-imenu)
+;;; scala-mode2-imenu.el ends here
+(mapconcat 'identity '("d" "c") ".")
