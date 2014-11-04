@@ -5,25 +5,35 @@
 ;;; Code:
 
 (require 'scala-mode2-syntax)
+
+;; Make lambdas proper clousures (only in this file)
 (make-local-variable 'lexical-binding)
 (setq lexical-binding t)
 
-(defcustom scala-imenu:should-flatten-index nil
+(defcustom scala-imenu:should-flatten-index t
   "Controls whether or not the imenu index is flattened or hierarchical.")
 (defcustom scala-imenu:build-imenu-candidate
   'scala-imenu:default-build-imenu-candidate
   "Controls whether or not the imenu index has definition type information.")
 
-(if scala-imenu:should-flatten-index (scala-imenu:flatten-index index) index)
+(defun scala-imenu:flatten-list (incoming-list &optional predicate)
+  (when (not predicate) (setq predicate 'listp))
+  (mapcan (lambda (x) (if (funcall predicate x)
+			  (scala-imenu:flatten-list x predicate) (list x))) incoming-list))
 
-(defun scala-imenu:flatten-list (list)
-  (mapcan (lambda (x)
-	    (if (listp x)
-		(ensime-flatten-list x)
-	      (list x))) list))
+(scala-imenu:flatten-list '((1 2) ((1 2 3) (1))))
+
+(defun scala-imenu:flatten-imenu-index (index)
+  (mapcan (lambda (x) (if (listp (cdr x))
+			  (scala-imenu:flatten-imenu-index (cdr x))
+			(list x))) index))
 
 (defun scala-imenu:create-imenu-index ()
-  (mapcar 'scala-imenu:build-imenu-candidates (scala-imenu:create-index)))
+  (let ((imenu-index (mapcar 'scala-imenu:build-imenu-candidates
+			     (scala-imenu:create-index))))
+    (if scala-imenu:should-flatten-index
+	(scala-imenu:flatten-imenu-index imenu-index)
+      imenu-index)))
 
 (defun scala-imenu:build-imenu-candidates (member-info &optional parents)
   (if (listp (car member-info))
@@ -50,12 +60,13 @@
 (defun scala-imenu:destructure-for-build-imenu-candidate (member-info parents)
   (cl-destructuring-bind (member-name definition-type marker) 
       member-info (funcall scala-imenu:build-imenu-candidate 
-		   member-name definition-type marker parents)))
+			   member-name definition-type marker parents)))
 
 (defun scala-imenu:default-build-imenu-candidate (member-name definition-type
 							      marker parents)
-  (let* ((all-names (append (mapcar (lambda (parent) (car parent)) parents)
-			    `(,member-name)))
+  (let* ((all-names 
+	  (append (mapcar (lambda (parent) (car parent)) parents)
+		  `(,member-name)))
 	 (member-string (mapconcat 'identity all-names ".")))
     `(,(format "(%s)%s" definition-type member-string) . ,marker)))
 
@@ -107,17 +118,6 @@
 	(save-excursion (scala-imenu:parse-nested-from-beginning))
       `(,member-name ,definition-type ,(point-marker)))))
 
-(defun scala-imenu:flatten-index (index)
-  (reduce #'append
-	  (mapcar 
-	   (lambda (class-info)
-	     (let ((class-name (car class-info)))
-	       (mapcar (lambda (member-info) 
-			 `(,(concat class-name "." (car member-info)) .
-			   ,(cdr member-info)))
-		       (cdr class-info)))) index)))
-
 
 (provide 'scala-mode2-imenu)
 ;;; scala-mode2-imenu.el ends here
-(mapconcat 'identity '("d" "c") ".")
