@@ -18,18 +18,16 @@
 
 (defun scala-imenu:flatten-list (incoming-list &optional predicate)
   (when (not predicate) (setq predicate 'listp))
-  (mapcan (lambda (x) (if (funcall predicate x)
+  (cl-mapcan (lambda (x) (if (funcall predicate x)
 			  (scala-imenu:flatten-list x predicate) (list x))) incoming-list))
 
-(scala-imenu:flatten-list '((1 2) ((1 2 3) (1))))
-
 (defun scala-imenu:flatten-imenu-index (index)
-  (mapcan (lambda (x) (if (listp (cdr x))
+  (cl-mapcan (lambda (x) (if (listp (cdr x))
 			  (scala-imenu:flatten-imenu-index (cdr x))
 			(list x))) index))
 
 (defun scala-imenu:create-imenu-index ()
-  (let ((imenu-index (mapcar 'scala-imenu:build-imenu-candidates
+  (let ((imenu-index (cl-mapcar 'scala-imenu:build-imenu-candidates
 			     (scala-imenu:create-index))))
     (if scala-imenu:should-flatten-index
 	(scala-imenu:flatten-imenu-index imenu-index)
@@ -54,7 +52,7 @@
     (scala-imenu:destructure-for-build-imenu-candidate member-info parents)))
 
 (defun scala-imenu:build-child-members (parents child-members)
-  (mapcar (lambda (child) (scala-imenu:build-imenu-candidates
+  (cl-mapcar (lambda (child) (scala-imenu:build-imenu-candidates
 			   child parents)) child-members))
 
 (defun scala-imenu:destructure-for-build-imenu-candidate (member-info parents)
@@ -65,7 +63,7 @@
 (defun scala-imenu:default-build-imenu-candidate (member-name definition-type
 							      marker parents)
   (let* ((all-names 
-	  (append (mapcar (lambda (parent) (car parent)) parents)
+	  (append (cl-mapcar (lambda (parent) (car parent)) parents)
 		  `(,member-name)))
 	 (member-string (mapconcat 'identity all-names ".")))
     `(,(format "(%s)%s" definition-type member-string) . ,marker)))
