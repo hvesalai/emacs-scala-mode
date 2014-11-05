@@ -90,6 +90,10 @@ modified from the scala-mode customization menu.
 
     For scala console (aka *REPL*) or **sbt** support, see
     [sbt-mode](https://github.com/hvesalai/sbt-mode).
+    
+    You might also be interested in these modules:
+    - https://github.com/ancane/scala-outline-popup
+    - https://github.com/ensime/ensime-server
 
 ## Indenting modes
 
