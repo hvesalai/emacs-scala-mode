@@ -722,7 +722,7 @@ one."
   (save-match-data
     (while (scala-syntax:looking-at scala-syntax:modifiers-re)
       (scala-syntax:forward-sexp)
-      (when (scala-syntax:looking-at "[")
+      (when (scala-syntax:looking-at "[[]")
         (forward-list)))))
 
 (defun scala-syntax:looking-back-else-if-p ()
