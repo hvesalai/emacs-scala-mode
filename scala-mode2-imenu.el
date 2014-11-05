@@ -15,6 +15,8 @@
 (defcustom scala-imenu:build-imenu-candidate
   'scala-imenu:default-build-imenu-candidate
   "Controls whether or not the imenu index has definition type information.")
+(defcustom scala-imenu:cleanup-hooks nil
+  "Functions that will be run after the construction of each imenu")
 
 (defun scala-imenu:flatten-list (incoming-list &optional predicate)
   (when (not predicate) (setq predicate 'listp))
@@ -29,6 +31,8 @@
 (defun scala-imenu:create-imenu-index ()
   (let ((imenu-index (cl-mapcar 'scala-imenu:build-imenu-candidates
 			     (scala-imenu:create-index))))
+    (dolist (cleanup-hook scala-imenu:cleanup-hooks)
+      (funcall cleanup-hook))
     (if scala-imenu:should-flatten-index
 	(scala-imenu:flatten-imenu-index imenu-index)
       imenu-index)))
@@ -59,6 +63,7 @@
   (cl-destructuring-bind (member-name definition-type marker) 
       member-info (funcall scala-imenu:build-imenu-candidate 
 			   member-name definition-type marker parents)))
+
 
 (defun scala-imenu:default-build-imenu-candidate (member-name definition-type
 							      marker parents)
