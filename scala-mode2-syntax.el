@@ -963,13 +963,13 @@ val a, b = (1, 2)
   (scala-syntax:go-to-pos
    (save-excursion
      (scala-syntax:movement-function-until-cond-function
-      (lambda () (or (looking-at " *[{=]")
+      (lambda () (or (looking-at "[[:space:]]*[{=]")
 		     (looking-at scala-syntax:all-definition-re)))
       (lambda () (condition-case ex (scala-syntax:forward-sexp-or-next-line) ('error nil)))))))
 
 (defun scala-syntax:handle-brace-equals-or-next ()
-  (cond ((looking-at " *{") (forward-sexp))
-	((looking-at " *=") (scala-syntax:forward-sexp-or-next-line)
+  (cond ((looking-at "[[:space:]]*{") (forward-sexp))
+	((looking-at "[[:space:]]*=") (scala-syntax:forward-sexp-or-next-line)
 	 (scala-syntax:handle-brace-equals-or-next))
 	((looking-at scala-syntax:all-definition-re) nil)
 	(t (scala-syntax:forward-sexp-or-next-line)
