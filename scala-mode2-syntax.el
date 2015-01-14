@@ -899,4 +899,95 @@ not. A list must be either enclosed in parentheses or start with
           (when (looking-at scala-syntax:list-keywords-re)
             (goto-char (match-end 0))))))))
 
+;; Functions to help with finding the beginning and end of scala definitions.
+
+(defconst scala-syntax:modifiers-re 
+  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
+                "private" "protected" "case") 'words))
+
+(defconst scala-syntax:whitespace-delimeted-modifiers-re
+  (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
+
+(defconst scala-syntax:definition-words-re 
+  (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type") "\\|"))
+
+(defun scala-syntax:build-definition-re (words-re)
+  (concat " *"
+	  scala-syntax:whitespace-delimeted-modifiers-re
+	  words-re
+	  "\\(?: *\\)"
+	  "\\(?2:"
+	  scala-syntax:id-re
+	  "\\)"))
+
+(defconst scala-syntax:all-definition-re
+  (scala-syntax:build-definition-re
+   (concat "\\(?1:" scala-syntax:definition-words-re "\\)")))
+
+;; Functions to help with beginning and end of definitions.
+
+(defun scala-syntax:backward-sexp-forcing ()
+  (condition-case ex (backward-sexp) ('error (backward-char))))
+
+(defun scala-syntax:forward-sexp-or-next-line ()
+  (interactive)
+  (cond ((looking-at "\n") (next-line) (beginning-of-line))
+	(t (forward-sexp))))
+
+(defun scala-syntax:beginning-of-definition ()
+  "This function may not work properly with certain types of scala definitions.
+For example, no care has been taken to support multiple assignments to vals such as
+
+val a, b = (1, 2)
+"
+  (interactive)
+  (let ((found-position
+	 (save-excursion
+	   (scala-syntax:backward-sexp-forcing)
+	   (scala-syntax:movement-function-until-re scala-syntax:all-definition-re
+						    'scala-syntax:backward-sexp-forcing))))
+    (when found-position (progn (goto-char found-position) (back-to-indentation)))))
+
+(defun scala-syntax:end-of-definition ()
+  "This function may not work properly with certain types of scala definitions.
+For example, no care has been taken to support multiple assignments to vals such as
+
+val a, b = (1, 2)
+"
+  (interactive)
+  (re-search-forward scala-syntax:all-definition-re)
+  (scala-syntax:find-brace-equals-or-next)
+  (scala-syntax:handle-brace-equals-or-next))
+
+(defun scala-syntax:find-brace-equals-or-next ()
+  (scala-syntax:go-to-pos
+   (save-excursion
+     (scala-syntax:movement-function-until-cond-function
+      (lambda () (or (looking-at "[[:space:]]*[{=]")
+		     (looking-at scala-syntax:all-definition-re)))
+      (lambda () (condition-case ex (scala-syntax:forward-sexp-or-next-line) ('error nil)))))))
+
+(defun scala-syntax:handle-brace-equals-or-next ()
+  (cond ((looking-at "[[:space:]]*{") (forward-sexp))
+	((looking-at "[[:space:]]*=") (scala-syntax:forward-sexp-or-next-line)
+	 (scala-syntax:handle-brace-equals-or-next))
+	((looking-at scala-syntax:all-definition-re) nil)
+	(t (scala-syntax:forward-sexp-or-next-line)
+	   (scala-syntax:handle-brace-equals-or-next))))
+
+(defun scala-syntax:movement-function-until-re (re movement-function)
+  (save-excursion
+    (scala-syntax:movement-function-until-cond-function
+     (lambda () (looking-at re)) movement-function)))
+
+(defun scala-syntax:movement-function-until-cond-function (cond-function movement-function)
+  (let ((last-point (point)))
+    (if (not (funcall cond-function))
+	(progn (funcall movement-function)
+	       (if (equal last-point (point)) nil
+		 (scala-syntax:movement-function-until-cond-function
+		  cond-function movement-function))) last-point)))
+
+(defun scala-syntax:go-to-pos (pos) (when pos (goto-char pos)))
+
 (provide 'scala-mode2-syntax)

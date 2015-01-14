@@ -428,6 +428,37 @@ Very complex scala files may need the following in your emacs init (.emacs, etc)
 (setq max-specpdl-size 5000)
 ```
 
+## `beginning-of-defun` and `end-of-defun`
+
+scala-mode2 defines `scala-syntax:beginning-of-definition` and
+`scala-syntax:end-of-definition` which move the cursor forward and
+backward over class, trait, object, def, val, var, and type definitions. These
+functions are assigned to the buffer local variables
+`beginning-of-defun-function` and `end-of-defun-function` which makes
+it so that the `beginning-of-defun` and `end-of-defun` functions behave
+in a way that is appropriate to scala. These functions are not currently able to
+support some of the more advanced scala definition types.
+Multiple assignment to variables e.g.
+
+```scala
+val a, b = (1, 2)
+```
+
+are among the assignment types that are not currently supported. In general
+the only types of definition that these functions are likely to support
+are ones that use only a single, simple (but possibly generic) identifier as 
+its identifer.
+
+## imenu
+
+scala-mode2 supports imenu, a library for accessing locations in documents that
+is included in emacs 24. The custom variable `scala-imenu:should-flatten-index`
+controls whether or not the imenu index will be hierarchical or completely flat.
+The current iMenu implementation only goes one level deep i.e. nested classes are
+not traversed. scala-mode2's imenu support depends heavily on the
+`scala-syntax:end-of-definition` and `scala-syntax:beginning-of-definition`
+functions, and as such, it shares their limitations.
+
 ## Other features
 - highlights only properly formatted string and character constants
 - indenting a code line removes trailing whitespace
@@ -447,16 +478,30 @@ The indenter thinks the second occurrence of `foo` is the body of the while.
 To work around this, terminate the while with a semicolon,
 or put a blank line after it.
 
+As mentioned above,
+`scala-syntax:end-of-definition` `scala-syntax:beginning-of-definition`
+don't properly handle any defintions that don't have a simple, single 
+identifier.
+Its likely that they will stumble when presented with some of the more advanced
+and obscure scala definitions out there.
+
+There also seems to be a strange bug with scala-modes2's `end-of-defun` integration
+where two functions are skipped instead of just one. `scala-syntax:end-of-definition`
+does not have this problem, so if you find this bug bothering you a lot
+you can bind whatever you normally bind to `end-of-defun` to
+`scala-syntax:end-of-definition` in scala mode to alleviate the issue.
+
 ## Future work
 
 - syntax-begin-function for reliably fontifying elements which span
   multiple lines
-- beginning-of-defun, end-of-defun
-- movement commands to move to previous or next definition (val,
-  var, def, class, trait, object)
 - highlight headings and annotations inside Scaladoc specially (use
   underline for headings)
 - highlight variables in string interpolation (scala 2.10)
+- Improve `end-of-defun` and `beginning-of-defun`. In particular,
+  figure out why `end-of-defun` sometimes skips defintions 
+  even though `scala-syntax:end-of-definition` does not and add
+  support for obscure types of val declarations.
 
 All suggestions and especially pull requests are welcomed in github
 https://github.com/hvesalai/scala-mode2
@@ -477,3 +522,4 @@ Contributors and valuable feedback:
 - Nic Ferrier
 - Tillmann Rendel
 - Jim Powers
+- Ivan Malison
