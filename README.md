@@ -459,6 +459,16 @@ not traversed. scala-mode2's imenu support depends heavily on the
 `scala-syntax:end-of-definition` and `scala-syntax:beginning-of-definition`
 functions, and as such, it shares their limitations.
 
+## Jump to the code
+
+Some people find it useful to add the following function to their
+`scala-mode-hook` as it will jump the package and import boilerplate
+in most files:
+
+```elisp
+(scala-mode:goto-start-of-code)
+```
+
 ## Other features
 - highlights only properly formatted string and character constants
 - indenting a code line removes trailing whitespace
@@ -523,3 +533,4 @@ Contributors and valuable feedback:
 - Tillmann Rendel
 - Jim Powers
 - Ivan Malison
+- Sam Halliday
