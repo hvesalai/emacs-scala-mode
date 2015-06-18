@@ -78,6 +78,14 @@ If there is no plausible default, return nil."
         forward-sexp-function           'scala-mode:forward-sexp-function))
 
 ;;;###autoload
+(defun scala-mode:goto-start-of-code ()
+  "Go to the start of the real code in the file: object, class or trait."
+  (interactive)
+  (let* ((case-fold-search nil))
+    (search-forward-regexp "\\([[:space:]]+\\|^\\)\\(class\\|object\\|trait\\)" nil t)
+    (move-beginning-of-line nil)))
+
+;;;###autoload
 (define-derived-mode scala-mode prog-mode "Scala"
   "Major mode for editing scala code.
 
