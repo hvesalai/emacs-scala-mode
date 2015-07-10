@@ -922,7 +922,7 @@ not. A list must be either enclosed in parentheses or start with
 
 (defconst scala-syntax:all-definition-re
   (scala-syntax:build-definition-re
-   (concat "\\(?1:" scala-syntax:definition-words-re "\\)")))
+   (concat "\\(?1:" scala-syntax:definition-words-re "\\)\\b")))
 
 ;; Functions to help with beginning and end of definitions.
 
