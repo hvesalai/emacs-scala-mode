@@ -469,6 +469,16 @@ in most files:
 (scala-mode:goto-start-of-code)
 ```
 
+## Auto parentheses formatting
+
+We recommend using [smartparens](https://github.com/Fuco1/smartparens) to
+automatically format parentheses on insertion, e.g. with
+
+```elisp
+  (sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
+  (sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
+```
+
 ## Other features
 - highlights only properly formatted string and character constants
 - indenting a code line removes trailing whitespace
