@@ -2,12 +2,6 @@
 
 ;; Copyright (C) Simon Hafner
 
-;; Author: Simon Hafner
-;; Keywords: scala
-;; Homepage: github.com/reactormonk/ob-scala
-;; Package-Version: 0.01
-;; Package-Requires: ((ensime "0.9.10"))
-
 ;;; License:
 
 ;; This program is free software; you can redistribute it and/or modify
