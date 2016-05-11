@@ -13,6 +13,7 @@
   "The number of spaces an indentation step should be. The actual
 indentation will be one or two steps depending on context."
   :type 'integer
+  :safe #'integerp
   :group 'scala)
 
 (defcustom scala-indent:indent-value-expression nil
@@ -62,6 +63,7 @@ val x = foo(1, List(1, 2, 3) map (i =>
   ), 2)
 "
   :type 'boolean
+  :safe #'booleanp
   :group 'scala)
 
 (defcustom scala-indent:align-forms nil
@@ -120,6 +122,7 @@ are not ruled out by the language specification.
   "When non-nil, a space will be added after a scaladoc asterisk,
 when it is added to an empty line."
   :type 'boolean
+  :safe #'booleanp
   :group 'scala)
 
 (defcustom scala-indent:use-javadoc-style nil
@@ -127,6 +130,7 @@ when it is added to an empty line."
 style (i.e. indented to the first asterisk). This overrides the
 Scaladoc behavior of indenting comment lines to the second asterisk."
   :type 'boolean
+  :safe #'booleanp
   :group 'scala)
 
 (defun scala-indent:run-on-strategy ()
