@@ -13,6 +13,7 @@
 (require 'scala-mode2-map)
 (require 'scala-mode2-sbt)
 (require 'scala-mode2-imenu)
+(require 'scala-mode2-prettify)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
@@ -168,6 +169,12 @@ When started, runs `scala-mode-hook'.
   (add-to-list 'auto-mode-alist
                '("\\.\\(scala\\|sbt\\)\\'" . scala-mode))
   (modify-coding-system-alist 'file "\\.\\(scala\\|sbt\\)\\'" 'utf-8))
+
+(defvar scala--prettify-symbols-alist scala-mode-pretty-all-alist)
+(defun scala-add-pretty ()
+  (setq prettify-symbols-alist scala--prettify-symbols-alist))
+
+(add-hook 'scala-mode-hook 'scala-add-pretty)
 
 (provide 'scala-mode2)
 ;;; scala-mode2.el ends here
