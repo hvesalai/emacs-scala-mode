@@ -51,4 +51,4 @@
 				       scala-mode-pretty-arrows-alist
 				       scala-mode-pretty-misc-alist))
 
-(provide 'scala-mode2-prettify)
+(provide 'scala-mode2-prettify-symbols)
