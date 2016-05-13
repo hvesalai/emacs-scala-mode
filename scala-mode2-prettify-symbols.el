@@ -1,6 +1,8 @@
 ;;; scala-mode-prettify.el - Extension of scala-mode for prettifying scala symbols/code
+;;; scala-mode2-prettify-symbols.el - Extension of scala-mode for prettifying scala symbols/code
 ;;; Copyright (c) 2016 Merlin Göttlinger
 ;;; For information on the License, see the LICENSE file
+;; -*- coding: UTF-8 -*-
 
 (defconst scala-mode-pretty-bool-alist '(
 					 ("<=" . ?≤)
