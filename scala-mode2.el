@@ -1,9 +1,17 @@
-;;; scala-mode2.el --- Major mode for editing scala
+;;; scala-mode2.el --- Major mode for editing Scala
 
 ;; Copyright (c) 2012 Heikki Vesalainen
-;; For information on the License, see the LICENSE file
-;; URL: http://github.com/hvesalai/scala-mode2
-;; Based on Scala Language Specification (SLS) Version 2.9
+
+;; Homepage: https://github.com/ensime/emacs-scala-mode
+;; Keywords: languages
+;; Package-Version:  0.22
+;; Package-Requires: ()
+
+;;; Commentary:
+;;
+;;  Documentation at http://ensime.github.io/editors/emacs/scala-mode/
+;;
+;;; Code:
 
 (require 'scala-mode2-lib)
 (require 'scala-mode2-syntax)

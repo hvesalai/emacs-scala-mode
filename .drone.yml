@@ -1,0 +1,14 @@
+build:
+  image: ensime/ensime:v1.x-cache
+  pull: true
+  commands:
+    - git log | head -n 20 ;
+    - host `curl -s http://httpbin.org/ip | jq -r '.origin'` || true ;
+    - cask pkg-file ;
+      cask install ;
+      cask build ;
+
+matrix:
+  EMACS:
+    - /opt/emacs-24.5/bin/emacs
+    - /opt/emacs-24.3/bin/emacs
