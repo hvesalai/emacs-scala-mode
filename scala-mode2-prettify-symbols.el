@@ -63,7 +63,7 @@
   "Prettify rules for other mixed code pieces."
   :type 'alist)
 
-(defcustom scala--prettify-symbols-alist (append
+(defcustom scala-prettify-symbols-alist (append
 					  scala-mode-pretty-bool-alist
 					  scala-mode-pretty-collection-alist
 					  scala-mode-pretty-arrows-alist
