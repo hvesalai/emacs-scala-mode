@@ -21,6 +21,7 @@
 (require 'scala-mode2-map)
 (require 'scala-mode2-sbt)
 (require 'scala-mode2-imenu)
+(require 'scala-mode2-prettify-symbols)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
