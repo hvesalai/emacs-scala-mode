@@ -2,7 +2,7 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(require 'scala-mode2-indent)
+(require 'scala-mode-indent)
 
 (defvar scala-mode-map
   (let ((map (make-sparse-keymap)))
@@ -23,4 +23,4 @@
   (add-hook 'post-command-hook
             'scala-indent:remove-indent-from-previous-empty-line))
 
-(provide 'scala-mode2-map)
+(provide 'scala-mode-map)

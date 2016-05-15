@@ -992,4 +992,4 @@ val a, b = (1, 2)
 
 (defun scala-syntax:go-to-pos (pos) (when pos (goto-char pos)))
 
-(provide 'scala-mode2-syntax)
+(provide 'scala-mode-syntax)

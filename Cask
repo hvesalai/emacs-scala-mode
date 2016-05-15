@@ -24,7 +24,7 @@
 
 (source melpa-stable)
 
-(package-file "scala-mode2.el")
+(package-file "scala-mode.el")
 
 (development
  (depends-on "ert-runner")

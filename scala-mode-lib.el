@@ -23,4 +23,4 @@
     (unless (bolp)
       (delete-char (- (line-end-position) (point))))))
 
-(provide 'scala-mode2-lib)
+(provide 'scala-mode-lib)
