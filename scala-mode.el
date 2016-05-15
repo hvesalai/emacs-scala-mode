@@ -1,4 +1,4 @@
-;;; scala-mode2.el --- Major mode for editing Scala
+;;; scala-mode.el --- Major mode for editing Scala
 
 ;; Copyright (c) 2012 Heikki Vesalainen
 
@@ -13,15 +13,14 @@
 ;;
 ;;; Code:
 
-(require 'scala-mode2-lib)
-(require 'scala-mode2-syntax)
-(require 'scala-mode2-paragraph)
-(require 'scala-mode2-indent)
-(require 'scala-mode2-fontlock)
-(require 'scala-mode2-map)
-(require 'scala-mode2-sbt)
-(require 'scala-mode2-imenu)
-(require 'scala-mode2-prettify-symbols)
+(require 'scala-mode-lib)
+(require 'scala-mode-syntax)
+(require 'scala-mode-paragraph)
+(require 'scala-mode-indent)
+(require 'scala-mode-fontlock)
+(require 'scala-mode-map)
+(require 'scala-mode-imenu)
+(require 'scala-mode-prettify-symbols)
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
@@ -178,5 +177,5 @@ When started, runs `scala-mode-hook'.
                '("\\.\\(scala\\|sbt\\)\\'" . scala-mode))
   (modify-coding-system-alist 'file "\\.\\(scala\\|sbt\\)\\'" 'utf-8))
 
-(provide 'scala-mode2)
-;;; scala-mode2.el ends here
+(provide 'scala-mode)
+;;; scala-mode.el ends here

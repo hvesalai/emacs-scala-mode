@@ -2,8 +2,8 @@
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-(require 'scala-mode2-syntax)
-(require 'scala-mode2-lib)
+(require 'scala-mode-syntax)
+(require 'scala-mode-lib)
 
 (eval-when-compile
   (defvar scala-indent:effective-run-on-strategy)
@@ -918,7 +918,7 @@ of a line inside a multi-line comment "
 
 
 (defun scala-indent:fixup-whitespace ()
-  "scala-mode2 version of `fixup-whitespace'"
+  "scala-mode version of `fixup-whitespace'"
   (interactive "*")
   (save-excursion
     (delete-horizontal-space)
@@ -932,7 +932,7 @@ of a line inside a multi-line comment "
       (insert ?\s))))
 
 (defun scala-indent:join-line (&optional arg)
-  "scala-mode2 version of `join-line', i.e. `delete-indentation'"
+  "scala-mode version of `join-line', i.e. `delete-indentation'"
   (interactive "*P")
   (beginning-of-line)
   (if arg (forward-line 1))
@@ -951,4 +951,4 @@ of a line inside a multi-line comment "
         (delete-forward-char 3))))
     (scala-indent:fixup-whitespace)))
 
-(provide 'scala-mode2-indent)
+(provide 'scala-mode-indent)

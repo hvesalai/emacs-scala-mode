@@ -1,4 +1,4 @@
-;;; scala-mode2-prettify-symbols.el --- Prettifying scala symbols -*- coding: utf-8; -*-
+;;; scala-mode-prettify-symbols.el --- Prettifying scala symbols -*- coding: utf-8; -*-
 
 ;; Copyright (c) 2016 Merlin Göttlinger
 ;; License: http://www.gnu.org/licenses/gpl.html
@@ -79,5 +79,5 @@
   :type 'alist
   :group 'scala)
 
-(provide 'scala-mode2-prettify-symbols)
-;;; scala-mode2-prettify-symbols.el ends here
+(provide 'scala-mode-prettify-symbols)
+;;; scala-mode-prettify-symbols.el ends here

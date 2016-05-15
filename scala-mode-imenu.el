@@ -4,7 +4,7 @@
 
 ;;; Code:
 
-(require 'scala-mode2-syntax)
+(require 'scala-mode-syntax)
 
 ;; Make lambdas proper clousures (only in this file)
 (make-local-variable 'lexical-binding)
@@ -123,5 +123,5 @@
       `(,member-name ,definition-type ,(point-marker)))))
 
 
-(provide 'scala-mode2-imenu)
-;;; scala-mode2-imenu.el ends here
+(provide 'scala-mode-imenu)
+;;; scala-mode-imenu.el ends here

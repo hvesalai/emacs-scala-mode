@@ -118,4 +118,4 @@
           ;; the rest should not be filled (code, etc)
           (t t))))
 
-(provide 'scala-mode2-paragraph)
+(provide 'scala-mode-paragraph)
