@@ -4,12 +4,12 @@
 
 ;; Homepage: https://github.com/ensime/emacs-scala-mode
 ;; Keywords: languages
-;; Package-Version:  0.22
+;; Package-Version:  0.23
 ;; Package-Requires: ()
 
 ;;; Commentary:
 ;;
-;;  Documentation at http://ensime.github.io/editors/emacs/scala-mode/
+;;  Documentation at http://ensime.org/editors/emacs/scala-mode/
 ;;
 ;;; Code:
 
