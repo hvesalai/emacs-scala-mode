@@ -68,13 +68,24 @@
     (":=" . ?≔))
   "Prettify rules for other mixed code pieces.")
 
+(defconst
+  scala-mode-pretty-categories-alist
+  '(("flatMap" . ?⤜)
+    (">>=" . ?⤜)
+    ("bind" . ?⤜)
+    (">>" . ?≫)
+    ("followedBy" . ?≫)
+    ("<+>" . ?⊕))
+  "Prettify rules for category theory related operators (for use with cats/scalaz/...).")
+
 (defcustom
   scala-prettify-symbols-alist
   (append
    scala-mode-pretty-bool-alist
    scala-mode-pretty-collection-alist
    scala-mode-pretty-arrows-alist
-   scala-mode-pretty-misc-alist)
+   scala-mode-pretty-misc-alist
+   scala-mode-pretty-categories-alist)
   "All prettify rules to be applied in scala code."
   :type 'alist
   :group 'scala)
