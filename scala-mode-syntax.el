@@ -155,6 +155,29 @@
           "\\|" scala-syntax:symbolLiteral-re
           "\\|" "null" "\\)"))
 
+(defconst scala-syntax:interpolation-re
+  (concat "\\(" "\\$"  scala-syntax:id-re "\\|" "\\${[^}\n\\\\]*}" "\\)"))
+
+(defun scala-syntax:interpolation-matcher (end)
+  (let* ((pos nil)
+         (syntax nil)
+         (str-start nil)
+         (char-before-str nil))
+    (while (and
+            (setq pos (re-search-forward scala-syntax:interpolation-re end t))
+            (setq syntax (syntax-ppss pos))
+            (if (nth 3 syntax) ;; "is string"
+                (progn
+                  (setq str-start (nth 8 syntax))
+                  ;; s"foo"
+                  ;; ^-- `char-before-str', must be identifier
+                  (setq char-before-str (char-after (1- str-start)))
+                  ;; break if match
+                  (null (string-match-p
+                         scala-syntax:id-re (string char-before-str))))
+              t))) ;; keep going
+    pos))
+
 ;; Paths (Chapter 3.1)
 ;; emacs has a problem with these regex, don't use them
 ;; (defconst scala-syntax:classQualifier-re (concat "[[]" scala-syntax:id-re "[]]"))
