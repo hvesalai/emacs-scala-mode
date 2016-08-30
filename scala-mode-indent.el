@@ -845,6 +845,11 @@ comment is outside the comment region. "
          (+ (match-beginning 0) 1)))
       (current-column))))
 
+(defun scala-indent:indent-on-parentheses ()
+  (when (and (= (char-syntax (char-before)) ?\))
+             (= (save-excursion (back-to-indentation) (point)) (1- (point))))
+    (scala-indent:indent-line)))
+
 (defconst scala-indent:indent-on-words-re
   (concat "^\\s *"
           (regexp-opt '("catch" "case" "else" "finally" "yield") 'words)))

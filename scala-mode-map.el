@@ -13,6 +13,8 @@
 
 (defun scala-mode-map:add-self-insert-hooks ()
   (add-hook 'post-self-insert-hook
+            'scala-indent:indent-on-parentheses)
+  (add-hook 'post-self-insert-hook
             'scala-indent:indent-on-special-words)
   (add-hook 'post-self-insert-hook
             'scala-indent:indent-on-scaladoc-asterisk)
