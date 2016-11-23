@@ -9,47 +9,36 @@
 ;;; multi-line strings.
 
 (defconst scala-paragraph:paragraph-line-start-re
-  (concat "\\(?:\\s *"                 ; whitespace
+  (concat "\\(?:\\s-*"                 ; whitespace
           "\\(?://+\\|\\*\\|/\\*+"     ; comment start
           "\\||\\)?"                   ; multi-line margin |
-          "\\s *\\)"))                 ; whitespace
+          "\\s-*\\)"))                 ; whitespace
 
 (defconst scala-paragraph:scaladoc-list-start-re
   (concat "\\(?:-"                     ; unordered liststs
           "\\|[1IiAa]\\."              ; ordered lists
-          "\\)\\s *"))
+          "\\)\\s-*"))
 
 (defconst scala-paragraph:fill-first-line-re
-  (concat "\\s *\\(//+\\|\\*\\||\\)?\\s *"
+  (concat "\\s-*\\(//+\\|\\*\\||\\)?\\s-*"
           "\\(?:" scala-paragraph:scaladoc-list-start-re "\\)?"))
 
 (defconst scala-paragraph:paragraph-start-re
   (concat scala-paragraph:paragraph-line-start-re
           "\\(?:$"                ; empty line
-          "\\|=[^=\n]+=[ ]*$"     ; heading 1
-          "\\|==[^=\n]+==[ ]*$"   ; heading 2
-          "\\|===[^=\n]+===[ ]*$"   ; heading 3
-          "\\|====+[^=\n]+====+[ ]*$"   ; heading 4-n
+          "\\|==*[^=]+==*[ ]*$"   ; headings
           "\\|"
           scala-paragraph:scaladoc-list-start-re
-          "\\|{{{"               ; code block start
-          "\\|}}}"               ; code block end
+          "\\|{{{"                ; code block start
+          "\\|}}}"                ; code block end
           "\\|@[a-zA-Z]+\\>"      ; annotations
           "\\)"
-          "\\|\\(?:\\s *\\*/\\)"  ; end of comment
+          "\\|\\(?:\\s-*\\*/\\)"  ; end of comment
           ))
 
 (defconst scala-paragraph:paragraph-separate-re
   (concat scala-paragraph:paragraph-line-start-re
-          "\\(?:$"
-          "\\|=[^=\n]+=[ ]*$"     ; heading 1
-          "\\|==[^=\n]+==[ ]*$"   ; heading 2
-          "\\|===[^=\n]+===[ ]*$"   ; heading 3
-          "\\|====+[^=\n]+====+[ ]*$"   ; heading 4-n
-          "\\|@[a-zA-Z]+\\>"      ; annotations
-          "\\|{{{"               ; code block start
-          "\\|}}}"               ; code block end
-          "\\)"
+          "\\(?:$\\)"
           "\\|\\(?:\\s *\\*/\\)"    ; end of comment
           ))
 
@@ -59,7 +48,7 @@
       (save-excursion
         (widen)
         (beginning-of-line)
-        (cond ((looking-at "\\s */?\\*+\\s *")
+        (cond ((looking-at "\\s-*/?\\*+\\s-*")
                (setq fill (replace-regexp-in-string
                            "/\\*+"
                            (lambda (str) (if (= (length str) 3) "  *" " *"))
@@ -71,7 +60,7 @@
                                                     (match-beginning 0)) ?\s)))))
               ((or (re-search-forward "\"\"\"|" (line-end-position) t)
                    (and (eq (nth 3 (syntax-ppss)) t)
-                        (re-search-forward "^\\s *|" (line-end-position) t)))
+                        (re-search-forward "^\\s-*|" (line-end-position) t)))
                (setq fill (concat (make-string (- (current-column) 1) ?\s) "|"))
                (setq fill (concat fill (make-string (skip-syntax-forward " ") ?\s)))
                (when (looking-at scala-paragraph:scaladoc-list-start-re)
@@ -81,8 +70,8 @@
     fill))
 
 (defun scala-paragraph:fill-paragraph (&rest args)
-  ;; move to inside multi-line comment or multi-line stirng, if outside
-  (when (looking-at "\\s *\\(?:/\\**\\|\"\"\"\\)\\s *")
+  ;; move to inside multi-line comment or multi-line string, if outside
+  (when (looking-at "\\s-*\\(?:/\\**\\|\"\"\"\\)\\s-*")
     (goto-char (match-end 0)))
   (let ((state (syntax-ppss))
         (fill-paragraph-function
