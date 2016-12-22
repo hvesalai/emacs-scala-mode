@@ -87,7 +87,7 @@
                                                (if (forward-comment 1)
                                                    (point)
                                                  (point-max))))
-             (fill-paragraph))
+             (apply #'fill-paragraph args))
            t)
           ((eq (nth 4 state) t)
            ;; line comment, let normal fill-function handle this
@@ -101,7 +101,7 @@
                                                      (forward-sexp)
                                                      (point))
                                                    (point-max))))
-             (fill-paragraph))
+             (apply #'fill-paragraph args))
            t)
           ;; TODO: fill lists
           ;; the rest should not be filled (code, etc)
