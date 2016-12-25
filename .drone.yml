@@ -5,10 +5,6 @@ pipeline:
     commands:
       - host `curl -s http://httpbin.org/ip | jq -r '.origin'` || true ;
       - git log | head -n 20 ; git fetch -q --tags
-      - if $(git grep -qE "TODO|FIXME" *) ; then
-          echo "Please remove TODO or FIXME. Create an issue at GitHub instead." ;
-          exit 1 ;
-        fi
       - cask pkg-file ;
         cask install ;
         cask build ;
