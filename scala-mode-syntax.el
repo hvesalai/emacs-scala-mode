@@ -287,7 +287,7 @@
                 "final" "finally" "for" "forSome" "if" "implicit" "import"
                 "lazy" "match" "new" "object" "override" "package" "private"
                 "protected" "return" "sealed" "throw" "trait" "try" "type"
-                "val" "var" "while" "with" "yield") 'words))
+                "val" "var" "while" "with" "yield" "inline") 'words))
 
 (defconst scala-syntax:other-keywords-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:other-keywords-unsafe-re "\\)"))
