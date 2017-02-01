@@ -529,8 +529,8 @@ condition (or generators in the case of 'for') in parentheses.")
   "Other flow control keywords (not followed by parentheses)")
 
 (defconst scala-indent:control-keywords-re
-  (concat scala-indent:control-keywords-cond-re
-          scala-indent:control-keywords-other-re))
+  (concat "\\(" scala-indent:control-keywords-cond-re
+          "\\|" scala-indent:control-keywords-other-re "\\)"))
 
 (defun scala-indent:body-p (&optional point)
   "Returns the position of '=' symbol, or one of the
