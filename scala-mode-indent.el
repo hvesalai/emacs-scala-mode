@@ -187,6 +187,7 @@ enclosing list."
     (ignore-errors
       (while (> (point) code-beg)
         (scala-syntax:backward-sexp)
+	(skip-syntax-backward ".")
         (when (< (point) code-beg)
           ;; moved to previous line, set new target
           (setq code-beg (scala-lib:point-after
