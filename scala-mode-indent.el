@@ -295,8 +295,9 @@ and are infact a sign of run-on. Reserved-symbols not included.")
        ((looking-at scala-indent:mustNotTerminate-line-beginning-re)
         t)
        ;; YES: end of prev line must not terminate
-       ((scala-syntax:looking-back-token
-         scala-indent:mustBeContinued-line-end-re)
+       ((let ((case-fold-search nil))
+          (scala-syntax:looking-back-token
+         scala-indent:mustBeContinued-line-end-re))
         t)
        ;; YES: this line starts with type param
        ((= (char-after) ?\[)
@@ -542,7 +543,8 @@ keyword, or nil if not."
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
     (or (scala-syntax:looking-back-token scala-syntax:body-start-re 3)
-        (scala-syntax:looking-back-token scala-indent:control-keywords-other-re)
+        (let ((case-fold-search nil))
+          (scala-syntax:looking-back-token scala-indent:control-keywords-other-re))
         (progn
           ;; if, else if
           (when (scala-syntax:looking-back-token ")" 1)
@@ -561,7 +563,8 @@ keyword, or nil if not."
   (let ((declaration-end (scala-indent:body-p point)))
     (when declaration-end
       (goto-char declaration-end)
-      (if (looking-at scala-indent:control-keywords-re)
+      (if (let ((case-fold-search nil))
+            (looking-at scala-indent:control-keywords-re))
           (point)
         (when (scala-indent:backward-sexp-to-beginning-of-line)
           (scala-indent:goto-run-on-anchor
