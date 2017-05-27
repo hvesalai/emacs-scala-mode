@@ -600,11 +600,27 @@ symbol constituents (syntax 3)."
                  (scala-syntax:put-syntax-table-property 0 '(3 . nil)))
                '(3 . nil))))))))) ;; symbol constituent syntax (3) also for the '_'
 
+(defcustom scala-syntax-special-identifiers
+  '("=>" "->" "<-" ">=" "<=" "++" "???" "_*" "<:<" "=:=" "<:" "::" ":::" ":+" "+:" "++:" "@@" "\\/" "-\\/" "\\/-" "\\/>" ">=>" ">>" ">>=" "|@|" "<*" "*>" "|+|" "===" "/==" "=/=" "+++" "~>" ":+:" ":::>" "<::" "<:::" "->>")
+  "List of identifiers names consisting of special characters which should be treated as a single `symbol'"
+  :type '(repeat string)
+  :group 'scala)
+
+(defun scala-syntax:propertize-special-identifiers (start end)
+  "Mark all `scala-syntax-special-identifiers' as symbol constituents (syntax 3)"
+  (save-excursion
+    (goto-char start)
+    (while (re-search-forward (regexp-opt scala-syntax-special-identifiers t) end t)
+      (let ((match-beg (match-beginning 0))
+            (match-end (match-end 0)))
+        (put-text-property match-beg match-end 'syntax-table '(3 . nil))))))
+
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function"
   (scala-syntax:propertize-char-and-string-literals start end)
   (scala-syntax:propertize-shell-preamble start end)
-  (scala-syntax:propertize-underscore-and-idrest start end))
+  (scala-syntax:propertize-underscore-and-idrest start end)
+  (scala-syntax:propertize-special-identifiers start end))
 
 ;;;;
 ;;;; Syntax navigation functions
