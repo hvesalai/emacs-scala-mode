@@ -41,16 +41,16 @@
   (if (listp (car member-info))
       (let* ((current-member-info (car member-info))
 	     (child-member-infos (cdr member-info))
-	     (current-member-result 
+	     (current-member-result
 	      (scala-imenu:destructure-for-build-imenu-candidate
 	       current-member-info parents))
 	     (current-member-name (car current-member-result)))
 	(if child-member-infos
-	    (let ((current-member-members 
-		   (scala-imenu:build-child-members 
+	    (let ((current-member-members
+		   (scala-imenu:build-child-members
 		    (append parents `(,current-member-info))
 		    (cdr member-info))))
-	      `(,current-member-name . 
+	      `(,current-member-name .
 	        ,(cons current-member-result current-member-members)))
 	  current-member-result))
     (scala-imenu:destructure-for-build-imenu-candidate member-info parents)))
@@ -60,14 +60,14 @@
 			   child parents)) child-members))
 
 (defun scala-imenu:destructure-for-build-imenu-candidate (member-info parents)
-  (cl-destructuring-bind (member-name definition-type marker) 
-      member-info (funcall scala-imenu:build-imenu-candidate 
+  (cl-destructuring-bind (member-name definition-type marker)
+      member-info (funcall scala-imenu:build-imenu-candidate
 			   member-name definition-type marker parents)))
 
 
 (defun scala-imenu:default-build-imenu-candidate (member-name definition-type
 							      marker parents)
-  (let* ((all-names 
+  (let* ((all-names
 	  (append (cl-mapcar (lambda (parent) (car parent)) parents)
 		  `(,member-name)))
 	 (member-string (mapconcat 'identity all-names ".")))
@@ -88,7 +88,7 @@
       (progn (looking-at scala-syntax:all-definition-re)
 	     (setq class-name (match-string-no-properties 2))
 	     (setq definition-type (match-string-no-properties 1)))
-      `(,`(,class-name ,definition-type ,(point-marker)) . 
+      `(,`(,class-name ,definition-type ,(point-marker)) .
 	,(scala-imenu:nested-members)))))
 
 (defun scala-imenu:parse-nested-from-beginning ()
@@ -118,7 +118,7 @@
   (looking-at scala-syntax:all-definition-re)
   (let* ((member-name (match-string-no-properties 2))
 	 (definition-type (match-string-no-properties 1)))
-    (if (member definition-type scala-imenu:nested-definition-types) 
+    (if (member definition-type scala-imenu:nested-definition-types)
 	(save-excursion (scala-imenu:parse-nested-from-beginning))
       `(,member-name ,definition-type ,(point-marker)))))
 

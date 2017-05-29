@@ -934,14 +934,14 @@ not. A list must be either enclosed in parentheses or start with
 
 ;; Functions to help with finding the beginning and end of scala definitions.
 
-(defconst scala-syntax:modifiers-re 
+(defconst scala-syntax:modifiers-re
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
                 "private" "protected" "case") 'words))
 
 (defconst scala-syntax:whitespace-delimeted-modifiers-re
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
-(defconst scala-syntax:definition-words-re 
+(defconst scala-syntax:definition-words-re
   (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type") "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)
