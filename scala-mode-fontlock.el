@@ -68,9 +68,9 @@ scala-mode has been reloaded."
 (defun scala-font-lock:mark-pattern1-part (&optional limit pattern-p)
   "Parses a part of val, var and case pattern (or id). Always
 parses a variable or constant name first and then type, leaving
-the pointer at the next variablename, constnat name, list or
+the pointer at the next variablename, constant name, list or
 Pattern3, if any, and setting up match data 1 (variable),
-2 (constant) and 3 (type) acordingly. If there is no variable
+2 (constant) and 3 (type) accordingly. If there is no variable
 name before the first type, then the match data for the variable
 name is nil. Returns t if something was matched or nil if nothing
 was found.

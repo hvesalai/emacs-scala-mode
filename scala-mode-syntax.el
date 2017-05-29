@@ -106,7 +106,7 @@
           "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
 
 ;; If you change this or any of the used regex, be sure to
-;; maintain this or update propertize function acordingly:
+;; maintain this or update propertize function accordingly:
 ;; group 1 = char start, 3 = char end
 ;; group 4 = multi-line string start, 6 = end
 ;; group 7 = string start, 9 = end
