@@ -132,7 +132,7 @@
 ;; stringlit is referred to, but not defined Scala Language Specification 2.9
 ;; we define it as consisting of anything but '`' and newline
 (defconst scala-syntax:stringlit-re "[^`\n\r]")
-(defconst scala-syntax:quotedid-re (concat "`" scala-syntax:stringlit-re "`"))
+(defconst scala-syntax:quotedid-re (concat "`" scala-syntax:stringlit-re "+`"))
 (defconst scala-syntax:id-re (concat "\\(" scala-syntax:plainid-re
                               "\\|" scala-syntax:quotedid-re "\\)"))
 (defconst scala-syntax:id-first-char-group
