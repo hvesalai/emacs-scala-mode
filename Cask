@@ -20,6 +20,9 @@
 ;;
 ;;  are particularly useful commands.
 ;;
+;; To run the tests:
+;;    cask exec ert-runner
+;;
 ;;; Code:
 
 (source melpa-stable)
