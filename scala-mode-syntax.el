@@ -106,7 +106,7 @@
           "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
 
 ;; If you change this or any of the used regex, be sure to
-;; maintain this or update propertize function acordingly:
+;; maintain this or update propertize function accordingly:
 ;; group 1 = char start, 3 = char end
 ;; group 4 = multi-line string start, 6 = end
 ;; group 7 = string start, 9 = end
@@ -600,6 +600,16 @@ symbol constituents (syntax 3)."
                  (scala-syntax:put-syntax-table-property 0 '(3 . nil)))
                '(3 . nil))))))))) ;; symbol constituent syntax (3) also for the '_'
 
+(defun scala-syntax:propertize-special-symbols (start end)
+  (save-excursion
+     (goto-char start)
+     (while (re-search-forward (concat "[" scala-syntax:opchar-group "]" scala-syntax:op-re) end t)
+       (let ((match-beg (match-beginning 0))
+             (match-end (match-end 0))
+             (match (match-string 0)))
+         (unless (member match '("/*" "//" "/**" "</" "*/"))
+           (put-text-property match-beg match-end 'syntax-table '(3 . nil)))))))
+
 (defun scala-syntax:propertize-quotedid (start end)
   "Mark all `scala-syntax:quotedid-re' as symbol constituents (syntax 3)"
   (save-excursion
@@ -614,6 +624,7 @@ symbol constituents (syntax 3)."
   (scala-syntax:propertize-char-and-string-literals start end)
   (scala-syntax:propertize-shell-preamble start end)
   (scala-syntax:propertize-underscore-and-idrest start end)
+  (scala-syntax:propertize-special-symbols start end)
   (scala-syntax:propertize-quotedid start end))
 
 ;;;;
@@ -934,14 +945,14 @@ not. A list must be either enclosed in parentheses or start with
 
 ;; Functions to help with finding the beginning and end of scala definitions.
 
-(defconst scala-syntax:modifiers-re 
+(defconst scala-syntax:modifiers-re
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
                 "private" "protected" "case") 'words))
 
 (defconst scala-syntax:whitespace-delimeted-modifiers-re
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
-(defconst scala-syntax:definition-words-re 
+(defconst scala-syntax:definition-words-re
   (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type") "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)

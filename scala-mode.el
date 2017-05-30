@@ -25,7 +25,7 @@
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
   (error
-   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"  
+   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"
            emacs-major-version  emacs-minor-version)))
 
 (defgroup scala nil
@@ -72,12 +72,12 @@ If there is no plausible default, return nil."
 
 ;;;###autoload
 (defun scala-mode:set-scala-syntax-mode ()
-  "Sets the syntax-table and other realted variables for the current buffer to those of scala-mode. Can be used to make some other major mode (such as sbt-mode) use scala syntax-table."
+  "Sets the syntax-table and other related variables for the current buffer to those of scala-mode. Can be used to make some other major mode (such as sbt-mode) use scala syntax-table."
   (set-syntax-table scala-syntax:syntax-table)
   (scala-mode:make-local-variables
    'syntax-propertize-function
    'parse-sexp-lookup-properties
-   'forward-sexp-function)  
+   'forward-sexp-function)
 
   (add-hook 'syntax-propertize-extend-region-functions
             'scala-syntax:propertize-extend-region)
@@ -97,11 +97,11 @@ If there is no plausible default, return nil."
 (define-derived-mode scala-mode prog-mode "Scala"
   "Major mode for editing scala code.
 
-When started, runs `scala-mode-hook'. 
+When started, runs `scala-mode-hook'.
 
-\\{scala-mode-map}" 
+\\{scala-mode-map}"
   :syntax-table scala-syntax:syntax-table
-;  :group                               
+;  :group
 ;  :abbrev
 
   (scala-mode:make-local-variables
