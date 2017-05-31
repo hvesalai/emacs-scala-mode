@@ -602,13 +602,16 @@ symbol constituents (syntax 3)."
 
 (defun scala-syntax:propertize-special-symbols (start end)
   (save-excursion
-     (goto-char start)
-     (while (re-search-forward (concat "[" scala-syntax:opchar-group "]" scala-syntax:op-re) end t)
-       (let ((match-beg (match-beginning 0))
-             (match-end (match-end 0))
-             (match (match-string 0)))
-         (unless (member match '("/*" "//" "/**" "</" "*/"))
-           (put-text-property match-beg match-end 'syntax-table '(3 . nil)))))))
+    (goto-char start)
+    (while (re-search-forward (concat "[" scala-syntax:opchar-group "]" scala-syntax:op-re) end t)
+      (let ((match-beg (match-beginning 0))
+            (match-end (match-end 0))
+            (match (match-string 0)))
+        (unless (or
+                 (member match '("/*" "//" "/**" "</" "*/"))
+                 (equal 2 (syntax-class (syntax-after match-end)))
+                 (equal 2 (syntax-class (syntax-after (1- match-beg)))))
+          (put-text-property match-beg match-end 'syntax-table '(3 . nil)))))))
 
 (defun scala-syntax:propertize-quotedid (start end)
   "Mark all `scala-syntax:quotedid-re' as symbol constituents (syntax 3)"

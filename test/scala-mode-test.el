@@ -31,6 +31,7 @@ object Ensime {
     ('font-lock-comment-face "O")
     ('font-lock-comment-delimiter-face "D")
     ('font-lock-doc-face "U")
+    ('font-lock-type-face "T")
     (_ "?")))
 
 (ert-deftest smt:syntax-class-and-font-lock-test-1 ()
@@ -68,3 +69,51 @@ object Ensime {
    "// val |--| = 123"
    "11022203333010222"
    "DDDOOOOOOOOOOOOOO"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-7 ()
+  (smt:test
+   "val xs = 1 :: 2 :: Nil"
+   "2220220102033020330222"
+   "KKK-VV-K-C----C----CCC"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-8 ()
+  (smt:test
+   "val xs = 1:: 2 :: Nil"
+   "222022010211020330222"
+   "KKK-VV-K-C---C----CCC"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-9 ()
+  (smt:test
+   "val xs = 1 ::2 :: Nil"
+   "222022010201120330222"
+   "KKK-VV-K-C---C----CCC"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-10 ()
+  (smt:test
+   "case a :: (2) :: Nil"
+   "22220203304250330222"
+   "KKKK-V-TT--C--CC-TTT"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-11 ()
+  (smt:test
+   "abc :<: def"
+   "22203330222"
+   "--------KKK"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-12 ()
+  (smt:test
+   "Foo<T>"
+   "222121"
+   "CCC-C-"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-13 ()
+  (smt:test
+   "class X[T<:Mapper[T]](t: T){}"
+   "22222024211222222425542102545"
+   "KKKKK-T-CKKCCCCCC-C----K-T---"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-14 ()
+  (smt:test
+   "class X[T <: Mapper[T]](t: T){}"
+   "2222202420330222222425542102545"
+   "KKKKK-T-C-KK-CCCCCC-C----K-T---"))
