@@ -117,3 +117,33 @@ object Ensime {
    "class X[T <: Mapper[T]](t: T){}"
    "2222202420330222222425542102545"
    "KKKKK-T-C-KK-CCCCCC-C----K-T---"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-15 ()
+  (smt:test
+   "val c = /* hello */ 20"
+   "2220201011022222011022"
+   "KKK-V-K-DDDOOOOOOOO-CC"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-16 ()
+  (smt:test
+   "val c = /* hello **/ 20"
+   "22202010110222220111022"
+   "KKK-V-K-DDDOOOOOOOOO-CC"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-17 ()
+  (smt:test
+   "val c = /**** hello */ 20"
+   "2220201011111022222011022"
+   "KKK-V-K-DDDDDDOOOOOOOO-CC"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-18 ()
+  (smt:test
+   "val c = //**** hello */ 20"
+   "22202010111111022222011022"
+   "KKK-V-K-DDOOOOOOOOOOOOOOOO"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-19 ()
+  (smt:test
+   "val c = 1 /////////// big comment"
+   "222020102011111111111022202222222"
+   "KKK-V-K-C-DDDDDDDDDDDDOOOOOOOOOOO"))

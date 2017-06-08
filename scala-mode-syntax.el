@@ -608,7 +608,8 @@ symbol constituents (syntax 3)."
             (match-end (match-end 0))
             (match (match-string 0)))
         (unless (or
-                 (member match '("/*" "//" "/**" "</" "*/"))
+                 (member match '("</"))
+                 (member 0 (mapcar (lambda (regexp) (string-match regexp match)) '("^*+/$" "^//.*$" "^/\\*+$")))
                  (equal 2 (syntax-class (syntax-after match-end)))
                  (equal 2 (syntax-class (syntax-after (1- match-beg)))))
           (put-text-property match-beg match-end 'syntax-table '(3 . nil)))))))
