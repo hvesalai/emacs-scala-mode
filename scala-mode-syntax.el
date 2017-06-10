@@ -402,9 +402,6 @@
   (regexp-opt '("var" "val" "import") 'words)
   ("Keywords that can start a list"))
 
-(defconst scala-syntax:multiLineStringLiteral-end-re
-  "\"\"+\\(\"\\)")
-
 (defconst scala-syntax:case-re
   "\\<case\\>")
 
