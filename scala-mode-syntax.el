@@ -616,9 +616,14 @@ symbol constituents (syntax 3)."
   (save-excursion
     (goto-char start)
     (while (re-search-forward scala-syntax:quotedid-re end t)
-      (let ((match-beg (match-beginning 0))
-            (match-end (match-end 0)))
-        (put-text-property match-beg match-end 'syntax-table '(3 . nil))))))
+      (scala-syntax:put-syntax-table-property 0 '(3 . nil)))))
+
+(defun scala-syntax:propertize-dollar (start end)
+  "Mark all $ occurences as punctuation (syntax 1)"
+  (save-excursion
+    (goto-char start)
+    (while (re-search-forward "\\$" end t)
+      (scala-syntax:put-syntax-table-property 0 '(1 . nil)))))
 
 (defun scala-syntax:propertize (start end)
   "See syntax-propertize-function"
@@ -626,7 +631,8 @@ symbol constituents (syntax 3)."
   (scala-syntax:propertize-shell-preamble start end)
   (scala-syntax:propertize-underscore-and-idrest start end)
   (scala-syntax:propertize-special-symbols start end)
-  (scala-syntax:propertize-quotedid start end))
+  (scala-syntax:propertize-quotedid start end)
+  (scala-syntax:propertize-dollar start end))
 
 ;;;;
 ;;;; Syntax navigation functions

@@ -32,6 +32,7 @@ object Ensime {
     ('font-lock-comment-delimiter-face "D")
     ('font-lock-doc-face "U")
     ('font-lock-type-face "T")
+    ('font-lock-string-face "S")
     (_ "?")))
 
 (ert-deftest smt:syntax-class-and-font-lock-test-1 ()
@@ -147,3 +148,21 @@ object Ensime {
    "val c = 1 /////////// big comment"
    "222020102011111111111022202222222"
    "KKK-V-K-C-DDDDDDDDDDDDOOOOOOOOOOO"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-20 ()
+  (smt:test
+   "val c = s\"result $sum\""
+   "2220201027222222012227"
+   "KKK-V-K--SSSSSSSSVVVVS"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-21 ()
+  (smt:test
+   "val c = s\"$sum-123\""
+   "2220201027122212227"
+   "KKK-V-K--SVVVVSSSSS"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-22 ()
+  (smt:test
+   "val c = s\"${sum.getOrElse(\"\")} - $sum\""
+   "22202010271422212222222224775501012227"
+   "KKK-V-K--SSSSSSSSSSSSSSSSSSSSSSSSSSSSS"))
