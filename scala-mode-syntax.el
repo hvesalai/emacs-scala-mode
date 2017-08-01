@@ -605,6 +605,7 @@ symbol constituents (syntax 3)."
             (match-end (match-end 0))
             (match (match-string 0)))
         (unless (or
+                 (string-suffix-p "*/" match)
                  (member match '("</"))
                  (member 0 (mapcar (lambda (regexp) (string-match regexp match)) '("^*+/$" "^//.*$" "^/\\*+$")))
                  (equal 2 (syntax-class (syntax-after match-end)))
