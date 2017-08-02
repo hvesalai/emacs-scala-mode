@@ -166,3 +166,13 @@ object Ensime {
    "val c = s\"${sum.getOrElse(\"\")} - $sum\""
    "22202010271422212222222224775501012227"
    "KKK-V-K--SSSSSSSSSSSSSSSSSSSSSSSSSSSSS"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-23 ()
+  "Test that `[!%&*+/?\\\\^|~-#:<=>@]\*/` will be treated as punctuation and
+_not_ a symbol. Doing so would cause comment strings such as `/* Comment &*/` to
+not be recognized as a delimiter, causing the entire file to treated as a
+comment. A concrete example may be viewed at https://github.com/scala/scala/blob/v2.11.11/src/reflect/scala/reflect/internal/Symbols.scala#L863"
+  (smt:test
+   "/* &*/"
+   "110111"
+   "DDDOOO"))
