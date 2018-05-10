@@ -244,7 +244,7 @@ and the empty line")
   (regexp-opt '("abstract" "catch" "case" "class" "def" "do" "else" "final"
                 "finally" "for" "if" "implicit" "import" "lazy" "new" "object"
                 "override" "package" "private" "protected" "return" "sealed"
-                "throw" "trait" "try" "type" "val" "var" "while" "yield" "inline")
+                "throw" "trait" "try" "type" "val" "var" "while" "yield")
               'words)
   "Words that we don't want to continue the previous line")
 
