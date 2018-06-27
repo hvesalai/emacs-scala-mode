@@ -340,13 +340,13 @@ Does not continue past limit.
        . font-lock-preprocessor-face)
 
     ;; reserved symbols
-    (scala-font-lock:mark-reserved-symbols 2 font-lock-keyword-face)
+    ;; (scala-font-lock:mark-reserved-symbols 2 font-lock-keyword-face)
 
     ;; 'Symbols
     (,scala-syntax:symbolLiteral-re 1 font-lock-string-face)
 
     ;; underscore
-    (scala-font-lock:mark-underscore 2 font-lock-keyword-face)
+    ;; (scala-font-lock:mark-underscore 2 font-lock-keyword-face)
 
     ;; escapes inside strings
     (scala-font-lock:mark-string-escapes (0 font-lock-constant-face prepend nil))
