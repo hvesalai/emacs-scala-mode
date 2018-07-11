@@ -67,18 +67,41 @@ This function is called by `org-babel-execute-src-block'"
          (full-body (org-babel-expand-body:scala
                      body params processed-params)))
     (ensime-inf-assert-running)
-    (org-babel-scala-table-or-string
-     (let ((temp-file (make-temp-file "scala-eval")))
-       (message temp-file)
+    (let ((temp-file (make-temp-file "scala-eval")))
+       ;(message temp-file)
        (with-temp-file temp-file
          (insert full-body))
-       (let ((output
-              (org-babel-comint-with-output (ensime-inf-buffer-name "ob_scala_eol")
-                (ensime-inf-send-string (concat ":load " temp-file))
-                (comint-send-input nil t )
-                (sleep-for 0 5))))
-         (delete-file temp-file)
-         output)))))
+       ;; load the result
+       (org-babel-comint-with-output (ensime-inf-buffer-name "ob_scala_eol")
+         (ensime-inf-send-string (concat ":load " temp-file))
+         (comint-send-input nil t)
+         (sleep-for 0 5))
+       (delete-file temp-file))
+     ; get the result from the REPL buffer
+    (org-babel-scala-table-or-string
+     (with-current-buffer ensime-inf-buffer-name
+       (save-excursion
+         (goto-char (point-max))
+         (forward-line -2)
+         (end-of-line)
+         (let ((end (point)))
+           (if (search-backward "Loading " nil t)
+               (progn
+                 (forward-line 1)
+                 (beginning-of-line)
+                 (split-string (buffer-substring-no-properties (point) (search-forward "ob_scala_eol" nil t)) "ob_scala_eol"))
+             nil)))))))
+
+(defun org-babel-scala-table-or-string (results)
+  "If the results look like a table, then convert them into an
+Emacs-lisp table, otherwise return the results as a string."
+  (message (format "%S" results))
+  (org-babel-script-escape
+   (org-trim
+    (mapconcat
+     (lambda (element) element)
+     results
+     ""))))
 
 ;; This function should be used to assign any variables in params in
 ;; the context of the session environment.
@@ -91,18 +114,6 @@ This function is called by `org-babel-execute-src-block'"
 specifying a var of the same value."
   (format "%S" var))
 
-(defun org-babel-scala-table-or-string (results)
-  "If the results look like a table, then convert them into an
-Emacs-lisp table, otherwise return the results as a string."
-  (message (format "%S" results))
-  (org-trim (mapconcat (lambda (element)
-                         (if (or
-                                  (string-equal (org-trim element) "scala>")
-                                  (string-equal (org-trim element) "ob_scala_eol"))
-                             ""
-                           element))
-                       (cddr results)
-                       "")))
 
 (defun org-babel-scala-initiate-session (&optional session)
   "If there is not a current inferior-process-buffer in SESSION then create.
