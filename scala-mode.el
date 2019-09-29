@@ -2,14 +2,12 @@
 
 ;; Copyright (c) 2012 Heikki Vesalainen
 
-;; Homepage: https://github.com/ensime/emacs-scala-mode
+;; Homepage: https://github.com/hvesalai/emacs-scala-mode
 ;; Keywords: languages
 ;; Package-Version:  0.23
 ;; Package-Requires: ()
 
 ;;; Commentary:
-;;
-;;  Documentation at http://ensime.org/editors/emacs/scala-mode/
 ;;
 ;;; Code:
 
