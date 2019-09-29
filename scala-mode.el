@@ -20,6 +20,9 @@
 (require 'scala-mode-imenu)
 (require 'scala-mode-prettify-symbols)
 
+(defvar fixup-whitespace) ;; for compilation
+(defvar delete-indentation) ;; for compilation
+
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)
   (error

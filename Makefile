@@ -15,7 +15,7 @@ SOURCE_DIR		 = $(ROOT)
 ##############################################################################
 # Variables
 
-MODE_NAME               = scala-mode2
+MODE_NAME               = scala-mode
 
 # Emacs Lisp
 ELISP_COMMAND		?= emacs
@@ -28,9 +28,10 @@ ELISP_FILES		+= $(MODE_NAME)
 ELISP_FILES		+= $(MODE_NAME)-syntax
 ELISP_FILES		+= $(MODE_NAME)-indent
 ELISP_FILES		+= $(MODE_NAME)-paragraph
+ELISP_FILES             += $(MODE_NAME)-prettify-symbols
+ELISP_FILES             += $(MODE_NAME)-imenu
 ELISP_FILES		+= $(MODE_NAME)-fontlock
 ELISP_FILES		+= $(MODE_NAME)-map
-ELISP_FILES		+= $(MODE_NAME)-sbt
 ELISP_SOURCES		+= $(ELISP_FILES:%=$(SOURCE_DIR)/%.el)
 
 PKG_FILE		+= $(SOURCE_DIR)/$(MODE_NAME)-pkg.el
@@ -74,7 +75,6 @@ package:
 	mkdir -p $(MODE_NAME_VERSION)
 	cp $(ELISP_SOURCES) $(PKG_FILE) $(MODE_NAME_VERSION)
 	tar cf $(MODE_NAME_VERSION).tar $(MODE_NAME_VERSION)
-
 
 ## SCALA LICENSE
 ##
