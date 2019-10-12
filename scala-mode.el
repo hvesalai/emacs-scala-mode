@@ -2,14 +2,12 @@
 
 ;; Copyright (c) 2012 Heikki Vesalainen
 
-;; Homepage: https://github.com/ensime/emacs-scala-mode
+;; Homepage: https://github.com/hvesalai/emacs-scala-mode
 ;; Keywords: languages
 ;; Package-Version:  0.23
 ;; Package-Requires: ()
 
 ;;; Commentary:
-;;
-;;  Documentation at http://ensime.org/editors/emacs/scala-mode/
 ;;
 ;;; Code:
 
@@ -21,6 +19,9 @@
 (require 'scala-mode-map)
 (require 'scala-mode-imenu)
 (require 'scala-mode-prettify-symbols)
+
+(defvar fixup-whitespace) ;; for compilation
+(defvar delete-indentation) ;; for compilation
 
 ;; Tested only for emacs 24
 (unless (<= 24 emacs-major-version)

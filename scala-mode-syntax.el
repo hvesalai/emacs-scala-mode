@@ -983,7 +983,7 @@ not. A list must be either enclosed in parentheses or start with
 
 (defun scala-syntax:forward-sexp-or-next-line ()
   (interactive)
-  (cond ((looking-at "\n") (next-line) (beginning-of-line))
+  (cond ((looking-at "\n") (forward-line 1) (beginning-of-line))
 	(t (forward-sexp))))
 
 (defun scala-syntax:beginning-of-definition ()

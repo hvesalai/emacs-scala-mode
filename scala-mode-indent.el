@@ -863,12 +863,12 @@ comment is outside the comment region. "
 
 Indents the line if position is right after a space that is after
 a word that needs to be indented specially."
-  ;; magic numbers used 4 = length of "case"
+  ;; magic numbers used 4 = length of "case", 7 = length of "finally"
   (when (and (> (current-column) 4)
              (= (char-before) ?\s)
              (= (char-syntax (char-before (- (point) 1))) ?w)
              (save-excursion (backward-char)
-                             (looking-back scala-indent:indent-on-words-re))
+                             (looking-back scala-indent:indent-on-words-re 7))
              (not (nth 8 (syntax-ppss))))
     (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))))
 
@@ -954,10 +954,10 @@ of a line inside a multi-line comment "
              (looking-at " *\\*\\($\\|[^/]\\)")
              (save-excursion (goto-char (max (nth 8 state) (line-beginning-position)))
                              (looking-at "\\s */?\\*")))
-        (delete-forward-char 2))
+        (delete-char 2))
        ((and (nth 4 state) ; row comment (i.e. with //)
              (looking-at " //"))
-        (delete-forward-char 3))))
+        (delete-char 3))))
     (scala-indent:fixup-whitespace)))
 
 (provide 'scala-mode-indent)

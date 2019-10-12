@@ -11,12 +11,19 @@
 (setq lexical-binding t)
 
 (defcustom scala-imenu:should-flatten-index t
-  "Controls whether or not the imenu index is flattened or hierarchical.")
+  "Controls whether or not the imenu index is flattened or hierarchical."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'scala)
 (defcustom scala-imenu:build-imenu-candidate
   'scala-imenu:default-build-imenu-candidate
-  "Controls whether or not the imenu index has definition type information.")
+  "Controls whether or not the imenu index has definition type information."
+  :type 'function
+  :group 'scala)
 (defcustom scala-imenu:cleanup-hooks nil
-  "Functions that will be run after the construction of each imenu")
+  "Functions that will be run after the construction of each imenu"
+  :type 'hook
+  :group 'scala)
 
 (defun scala-imenu:flatten-list (incoming-list &optional predicate)
   (when (not predicate) (setq predicate 'listp))
