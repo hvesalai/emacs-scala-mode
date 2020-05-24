@@ -175,8 +175,8 @@ When started, runs `scala-mode-hook'.
 ;;;###autoload
 (progn
   (add-to-list 'auto-mode-alist
-               '("\\.\\(scala\\|sbt\\)\\'" . scala-mode))
-  (modify-coding-system-alist 'file "\\.\\(scala\\|sbt\\)\\'" 'utf-8))
+               '("\\.\\(scala\\|sbt\\|worksheet\\.sc\\)\\'" . scala-mode))
+  (modify-coding-system-alist 'file "\\.\\(scala\\|sbt\\|worksheet\\.sc\\)\\'" 'utf-8))
 
 (provide 'scala-mode)
 ;;; scala-mode.el ends here
