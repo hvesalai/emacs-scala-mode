@@ -6,7 +6,7 @@ The mode intends to provide basic emacs support for the Scala language, includin
 - motion commands
 - highlighting
 
-See also (emacs-sbt-mode)[https://github.com/hvesalai/emacs-sbt-mode].
+See also [emacs-sbt-mode](https://github.com/hvesalai/emacs-sbt-mode).
 
 ## Installation
 
@@ -17,7 +17,7 @@ The preferred mechanism is via MELPA and `use-package` as per our
 (use-package scala-mode
   :interpreter
     ("scala" . scala-mode))
-    ```
+```
 
 ## Multi-line comments
 
@@ -32,7 +32,7 @@ the Scaladoc style guide.
 /** This is a Scaladoc comment.
   * 2nd line.
     */
-    ```
+```
 
 Alternatively, if the configurable variable
 *scala-indent:use-javadoc-style* is set to `t`, multi-line comments
@@ -44,7 +44,7 @@ wherein all following lines are indented under the first asterisk.
  * This is a Javadoc-style comment.
   * 2nd line.
    */
-   ```
+```
 
 All other multi-line comments are indented under the first asterisk.
 
@@ -57,7 +57,7 @@ All other multi-line comments are indented under the first asterisk.
 /*
  A comment
   */
-  ```
+```
 
 Typing an asterisk in multi-line comment region, at the start of a
 line, will trigger indent. Furthermore, if the configurable variable
