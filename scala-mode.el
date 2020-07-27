@@ -30,7 +30,7 @@
            emacs-major-version  emacs-minor-version)))
 
 (defgroup scala nil
-  "A programming mode for the Scala language 2.9"
+  "A programming mode for the Scala language 2/3"
   :group 'languages)
 
 (defmacro scala-mode:make-local-variables (&rest quoted-names)
