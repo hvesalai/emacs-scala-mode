@@ -288,7 +288,13 @@
                 "if" "implicit" "import" "lazy" "match" "new" "object"
                 "override" "package" "private" "protected" "return" "sealed"
                 "then" "throw" "trait" "try" "type" "val" "var" "while"
-                "with" "yield" "inline") 'words))
+                "with" "yield"
+                ;; "Soft" keywords https://dotty.epfl.ch/docs/internals/syntax.html#soft-keywords
+                ;; Presumably this means they do not apply in all contexts. Do
+                ;; not know of a way to support this in Emacs, so preferring
+                ;; supporting them everywhere, as regular keywords.
+                "as" "derives" "end" "extension" "inline" "opaque" "open"
+                "transparent" "using") 'words))
 
 (defconst scala-syntax:other-keywords-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:other-keywords-unsafe-re "\\)"))
