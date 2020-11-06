@@ -283,11 +283,18 @@
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:value-keywords-unsafe-re "\\)"))
 
 (defconst scala-syntax:other-keywords-unsafe-re
-  (regexp-opt '("abstract" "case" "catch" "class" "def" "do" "else" "extends"
-                "final" "finally" "for" "forSome" "if" "implicit" "import"
-                "lazy" "match" "new" "object" "override" "package" "private"
-                "protected" "return" "sealed" "throw" "trait" "try" "type"
-                "val" "var" "while" "with" "yield" "inline") 'words))
+  (regexp-opt '("abstract" "case" "catch" "class" "def" "do" "else" "enum"
+                "export" "extends" "final" "finally" "for" "given" "forSome"
+                "if" "implicit" "import" "lazy" "match" "new" "object"
+                "override" "package" "private" "protected" "return" "sealed"
+                "then" "throw" "trait" "try" "type" "val" "var" "while"
+                "with" "yield"
+                ;; "Soft" keywords https://dotty.epfl.ch/docs/internals/syntax.html#soft-keywords
+                ;; Presumably this means they do not apply in all contexts. Do
+                ;; not know of a way to support this in Emacs, so preferring
+                ;; supporting them everywhere, as regular keywords.
+                "as" "derives" "end" "extension" "inline" "opaque" "open"
+                "transparent" "using") 'words))
 
 (defconst scala-syntax:other-keywords-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:other-keywords-unsafe-re "\\)"))
