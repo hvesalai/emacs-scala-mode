@@ -11,7 +11,7 @@ See also [emacs-sbt-mode](https://github.com/hvesalai/emacs-sbt-mode).
 ## Installation
 
 The preferred mechanism is via MELPA and `use-package` as per our
-[Learning Emacs](/editors/emacs/learning) guide:
+[Learning Emacs](https://www.emacswiki.org/emacs/LearningEmacs) guide:
 
 ```elisp
 (use-package scala-mode
