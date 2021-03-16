@@ -364,12 +364,14 @@
 (defconst scala-syntax:final-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:final-unsafe-re "\\)"))
 
+;; TODO open
 (defconst scala-syntax:sealed-unsafe-re
   (regexp-opt '("sealed") 'words))
 
 (defconst scala-syntax:sealed-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:sealed-unsafe-re "\\)"))
 
+;; TODO using/given
 (defconst scala-syntax:implicit-unsafe-re
   (regexp-opt '("implicit") 'words))
 
@@ -395,7 +397,7 @@
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:protected-unsafe-re "\\)"))
 
 (defconst scala-syntax:modifiers-unsafe-re
-  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
+  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy" "open"
                 "private" "protected") 'words))
 
 (defconst scala-syntax:modifiers-re
@@ -705,6 +707,7 @@ stableId"
     (and (looking-at scala-syntax:case-re)
          (goto-char (match-end 0))
          (scala-syntax:skip-forward-ignorable)
+         ;; TODO "not in an enum environment"
          (not (looking-at-p scala-syntax:class-or-object-re)))))
 
 (defun scala-syntax:looking-back-empty-line-p ()
@@ -784,6 +787,7 @@ one."
       (when (scala-syntax:looking-at "[[]")
         (forward-list)))))
 
+;; TODO if-then-else syntax
 (defun scala-syntax:looking-back-else-if-p ()
   ;; TODO: rewrite using (scala-syntax:if-skipped (scala:syntax:skip-backward-else-if))
   (save-excursion
@@ -961,14 +965,14 @@ not. A list must be either enclosed in parentheses or start with
 ;; Functions to help with finding the beginning and end of scala definitions.
 
 (defconst scala-syntax:modifiers-re
-  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy"
+  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy" "using" "extension"
                 "private" "protected" "case") 'words))
 
 (defconst scala-syntax:whitespace-delimeted-modifiers-re
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
 (defconst scala-syntax:definition-words-re
-  (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type") "\\|"))
+  (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type" "enum" "given") "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)
   (concat " *"
@@ -1018,6 +1022,7 @@ val a, b = (1, 2)
   (scala-syntax:find-brace-equals-or-next)
   (scala-syntax:handle-brace-equals-or-next))
 
+;; TODO or : or... (indentation syntax)
 (defun scala-syntax:find-brace-equals-or-next ()
   (scala-syntax:go-to-pos
    (save-excursion
