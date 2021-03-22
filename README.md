@@ -31,7 +31,7 @@ the Scaladoc style guide.
 ```scala
 /** This is a Scaladoc comment.
   * 2nd line.
-    */
+  */
 ```
 
 Alternatively, if the configurable variable
@@ -42,8 +42,8 @@ wherein all following lines are indented under the first asterisk.
 ```scala
 /**
  * This is a Javadoc-style comment.
-  * 2nd line.
-   */
+ * 2nd line.
+ */
 ```
 
 All other multi-line comments are indented under the first asterisk.
@@ -51,12 +51,12 @@ All other multi-line comments are indented under the first asterisk.
 ```
 /**
  * Supercalifragilistic-
-  * expialidocious!
-   */
+ * expialidocious!
+ */
 
 /*
- A comment
-  */
+A comment
+*/
 ```
 
 Typing an asterisk in multi-line comment region, at the start of a
@@ -169,8 +169,8 @@ example, the `eager` mode will indent `map` in the following code
 
 ```scala
 val x = List(1, 2, 3)
-  map(x => x + 1)
-  ```
+ map(x => x + 1)
+```
 
 The `operators` and `eager` modes will indent the second row in the
 following code, as the first line ends with an operator character.
@@ -178,7 +178,7 @@ following code, as the first line ends with an operator character.
 ```scala
 val x = 20 +
   21
-  ```
+```
 
 The `reluctant` mode (default) will not indent the line in either
 case. However, all three modes will indent the second line in these
@@ -191,7 +191,7 @@ val x = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).
 
 val y = (List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
            map (x => x + 1)) // inside 'newlines disabled' region
-           ```
+```
 
 You can use empty lines in the `eager` mode to stop it from indenting
 a line. For example
@@ -218,12 +218,12 @@ expressions will be indented in the traditional way.
 ```scala
 val x = try {
   some()
-  } catch {
-    case e => other
-    } finally {
-      clean-up()
-      }
-      ```
+} catch {
+  case e => other
+} finally {
+  clean-up()
+}
+```
 
 However, when the variable is set to `t`, the body will be indented
 one extra step to make the `val`, `var` or `def` stand out. For
@@ -232,12 +232,12 @@ example:
 ```scala
 val x = try {
     some()
-      } catch {
-          case e => other
-            } finally {
-                clean-up()
-                  }
-                  ```
+  } catch {
+    case e => other
+  } finally {
+    clean-up()
+  }
+```
 
 ### Parameter lists
 
@@ -253,7 +253,7 @@ val y = List( "Alpha", "Bravo",
 
 val x = equals(List(1,2,3) map (x =>
   x + 1))
-  ```
+```
 
 When the variable is set to `t`, the same will be indented as:
 
@@ -263,7 +263,7 @@ val y = List( "Alpha", "Bravo",
 
 val x = equals(List(1,2,3) map (x =>
                  x + 1))
-                 ```
+```
 
 ### Expression forms: if, for, try
 
@@ -275,10 +275,10 @@ forms are not aligned specially.
 ```scala
 val x = if (kala)
   foo
-  else if (koira)
-    bar
-    else
-      zot
+else if (koira)
+  bar
+else
+  zot
 
 val x = try "1".toInt
 catch { case e => 0}
@@ -293,18 +293,18 @@ When the variable is set to `t`, the same will be indented as:
 ```scala
 val x = if (kala)
           foo
-                  else if (koira)
-                            bar
-                                    else
-                                              zot
+        else if (koira)
+          bar
+        else
+          zot
 
 val x = try "1".toInt
         catch { case e => 0}
-                finally { println("hello") }
+        finally { println("hello") }
 
 val xs = for (i <- 1 to 10)
          yield i
-         ```
+```
 
 ## Prettify-Symbols
 
