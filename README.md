@@ -48,15 +48,15 @@ wherein all following lines are indented under the first asterisk.
 
 All other multi-line comments are indented under the first asterisk.
 
-```
+```scala
 /**
  * Supercalifragilistic-
  * expialidocious!
  */
 
 /*
-A comment
-*/
+ A comment
+ */
 ```
 
 Typing an asterisk in multi-line comment region, at the start of a
