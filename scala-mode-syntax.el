@@ -943,7 +943,7 @@ not. A list must be either enclosed in parentheses or start with
     ;; first check that the previous line ended with ','
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
-    (when (scala-syntax:looking-back-token "," 1)
+    (when (and (scala-syntax:looking-back-token "," 1) (not (looking-at-p ")")))
       (goto-char (match-beginning 0))
       (let ((parenpoint (nth 1 (syntax-ppss))))
         (if (and parenpoint (or (= (char-after parenpoint) ?\()

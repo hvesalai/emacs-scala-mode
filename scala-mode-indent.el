@@ -479,7 +479,7 @@ special word found. Special words include 'yield', 'else',
 
 (defun scala-indent:goto-list-anchor (&optional point)
   "Moves back to the point whose column will be used to indent
-list rows at current point (or point 'point'). Returns the new
+list rows at current point (or point `point'). Returns the new
 point or nil if the point is not in a list element > 1."
   (let ((list-beg (scala-syntax:list-p point)))
     (when list-beg
