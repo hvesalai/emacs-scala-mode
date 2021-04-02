@@ -1,44 +1,91 @@
-;;;; scala-mode-syntax.el - Major mode for editing scala, syntax
-;;; Copyright (c) 2012 Heikki Vesalainen
+;;;; scala-mode-syntax.el - Major mode for editing Scala, syntax
+;;; Copyright (c) 2021 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
-;;; Based on Scala Language Specification (SLS) Version 2.9
+;;; Based on Scala Language Specification (SLS) Version 3.0
+;;; https://dotty.epfl.ch/docs/internals/syntax.html
 
 ;;;;
 ;;;; Scala syntax regular expressions
 ;;;;
 
-;;; Based on the Scala language specification 2.9.  Note: order is not
+;;; Based on the Scala language specification 3.0.  Note: order is not
 ;;; the same as in the document, as here things are declared before
 ;;; used.
 
-;;; A note on naming. Things that end with '-re' are regular
-;;; expressions.  Things that end with '-group' are regular expression
+;;; A note on naming. Things that end with `-re' are regular
+;;; expressions.  Things that end with `-group' are regular expression
 ;;; character groups without the enclosing [], i.e. they are not
 ;;; regular expressions, but can be used in declaring one.
 
 ;; single letter matching groups (Chapter 1)
 (defconst scala-syntax:hexDigit-group "0-9A-Fa-f")
-(defconst scala-syntax:UnicodeEscape-re (concat "\\\\u[" scala-syntax:hexDigit-group "]\\{4\\}"))
+(defconst scala-syntax:UnicodeEscape-re
+  ;; using `format' allows editing these regexes with one step closer to a sane
+  ;; number of backslash escapes, via `string-edit', at the expense of making %
+  ;; a special character
+  (format "\\\\u[%s]\\{4\\}" scala-syntax:hexDigit-group))
 
+;; TODO BNF for `upper' adds the coments "and Unicode category Lu"; do Emacs
+;; regexes handle this naturally?
 (defconst scala-syntax:upper-group "[:upper:]\\$") ;; missing _ to make ids work
-(defconst scala-syntax:upperAndUnderscore-group (concat "_" scala-syntax:upper-group ))
+;; NOTE `upperAndUnderscore' corresponds to the `upper' group in the BNF
+(defconst scala-syntax:upperAndUnderscore-group
+  (concat "_" scala-syntax:upper-group ))
+;; TODO BNF for `lower' adds the coments "and Unicode category Ll"; do Emacs
+;; regexes handle this naturally?
 (defconst scala-syntax:lower-group "[:lower:]")
-(defconst scala-syntax:letter-group (concat scala-syntax:lower-group scala-syntax:upper-group)) ;; TODO: add Lt, Lo, Nl
+;; TODO BNF for `lower' adds the coments "and Unicode categories Lo, Lt, Nl"
+(defconst scala-syntax:letter-group (concat scala-syntax:lower-group
+                                            scala-syntax:upper-group))
 (defconst scala-syntax:digit-group "0-9")
-(defconst scala-syntax:letterOrDigit-group (concat
-                                            scala-syntax:upperAndUnderscore-group
-                                            scala-syntax:lower-group
-                                            scala-syntax:digit-group))
-(defconst scala-syntax:opchar-safe-group "!%&*+/?\\\\^|~-") ;; TODO: Sm, So
+;; NOTE `letterOrDigit' does not have a separate entry in the 3.0 BNF.
+(defconst scala-syntax:letterOrDigit-group
+  (concat
+   scala-syntax:upperAndUnderscore-group
+   scala-syntax:lower-group
+   scala-syntax:digit-group))
+;; TODO ensure Unicode Sm, So disallowed in `opchar'
+;; TODO do the math: check these positively stated symbols against the
+;; negatively stated BNF.
+(defconst scala-syntax:opchar-safe-group "!%&*+/?\\\\^|~-")
 (defconst scala-syntax:opchar-unsafe-group "#:<=>@")
 (defconst scala-syntax:opchar-group (concat scala-syntax:opchar-unsafe-group
                                             scala-syntax:opchar-safe-group))
 
-;; Scala delimiters (Chapter 1), but no quotes
+;; NOTE `delim' in the BNF
+;; TODO should backtick be here? I'm not sure it is handled correctly ATM.
+;; Scala delimiters, but no quotes
 (defconst scala-syntax:delimiter-group ".,;")
 
-;; Integer Literal (Chapter 1.3.1)
+;; NOTE BNF also has a definition here for `printabeChar'
+;; NOTE BNF also has a definition here for `charEscapeSeq'
+
+(defconst scala-syntax:op-re
+  (concat "[" scala-syntax:opchar-group "]+" ))
+
+(defconst scala-syntax:idrest-re
+  ;; Eagerness of regexp causes problems with _. The following is a workaround,
+  ;; but the resulting regexp matches only what SLS demands.
+  (format "\\([_]??[%s%s]+\\)*\\(_+%s\\|_\\)?"
+          scala-syntax:letter-group
+          scala-syntax:digit-group
+          scala-syntax:op-re))
+
+(defconst scala-syntax:varid-re
+  (concat "[" scala-syntax:lower-group "]" scala-syntax:idrest-re))
+
+;; `alphaid' introduced by SIP-11 - String Interpolation
+;; https://docs.scala-lang.org/sips/string-interpolation.html
+(defconst scala-syntax:alphaid-re
+  (format "\\([%s%s]%s\\)"
+          scala-syntax:lower-group
+          scala-syntax:upperAndUnderscore-group
+          scala-syntax:idrest-re))
+
+;; TODO resume here (`plainid' in the BNF)
+
+;; Integer Literal
 (defconst scala-syntax:nonZeroDigit-group "1-9")
 (defconst scala-syntax:octalDigit-group "0-7")
 (defconst scala-syntax:decimalNumeral-re
@@ -116,19 +163,10 @@
           "\\(?:" scala-syntax:multiLineStringLiteral-end-re "\\)?"
           "\\|\\(\"\\)" "\\(\\\\.\\|[^\"\n\\]\\)*" "\\(\"\\)"))
 
-;; Identifiers (Chapter 1.1)
-(defconst scala-syntax:op-re
-  (concat "[" scala-syntax:opchar-group "]+" ))
-(defconst scala-syntax:idrest-re
-  ;; Eagerness of regexp causes problems with _. The following is a workaround,
-  ;; but the resulting regexp matches only what SLS demands.
-  (concat "\\(" "[_]??" "[" scala-syntax:letter-group scala-syntax:digit-group "]+" "\\)*"
-          "\\(" "_+" scala-syntax:op-re "\\|" "_" "\\)?"))
-(defconst scala-syntax:varid-re (concat "[" scala-syntax:lower-group "]" scala-syntax:idrest-re))
-(defconst scala-syntax:capitalid-re (concat "[" scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re))
-;; alphaid introduce by SIP11
-(defconst scala-syntax:alphaid-re (concat "\\(" "[" scala-syntax:lower-group scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re "\\)"))
-(defconst scala-syntax:plainid-re (concat "\\(" scala-syntax:alphaid-re "\\|" scala-syntax:op-re "\\)"))
+(defconst scala-syntax:capitalid-re
+  (concat "[" scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re))
+(defconst scala-syntax:plainid-re
+  (concat "\\(" scala-syntax:alphaid-re "\\|" scala-syntax:op-re "\\)"))
 ;; stringlit is referred to, but not defined Scala Language Specification 2.9
 ;; we define it as consisting of anything but '`' and newline
 (defconst scala-syntax:stringlit-re "[^`\n\r]")
@@ -968,7 +1006,7 @@ not. A list must be either enclosed in parentheses or start with
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy" "using" "extension"
                 "private" "protected" "case") 'words))
 
-(defconst scala-syntax:whitespace-delimeted-modifiers-re
+(defconst scala-syntax:whitespace-delimited-modifiers-re
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
 (defconst scala-syntax:definition-words-re
@@ -976,7 +1014,7 @@ not. A list must be either enclosed in parentheses or start with
 
 (defun scala-syntax:build-definition-re (words-re)
   (concat " *"
-	  scala-syntax:whitespace-delimeted-modifiers-re
+	  scala-syntax:whitespace-delimited-modifiers-re
 	  words-re
 	  "\\(?: *\\)"
 	  "\\(?2:"
