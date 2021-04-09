@@ -115,6 +115,7 @@ When started, runs `scala-mode-hook'.
    'parse-sexp-lookup-properties
    'fill-paragraph-function
    'adaptive-fill-function
+   'adaptive-fill-regexp
    'adaptive-fill-first-line-regexp
    'comment-start
    'comment-end
@@ -150,6 +151,7 @@ When started, runs `scala-mode-hook'.
         paragraph-separate              scala-paragraph:paragraph-separate-re
         fill-paragraph-function         'scala-paragraph:fill-paragraph
         adaptive-fill-function          'scala-paragraph:fill-function
+        adaptive-fill-regexp            "[ \t]*\\(//+[ \t]*\\)*"
         adaptive-fill-first-line-regexp scala-paragraph:fill-first-line-re
         comment-start                   "// "
         comment-end                     ""
