@@ -18,6 +18,9 @@
 ;;; character groups without the enclosing [], i.e. they are not
 ;;; regular expressions, but can be used in declaring one.
 
+(defun scala-syntax:alt (&rest res)
+  (concat "\\(" (string-join res "\\|") "\\)"))
+
 ;; single letter matching groups (Chapter 1)
 (defconst scala-syntax:hexDigit-group "0-9A-Fa-f")
 (defconst scala-syntax:UnicodeEscape-re
@@ -58,8 +61,15 @@
 ;; Scala delimiters, but no quotes
 (defconst scala-syntax:delimiter-group ".,;")
 
-;; NOTE BNF also has a definition here for `printabeChar'
-;; NOTE BNF also has a definition here for `charEscapeSeq'
+;; NOTE BNF also has a definition here for `printableChar'
+;; `printableChar' has a definition that seems to restrict it to simple ASCII
+;; characters, though, which is surprising.
+;; We may not need it though, because e.g. in the definition of
+;; `characterLiteral' we use some faster regex.
+
+;; Escape Sequences (Chapter 1.3.6)
+;; NOTE BNF calls this `charEscapeSeq'
+(defconst scala-syntax:escapeSequence-re "\\\\['btnfr\"\\\\]")
 
 (defconst scala-syntax:op-re
   (concat "[" scala-syntax:opchar-group "]+" ))
@@ -83,19 +93,42 @@
           scala-syntax:upperAndUnderscore-group
           scala-syntax:idrest-re))
 
-;; TODO resume here (`plainid' in the BNF)
+(defconst scala-syntax:plainid-re
+  (scala-syntax:alt scala-syntax:alphaid-re
+                    scala-syntax:op-re))
+
+;; NOTE `stringlit' is referred to, but not defined in the Scala Language
+;; Specification 2.9. We define it as consisting of anything but '`' and newline
+;; TODO `stringLiteral' is defined in Scala 3, but probably differently, and for
+;; use in a different context.
+(defconst scala-syntax:stringlit-re "[^`\n\r]")
+;; NOTE there is `quoteId' but not `quotedId' in the Scala 3 BNF, and the
+;; `quoteId' is for something different.
+;; TODO The Scala 3 BNF has
+;;   { charNoBackQuoteOrNewline | UnicodeEscape | charEscapeSeq }
+;; rather than `stringlit'.
+(defconst scala-syntax:quotedid-re (concat "`" scala-syntax:stringlit-re "+`"))
+(defconst scala-syntax:id-re
+  (scala-syntax:alt scala-syntax:plainid-re scala-syntax:quotedid-re))
+
+(defconst scala-syntax:quoteid-re
+  (concat "'" scala-syntax:alphaid-re))
 
 ;; Integer Literal
 (defconst scala-syntax:nonZeroDigit-group "1-9")
+;; TODO add support for underscores to `decimalNumeral'
 (defconst scala-syntax:decimalNumeral-re
   (concat "0"
           "\\|[" scala-syntax:nonZeroDigit-group "][" scala-syntax:digit-group "]*"))
-(defconst scala-syntax:hexNumeral-re (concat "0x[" scala-syntax:hexDigit-group "]+"))
+;; TODO add support for underscores to `hexNumeral'
+(defconst scala-syntax:hexNumeral-re (concat "0[xX][" scala-syntax:hexDigit-group "]+"))
 (defconst scala-syntax:integerLiteral-re (concat "-?" ;; added from definition of literal
                                                  "\\(" scala-syntax:hexNumeral-re
                                                  "\\|" scala-syntax:decimalNumeral-re
                                                  "\\)[Ll]?"))
 
+
+;; TODO resume here (`floatingPointLiteral' in the BNF)
 
 ;; Floating Point Literal (Chapter 1.3.2)
 (defconst scala-syntax:exponentPart-re (concat "\\([eE][+-]?[" scala-syntax:digit-group "]+\\)"))
@@ -114,9 +147,6 @@
 
 ;; Boolean Literals (Chapter 1.3.3)
 (defconst scala-syntax:booleanLiteral-re "true|false")
-
-;; Escape Sequences (Chapter 1.3.6)
-(defconst scala-syntax:escapeSequence-re "\\\\['btnfr\"\\\\]")
 
 ;; Octal Escape Sequences (Chapter 1.3.6)
 (defconst scala-syntax:octalEscape-re (concat "\\\\[" scala-syntax:octalDigit-group "\\]\\{1,3\\}"))
@@ -162,14 +192,6 @@
 
 (defconst scala-syntax:capitalid-re
   (concat "[" scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re))
-(defconst scala-syntax:plainid-re
-  (concat "\\(" scala-syntax:alphaid-re "\\|" scala-syntax:op-re "\\)"))
-;; stringlit is referred to, but not defined Scala Language Specification 2.9
-;; we define it as consisting of anything but '`' and newline
-(defconst scala-syntax:stringlit-re "[^`\n\r]")
-(defconst scala-syntax:quotedid-re (concat "`" scala-syntax:stringlit-re "+`"))
-(defconst scala-syntax:id-re (concat "\\(" scala-syntax:plainid-re
-                              "\\|" scala-syntax:quotedid-re "\\)"))
 (defconst scala-syntax:id-first-char-group
   (concat scala-syntax:lower-group
           scala-syntax:upperAndUnderscore-group
