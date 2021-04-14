@@ -13,13 +13,13 @@
 
 (defun scala-mode-map:add-self-insert-hooks ()
   (add-hook 'post-self-insert-hook
-            'scala-indent:indent-on-parentheses)
+            'scala-indent:indent-on-parentheses nil t)
   (add-hook 'post-self-insert-hook
-            'scala-indent:indent-on-special-words)
+            'scala-indent:indent-on-special-words nil t)
   (add-hook 'post-self-insert-hook
-            'scala-indent:indent-on-scaladoc-asterisk)
+            'scala-indent:indent-on-scaladoc-asterisk nil t)
   (add-hook 'post-self-insert-hook
-            'scala-indent:fix-scaladoc-close))
+            'scala-indent:fix-scaladoc-close nil t))
 
 (defun scala-mode-map:add-remove-indent-hook ()
   (add-hook 'post-command-hook

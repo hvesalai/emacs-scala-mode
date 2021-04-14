@@ -106,7 +106,6 @@ When started, runs `scala-mode-hook'.
 ;  :abbrev
 
   (scala-mode:make-local-variables
-   'post-self-insert-hook
    'syntax-propertize-function
    'font-lock-syntactic-face-function
    'font-lock-defaults
