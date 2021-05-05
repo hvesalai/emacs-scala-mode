@@ -99,8 +99,7 @@
 
 ;; NOTE `stringlit' is referred to, but not defined in the Scala Language
 ;; Specification 2.9. We define it as consisting of anything but '`' and newline
-;; TODO `stringLiteral' is defined in Scala 3, but probably differently, and for
-;; use in a different context.
+;; NOTE this is not the same thing as `stringLiteral'
 (defconst scala-syntax:stringlit-re "[^`\n\r]")
 ;; NOTE there is `quoteId' but not `quotedId' in the Scala 3 BNF, and the
 ;; `quoteId' is for something different.
@@ -116,31 +115,48 @@
 
 ;; Integer Literal
 (defconst scala-syntax:nonZeroDigit-group "1-9")
-;; TODO add support for underscores to `decimalNumeral'
 (defconst scala-syntax:decimalNumeral-re
   (concat "0"
-          "\\|[" scala-syntax:nonZeroDigit-group "][" scala-syntax:digit-group "]*"))
-;; TODO add support for underscores to `hexNumeral'
-(defconst scala-syntax:hexNumeral-re (concat "0[xX][" scala-syntax:hexDigit-group "]+"))
+          "\\|["
+          scala-syntax:nonZeroDigit-group
+          "]\\(["
+          scala-syntax:digit-group
+          "_]*["
+          scala-syntax:digit-group
+          "]\\)?"))
+(defconst scala-syntax:hexNumeral-re
+  (concat "0[xX]["
+          scala-syntax:hexDigit-group
+          "]\\(["
+          scala-syntax:hexDigit-group
+          "_]*["
+          scala-syntax:hexDigit-group
+          "]\\)?"))
+
 (defconst scala-syntax:integerLiteral-re (concat "-?" ;; added from definition of literal
                                                  "\\(" scala-syntax:hexNumeral-re
                                                  "\\|" scala-syntax:decimalNumeral-re
                                                  "\\)[Ll]?"))
 
-
-;; TODO resume here (`floatingPointLiteral' in the BNF)
-
 ;; Floating Point Literal (Chapter 1.3.2)
-(defconst scala-syntax:exponentPart-re (concat "\\([eE][+-]?[" scala-syntax:digit-group "]+\\)"))
+(defconst scala-syntax:exponentPart-re
+  (concat "\\([eE][+-]?["
+          scala-syntax:digit-group
+          "_]*["
+          scala-syntax:digit-group
+          "]\\)"))
+
 (defconst scala-syntax:floatType-re "[fFdD]")
+
 (defconst scala-syntax:floatingPointLiteral-re
   (concat "-?" ;; added from definition of literal
-          "\\([" scala-syntax:digit-group "]+\\.[" scala-syntax:digit-group "]*"
+          "\\(" "\\(" scala-syntax:decimalNumeral-re "\\)"
+          "\\.[" scala-syntax:digit-group "]"
+          "\\([" scala-syntax:digit-group "_]*" scala-syntax:digit-group "\\)?"
           scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
-          "\\|" "\\.[" scala-syntax:digit-group "]+"
-          scala-syntax:exponentPart-re "?" scala-syntax:floatType-re "?"
-          "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:exponentPart-re
-          "\\|" "[" scala-syntax:digit-group "]+" scala-syntax:floatType-re "\\)"))
+          "\\|" "\\(" scala-syntax:decimalNumeral-re "\\)"
+          scala-syntax:exponentPart-re scala-syntax:floatType-re "?"
+          "\\|" "\\(" scala-syntax:decimalNumeral-re "\\)" scala-syntax:floatType-re "\\)"))
 
 (defconst scala-syntax:number-safe-start-re
   (concat "[^_" scala-syntax:letter-group "]"))
@@ -148,7 +164,10 @@
 ;; Boolean Literals (Chapter 1.3.3)
 (defconst scala-syntax:booleanLiteral-re "true|false")
 
+;; TODO resume here (`characterLiteral' in the BNF)
+
 ;; Octal Escape Sequences (Chapter 1.3.6)
+(defconst scala-syntax:octalDigit-group "0-7")
 (defconst scala-syntax:octalEscape-re (concat "\\\\[" scala-syntax:octalDigit-group "\\]\\{1,3\\}"))
 
 ;; Character Literals (Chapter 1.3.4)
