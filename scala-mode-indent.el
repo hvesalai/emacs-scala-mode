@@ -179,7 +179,7 @@ it is nilled."
 (defun scala-indent:backward-sexp-to-beginning-of-line ()
   "Skip sexps backwards until reaches beginning of line (i.e. the
 point is at the first non whitespace or comment character). It
-does not move outside enclosin list. Returns the current point or
+does not move outside enclosing list. Returns the current point or
 nil if the beginning of line could not be reached because of
 enclosing list."
   (let ((code-beg (scala-lib:point-after
@@ -196,17 +196,16 @@ enclosing list."
       (point))))
 
 (defun scala-indent:align-anchor ()
-  "Go to beginning of line, if a) scala-indent:align-parameters
-is nil or backward-sexp-to-beginning-of-line is non-nil. This has
-the effect of staying within lists if
-scala-indent:align-parameters is non-nil."
+  "Go to beginning of line, if a) `scala-indent:align-parameters' is nil or
+`scala-indent:backward-sexp-to-beginning-of-line' is non-nil. This has the
+effect of staying within lists if `scala-indent:align-parameters' is non-nil."
   (when (or (scala-indent:backward-sexp-to-beginning-of-line)
             (not scala-indent:align-parameters))
     (back-to-indentation)))
 
 (defun scala-indent:value-expression-lead (start anchor &optional not-block-p)
-  ;; calculate an indent lead. The lead is one indent step if there is
-  ;; a '=' between anchor and start, otherwise 0.
+  ;; calculate an indent lead. The lead is one indent step if there is a '='
+  ;; between anchor and start, otherwise 0.
   (if (and scala-indent:indent-value-expression
            (ignore-errors
              (save-excursion
@@ -229,11 +228,11 @@ expression")
 (defconst scala-indent:mustNotTerminate-line-beginning-re
   (concat "\\(" scala-indent:mustNotTerminate-keywords-re
           "\\|:\\("  scala-syntax:after-reserved-symbol-re "\\)\\)")
-  "All keywords and symbols that cannot terminate a expression
+  "All keywords and symbols that cannot terminate an expression
 and must be handled by run-on. Reserved-symbols not included.")
 
 (defconst scala-indent:mustTerminate-re
-  (concat "\\([,;\u21D2]\\|=>?" scala-syntax:end-of-code-line-re
+  (concat "\\([,;]\\|=>?" scala-syntax:end-of-code-line-re
           "\\|\\s(\\|" scala-syntax:empty-line-re "\\)")
   "Symbols that must terminate an expression or start a
 sub-expression, i.e the following expression cannot be a
@@ -251,8 +250,8 @@ and the empty line")
 (defconst scala-indent:mustBeContinued-line-end-re
   (concat "\\(" scala-syntax:other-keywords-unsafe-re
           "\\|:" scala-syntax:end-of-code-line-re "\\)")
-  "All keywords and symbols that cannot terminate a expression
-and are infact a sign of run-on. Reserved-symbols not included.")
+  "All keywords and symbols that cannot terminate an expression
+and are in fact a sign of run-on. Reserved-symbols not included.")
 
 (defun scala-indent:run-on-p (&optional point strategy)
   "Returns t if the current point is in the middle of an expression"
@@ -261,9 +260,8 @@ and are infact a sign of run-on. Reserved-symbols not included.")
   (save-excursion
     (when point (goto-char point))
     (unless (eobp)
-      ;; Note: ofcourse this 'cond' could be written as one big boolean
-      ;; expression, but I doubt that would be so readable and
-      ;; maintainable
+      ;; NOTE: of course this 'cond' could be written as one big boolean
+      ;; expression, but I doubt that would be so readable and maintainable
       (cond
        ;; NO: this line starts with close parenthesis
        ((= (char-syntax (char-after)) ?\))
@@ -358,7 +356,8 @@ is not on a run-on line."
     (point)))
 
 (defconst scala-indent:double-indent-re
-  (concat (regexp-opt '("with" "extends" "forSome") 'words)
+  ;; used to include with but given...with is a counterexample
+  (concat (regexp-opt '("extends" "forSome") 'words)
           "\\|:\\("  scala-syntax:after-reserved-symbol-re "\\)"))
 
 (defun scala-indent:resolve-run-on-step (start &optional anchor)
@@ -392,12 +391,12 @@ is not on a run-on line."
              scala-indent:step))))))
 
 (defconst scala-indent:forms-align-re
-  (regexp-opt '("yield" "else" "catch" "finally") 'words))
+  (regexp-opt '("yield" "then" "else" "catch" "finally") 'words))
 
 (defun scala-indent:forms-align-p (&optional point)
-  "Returns scala-syntax:beginning-of-code-line for the line on
+  "Returns `scala-syntax:beginning-of-code-line' for the line on
 which current point (or point 'point') is, if the line starts
-with one of 'yield', 'else', 'catch' and 'finally', otherwise
+with one of 'yield', 'then', 'else', 'catch' and 'finally', otherwise
 nil. Also, the previous line must not be with '}'"
   (save-excursion
     (when point (goto-char point))
@@ -405,7 +404,6 @@ nil. Also, the previous line must not be with '}'"
     (when (looking-at scala-indent:forms-align-re)
       (goto-char (match-beginning 0))
       (point))))
-
 
 (defun scala-indent:goto-forms-align-anchor (&optional point)
   "Moves back to the point whose column will be used as the
@@ -427,6 +425,13 @@ special word found. Special words include 'yield', 'else',
                       (if (scala-syntax:search-backward-sexp "\\<for\\>")
                           (point)
                         (message "matching 'for' not found")
+                        nil))
+                     ((looking-at "\\<then\\>")
+                      ;; align with 'if' or 'else if'
+                      (if (scala-syntax:search-backward-sexp "\\<if\\>")
+                          (if (scala-syntax:looking-back-token "\\<then\\>")
+                              (goto-char (match-beginning 0))
+                            (point))
                         nil))
                      ((looking-at "\\<else\\>")
                       ;; align with 'if' or 'else if'
@@ -508,6 +513,7 @@ if not in a list of enumerators or at the first enumerator."
             (when (< (point) point)
               (1+ (nth 1 state)))))))))
 
+;; TODO this does not work properly with indent-based syntax
 (defun scala-indent:goto-for-enumerators-anchor (&optional point)
   "Moves back to the point whose column will be used to indent
 for enumerator at current point (or point 'point'). Returns the new
@@ -521,12 +527,14 @@ point or nil if the point is not in a enumerator element > 1."
 ;;;
 
 (defconst scala-indent:control-keywords-cond-re
-  (regexp-opt '("if" "while" "for") 'words)
+  ;; TODO `if' and `for' and possibly `while' no longer have to be followed by a
+  ;; parenthetical.
+  (regexp-opt '("for" "if" "while") 'words)
   "All the flow control keywords that are followed by a
 condition (or generators in the case of 'for') in parentheses.")
 
 (defconst scala-indent:control-keywords-other-re
-  (regexp-opt '("else" "do" "yield" "try" "finally" "catch") 'words)
+  (regexp-opt '("for" "if" "then" "else" "do" "yield" "try" "finally" "catch") 'words)
   "Other flow control keywords (not followed by parentheses)")
 
 (defconst scala-indent:control-keywords-re
@@ -535,22 +543,26 @@ condition (or generators in the case of 'for') in parentheses.")
 
 (defun scala-indent:body-p (&optional point)
   "Returns the position of '=' symbol, or one of the
-scala-indent:control-keywords-re or
-scala-indent:control-keywords-cond-re keywords if current
+`scala-indent:control-keywords-re' or
+`scala-indent:control-keywords-cond-re' keywords if current
 point (or point 'point) is on a line that follows said symbol or
 keyword, or nil if not."
+  ;; TODO this needs to look back more than one line
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
     (or (scala-syntax:looking-back-token scala-syntax:body-start-re 3)
         (let ((case-fold-search nil))
+          ;; This handles cases like
+          ;;   for
+          ;;     x <- List(1, 2, 3)
           (scala-syntax:looking-back-token scala-indent:control-keywords-other-re))
         (progn
           ;; if, else if
           (when (scala-syntax:looking-back-token ")" 1)
             (goto-char (match-end 0))
             (backward-list))
-          (when (scala-syntax:looking-back-token scala-indent:control-keywords-cond-re)
+          (when (scala-syntax:looking-back-token scala-indent:control-keywords-other-re)
             (goto-char (match-beginning 0))
             (when (and (looking-at "\\<if\\>")
                        (scala-syntax:looking-back-token "\\<else\\>"))
@@ -560,18 +572,18 @@ keyword, or nil if not."
             (point))))))
 
 (defun scala-indent:goto-body-anchor (&optional point)
-  (let ((declaration-end (scala-indent:body-p point)))
-    (when declaration-end
-      (goto-char declaration-end)
-      (if (let ((case-fold-search nil))
-            (looking-at scala-indent:control-keywords-re))
-          (point)
-        (when (scala-indent:backward-sexp-to-beginning-of-line)
-          (scala-indent:goto-run-on-anchor
-           nil
-           scala-indent:keywords-only-strategy))
-        (scala-indent:align-anchor)
-        (point)))))
+  ;; TODO this does not work right in indentation syntax
+  (when-let ((declaration-end (scala-indent:body-p point)))
+    (goto-char declaration-end)
+    (if (let ((case-fold-search nil))
+          (looking-at scala-indent:control-keywords-re))
+        (point)
+      (when (scala-indent:backward-sexp-to-beginning-of-line)
+        (scala-indent:goto-run-on-anchor
+         nil
+         scala-indent:keywords-only-strategy))
+      (scala-indent:align-anchor)
+      (point))))
 
 (defun scala-indent:resolve-body-step (start &optional anchor)
   (if (and (not (= start (point-max))) (= (char-after start) ?\{))
@@ -856,7 +868,7 @@ comment is outside the comment region. "
 
 (defconst scala-indent:indent-on-words-re
   (concat "^\\s *"
-          (regexp-opt '("catch" "case" "else" "finally" "yield") 'words)))
+          (regexp-opt '("catch" "case" "then" "else" "finally" "yield") 'words)))
 
 (defun scala-indent:indent-on-special-words ()
   "This function is meant to be used with post-self-insert-hook.
@@ -922,12 +934,8 @@ of a line inside a multi-line comment "
       (insert "*")
       (scala-indent:indent-on-scaladoc-asterisk))))
 
-(defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
-  (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
-
-
 (defun scala-indent:fixup-whitespace ()
-  "scala-mode version of `fixup-whitespace'"
+  "`scala-mode' version of `fixup-whitespace'"
   (interactive "*")
   (save-excursion
     (delete-horizontal-space)

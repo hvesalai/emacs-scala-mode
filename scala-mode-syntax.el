@@ -343,8 +343,8 @@
 (defconst scala-syntax:end-of-code-line-re
   (concat "\\([ ]\\|$\\|" scala-syntax:comment-start-re "\\)")
   "A special regexp that can be concatenated to an other regular
-  expression when used with scala-syntax:looking-back-token. Not
-  meaningfull in other contexts.")
+  expression when used with `scala-syntax:looking-back-token'. Not
+  meaningful in other contexts.")
 
 (defconst scala-syntax:path-keywords-unsafe-re
   (regexp-opt '("super" "this") 'words))
@@ -381,13 +381,6 @@
           "\\|" scala-syntax:other-keywords-unsafe-re
           "\\)"))
 
-;; TODO: remove
-;; (defconst scala-syntax:keywords-re
-;;   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:value-keywords-unsafe-re
-;;           "\\|" scala-syntax:path-keywords-unsafe-re
-;;           "\\|" scala-syntax:other-keywords-unsafe-re "\\)"))
-
-
 (defconst scala-syntax:after-reserved-symbol-underscore-re
   (concat "$\\|" scala-syntax:comment-start-re
           "\\|[^" scala-syntax:letterOrDigit-group "]"))
@@ -412,6 +405,7 @@
 
 (defconst scala-syntax:reserved-symbols-re
   ;; reserved symbols and XML starts ('<!' and '<?')
+  ;; TODO XML starts have been dropped from the language
   (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)"
           scala-syntax:reserved-symbols-unsafe-re
           "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
@@ -821,8 +815,8 @@ and whitespace are skipped before matching."
     (looking-at re)))
 
 (defun scala-syntax:looking-back-token (re &optional max-chars)
-  "Return the start position of the token matched by re, if the
-current position is preceeded by it, or nil if not. All ignorable
+  "Return the start position of the token matched by RE, if the
+current position is preceded by it, or nil if not. All ignorable
 comments and whitespace are ignored, i.e. does not search past an
 empty line. Expects to be outside of comment. A limit for the
 search is calculated based on max-chars. The function won't look
@@ -871,6 +865,8 @@ one."
              (backward-list)
              (prog1 (scala-syntax:looking-back-token "if")
                (goto-char (match-beginning 0)))
+             (prog1 (scala-syntax:looking-back-token "then")
+               (goto-char (match-beginning 0)))
              (prog1 (scala-syntax:looking-back-token "else")
                (goto-char (match-beginning 0))))
         (point) nil)))
@@ -881,7 +877,6 @@ point 'point') as specified by SLS chapter 1.2"
   ;; newlines are disabled if
   ;; - in '()' or '[]'
   ;; - between 'case' and '=>'
-  ;; - XML mode (not implemented here)
   (unless point (setq point (point)))
   (save-excursion
     (let* ((state (syntax-ppss point))
