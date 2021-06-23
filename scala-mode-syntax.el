@@ -460,6 +460,7 @@
 (defconst scala-syntax:private-re
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:private-unsafe-re "\\)"))
 
+;; TODO isn't this being dropped?
 (defconst scala-syntax:protected-unsafe-re
   (regexp-opt '("protected") 'words))
 
@@ -490,7 +491,6 @@
 (defconst scala-syntax:class-or-object-re
   (regexp-opt '("class" "object") 'words))
 
-
 ;;;;
 ;;;; Character syntax table and related syntax-propertize functions
 ;;;;
@@ -503,10 +503,9 @@
   "Syntax table used in `scala-mode' buffers.")
 (when (not scala-syntax:syntax-table)
   (let ((syntab (make-syntax-table)))
-    ;; 1. start by reseting the syntax table: only (){}[] are
-    ;; parentheses, so all others marked as parentheses in the parent
-    ;; table must be marked as symbols, nothing is a punctuation
-    ;; unless otherwise stated
+    ;; 1. start by reseting the syntax table: only (){}[] are parentheses, so
+    ;; all others marked as parentheses in the parent table must be marked as
+    ;; symbols, nothing is a punctuation unless otherwise stated
     (map-char-table
      #'(lambda (key value)
          (when (or (= (syntax-class value) 4) ; open
@@ -515,8 +514,8 @@
            (modify-syntax-entry key "_" syntab)))
      (char-table-parent syntab))
 
-    ;; Below 'space', everything is either illegal or whitespace.
-    ;; Consider as whitespace, unless otherwise stated below.
+    ;; Below 'space', everything is either illegal or whitespace. Consider as
+    ;; whitespace, unless otherwise stated below.
     (modify-syntax-entry '(0 . 32) " " syntab)
 
     ;; The scala parentheses
@@ -527,44 +526,40 @@
     (modify-syntax-entry ?\] ")[" syntab)
     (modify-syntax-entry ?\} "){" syntab)
 
-    ;; _ is upper-case letter, but will be modified to be symbol
-    ;; constituent when in reserved symbol position by
-    ;; syntax-propertize-function
+    ;; _ is upper-case letter, but will be modified to be symbol constituent
+    ;; when in reserved symbol position by `syntax-propertize-function'
     (modify-syntax-entry ?\_ "w" syntab)
 
-    ;; by default all opchars are punctuation, but they will be
-    ;; modified by syntax-propertize-function to be symbol
-    ;; constituents when a part of varid or capitalid
-    (dolist (char (mapcar 'identity "!#%&*+/:<=>?@^|~-\u21D2\u2190")) ;; TODO: Sm, So
+    ;; By default all opchars are punctuation, but they will be modified by
+    ;; `syntax-propertize-function' to be symbol constituents when a part of
+    ;; varid or capitalid
+    (dolist (char (mapcar #'identity "!#%&*+/:<=>?@^|~-")) ;; TODO: Sm, So
       (modify-syntax-entry char "." syntab))
 
-    ;; for clarity, the \ is alone here and not in the string above
+    ;; For clarity, the \ is alone here and not in the string above
     (modify-syntax-entry ?\\ "." syntab)
 
-    ;; scala strings cannot span lines, so we mark
-    ;; " as punctuation, but do the real stuff
-    ;; in syntax-propertize-function for properly
-    ;; formatted strings.
+    ;; Scala strings cannot span lines, so we mark " as punctuation, but do the
+    ;; real stuff in `syntax-propertize-function' for properly formatted
+    ;; strings.
     (modify-syntax-entry ?\" "." syntab)
 
-    ;; backquote is given paired delimiter syntax so that
-    ;; quoted ids are parsed as one sexp. Fontification
-    ;; is done separately.
+    ;; Backquote is given paired delimiter syntax so that quoted ids are parsed
+    ;; as one sexp. Fontification is done separately.
     (modify-syntax-entry ?\` "$" syntab)
 
-    ;; ' is considered an expression prefix, since it can
-    ;; both start a Symbol and is a char quote. It
-    ;; will be given string syntax by syntax-propertize-function
-    ;; for properly formatted char literals.
+    ;; ' is considered an expression prefix, since it can both start a Symbol
+    ;; and is a char quote. It will be given string syntax by
+    ;; `syntax-propertize-function' for properly formatted char literals.
     (modify-syntax-entry ?\' "'" syntab)
 
-    ;; punctuation as specified by SLS
+    ;; Punctuation as specified by SLS
     (modify-syntax-entry ?\. "." syntab)
     (modify-syntax-entry ?\; "." syntab)
     (modify-syntax-entry ?\, "." syntab)
 
-    ;; comments
-    ;; the `n' means that comments can be nested
+    ;; Comments
+    ;; The `n' means that comments can be nested
     (modify-syntax-entry ?\/  ". 124b" syntab)
     (modify-syntax-entry ?\*  ". 23n"   syntab)
     (modify-syntax-entry ?\n  "> b" syntab)
@@ -573,7 +568,7 @@
     (setq scala-syntax:syntax-table syntab)))
 
 (defun scala-syntax:propertize-extend-region (start end)
-  "See syntax-propertize-extend-region-functions"
+  "See `syntax-propertize-extend-region-functions'"
   ;; nothing yet
   nil)
 
@@ -706,7 +701,7 @@ symbol constituents (syntax 3)."
       (scala-syntax:put-syntax-table-property 0 '(1 . nil)))))
 
 (defun scala-syntax:propertize (start end)
-  "See syntax-propertize-function"
+  "See `syntax-propertize-function'"
   (scala-syntax:propertize-char-and-string-literals start end)
   (scala-syntax:propertize-shell-preamble start end)
   (scala-syntax:propertize-underscore-and-idrest start end)
@@ -719,12 +714,12 @@ symbol constituents (syntax 3)."
 ;;;;
 
 (defun scala-syntax:beginning-of-code-line ()
-  (interactive)
   "Move to the beginning of code on the line, or to the end of
 the line, if the line is empty. Return the new point.  Not to be
 called on a line whose start is inside a comment, i.e. a comment
 begins on the previous line and continues past the start of this
 line."
+  (interactive)
   ;; TODO: make it work even if the start IS inside a comment
   (beginning-of-line)
   (let ((eol (line-end-position))
@@ -975,7 +970,7 @@ is placed at the end of the skipped token."
   expression."
   (interactive)
   (syntax-propertize (point))
-  ;; for implementation comments, see scala-syntax:forward-sexp
+  ;; For implementation comments, see `scala-syntax:forward-sexp'
   (forward-comment (- (buffer-size)))
   (while (> 0 (+ (skip-syntax-backward " ")
                  (skip-chars-backward scala-syntax:delimiter-group))))
@@ -1015,7 +1010,7 @@ is returned, otherwise nil is returned"
 not. A list must be either enclosed in parentheses or start with
 'val', 'var' or 'import'."
   (save-excursion
-    ;; first check that the previous line ended with ','
+    ;; First check that the previous line ended with ','
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
     (when (and (scala-syntax:looking-back-token "," 1) (not (looking-at-p ")")))
@@ -1064,12 +1059,13 @@ not. A list must be either enclosed in parentheses or start with
   (condition-case ex (backward-sexp) ('error (backward-char))))
 
 (defun scala-syntax:forward-sexp-or-next-line ()
+  ;; TODO this is a candidate for updating for whitespace
   (interactive)
   (cond ((looking-at "\n") (forward-line 1) (beginning-of-line))
 	(t (forward-sexp))))
 
 (defun scala-syntax:beginning-of-definition ()
-  "This function may not work properly with certain types of scala definitions.
+  "This function may not work properly with certain types of Scala definitions.
 For example, no care has been taken to support multiple assignments to vals such as
 
 val a, b = (1, 2)
@@ -1083,7 +1079,7 @@ val a, b = (1, 2)
     (when found-position (progn (goto-char found-position) (back-to-indentation)))))
 
 (defun scala-syntax:end-of-definition ()
-  "This function may not work properly with certain types of scala definitions.
+  "This function may not work properly with certain types of Scala definitions.
 For example, no care has been taken to support multiple assignments to vals such as
 
 val a, b = (1, 2)
