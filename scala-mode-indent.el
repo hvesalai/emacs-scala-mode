@@ -547,7 +547,7 @@ condition (or generators in the case of 'for') in parentheses.")
 `scala-indent:control-keywords-cond-re' keywords if current
 point (or point 'point) is on a line that follows said symbol or
 keyword, or nil if not."
-  ;; TODO this needs to look back more than one line
+  ;; TODO does this need to be adjusted for whitespace syntax?
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
@@ -567,7 +567,7 @@ keyword, or nil if not."
             (when (and (looking-at "\\<if\\>")
                        (scala-syntax:looking-back-token "\\<else\\>"))
               (goto-char (match-beginning 0)))
-            (when (not scala-indent:align-forms)
+            (unless scala-indent:align-forms
               (scala-indent:align-anchor))
             (point))))))
 
@@ -586,7 +586,7 @@ keyword, or nil if not."
       (point))))
 
 (defun scala-indent:resolve-body-step (start &optional anchor)
-  (if (and (not (= start (point-max))) (= (char-after start) ?\{))
+  (if (and (not (= start (point-max))) (or (= (char-after start) ?\{) (= (char-after start) ?:)))
       0
     (+ (scala-indent:value-expression-lead start anchor t)
        scala-indent:step)))
@@ -599,25 +599,26 @@ keyword, or nil if not."
   "Moves back to the point whose column will be used as the
 anchor for calculating block indent for current point (or point
 'point'). Returns point or (point-min) if not inside a block."
-  (let ((block-beg (nth 1 (syntax-ppss
-                           (scala-lib:point-after (beginning-of-line))))))
-    (when block-beg
-      ;; check if the opening paren is the first on the line,
-      ;; if so, it is the anchor. If not, then go back to the
-      ;; start of the line
-      (goto-char block-beg)
-      (if (= (point) (scala-lib:point-after
-                      (scala-syntax:beginning-of-code-line)))
-          (point)
-        (goto-char (or (scala-syntax:looking-back-token
-                        scala-syntax:body-start-re 3)
-                       (point)))
-        (scala-syntax:backward-parameter-groups)
-        (when (scala-indent:backward-sexp-to-beginning-of-line)
-          (scala-indent:goto-run-on-anchor nil
-                                           scala-indent:keywords-only-strategy))
-        (scala-indent:align-anchor)
-        (point)))))
+  ;; TODO this may be the heart of why indentation is not working for whitespace
+  ;; syntax. Need to finish updating the syntax definition on the BNF, and some
+  ;; of this may resolve naturally.
+  (when-let ((block-beg (nth 1 (syntax-ppss
+                                (scala-lib:point-after (beginning-of-line))))))
+    ;; Check if the opening paren is the first on the line, if so, it is the
+    ;; anchor. If not, then go back to the start of the line
+    (goto-char block-beg)
+    (if (= (point) (scala-lib:point-after
+                    (scala-syntax:beginning-of-code-line)))
+        (point)
+      (goto-char (or (scala-syntax:looking-back-token
+                      scala-syntax:body-start-re 3)
+                     (point)))
+      (scala-syntax:backward-parameter-groups)
+      (when (scala-indent:backward-sexp-to-beginning-of-line)
+        (scala-indent:goto-run-on-anchor nil
+                                         scala-indent:keywords-only-strategy))
+      (scala-indent:align-anchor)
+      (point))))
 
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
@@ -823,21 +824,22 @@ strings"
   "Indents the current line."
   (interactive "*")
   (let ((state (save-excursion (syntax-ppss (line-beginning-position)))))
-    (if (not (nth 8 state)) ;; 8 = start pos of comment or string, nil if none
-        (scala-indent:indent-code-line strategy)
-      (scala-indent:indent-line-to
-       (cond ((integerp (nth 4 state))    ;; 4 = nesting level of multi-line comment
-              (scala-indent:scaladoc-indent (nth 8 state)))
-             ((eq t (nth 3 state))   ;; 3 = t for multi-line string
-              (or (save-excursion
-                    (beginning-of-line)
-                    (when (and (looking-at "\\s *|")
-                               (progn (goto-char (nth 8 state))
-                                      (looking-at "\\(\"\"\"\\)|")))
-                      (goto-char (match-end 1))
-                      (current-column)))
-                  (current-indentation)))
-             (t (current-indentation)))))))
+    (if (nth 8 state) ;; 8 = start pos of comment or string
+        (scala-indent:indent-line-to
+         (cond ((integerp (nth 4 state))    ;; 4 = nesting level of multi-line comment
+                (scala-indent:scaladoc-indent (nth 8 state)))
+               ((eq t (nth 3 state))   ;; 3 = t for multi-line string
+                (or (save-excursion
+                      (beginning-of-line)
+                      (when (and (looking-at "\\s *|")
+                                 (progn (goto-char (nth 8 state))
+                                        (looking-at "\\(\"\"\"\\)|")))
+                        (goto-char (match-end 1))
+                        (current-column)))
+                    (current-indentation)))
+               (t (current-indentation))))
+      (scala-indent:indent-code-line strategy)))
+  )
 
 (defun scala-indent:indent-with-reluctant-strategy ()
   (interactive "*")
