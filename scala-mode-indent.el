@@ -569,7 +569,11 @@ keyword, or nil if not."
               (goto-char (match-beginning 0)))
             (unless scala-indent:align-forms
               (scala-indent:align-anchor))
-            (point))))))
+            (point)))
+        (progn
+          ;; TODO this is crude and not quite right yet
+          (scala-syntax:beginning-of-definition)
+          (point)))))
 
 (defun scala-indent:goto-body-anchor (&optional point)
   ;; TODO this does not work right in indentation syntax
@@ -599,9 +603,6 @@ keyword, or nil if not."
   "Moves back to the point whose column will be used as the
 anchor for calculating block indent for current point (or point
 'point'). Returns point or (point-min) if not inside a block."
-  ;; TODO this may be the heart of why indentation is not working for whitespace
-  ;; syntax. Need to finish updating the syntax definition on the BNF, and some
-  ;; of this may resolve naturally.
   (when-let ((block-beg (nth 1 (syntax-ppss
                                 (scala-lib:point-after (beginning-of-line))))))
     ;; Check if the opening paren is the first on the line, if so, it is the

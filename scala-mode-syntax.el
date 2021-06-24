@@ -468,6 +468,8 @@
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:protected-unsafe-re "\\)"))
 
 (defconst scala-syntax:modifiers-unsafe-re
+  ;; TODO is `protected` deprecated? Can `given` ever be a modifier, or does it
+  ;; always eat its `def`?
   (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy" "open"
                 "private" "protected") 'words))
 
@@ -475,6 +477,8 @@
   (concat "\\(^\\|[^`'_]\\)\\(" scala-syntax:modifiers-unsafe-re "\\)"))
 
 (defconst scala-syntax:body-start-re
+  ;; TODO this is getting complicated in Scala 3. A block can be introduced by
+  ;; `:` or `with`, but it depends on what kind of definition it is.
   (concat "=" scala-syntax:end-of-code-line-re)
   "A regexp for detecting if a line ends with '='")
 
@@ -1035,19 +1039,25 @@ not. A list must be either enclosed in parentheses or start with
                 "private" "protected" "case") 'words))
 
 (defconst scala-syntax:whitespace-delimited-modifiers-re
+  ;; NOTE this is sloppy because not all of these modifiers play together.
+  ;; Perhaps it's better that Emacs not get overly intelligent about this, lest
+  ;; its behavior be fragile in the face of partially incorrect code.
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
 (defconst scala-syntax:definition-words-re
+  ;; TODO is `type` the odd man out here? That is, can it introduce a block, or
+  ;; not?
+  ;; TODO Also, is it necessary to worry about which is introduced by which of
+  ;; these is introduced by `:`, `=`, `with`, &c?
   (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type" "enum" "given") "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)
-  (concat " *"
-	  scala-syntax:whitespace-delimited-modifiers-re
-	  words-re
-	  "\\(?: *\\)"
-	  "\\(?2:"
-	  scala-syntax:id-re
-	  "\\)"))
+  (concat scala-syntax:whitespace-delimited-modifiers-re
+          words-re
+          "\\(?: *\\)"
+          "\\(?2:"
+          scala-syntax:id-re ;; TODO should this be plain only?
+          "\\)"))
 
 (defconst scala-syntax:all-definition-re
   (scala-syntax:build-definition-re
@@ -1064,6 +1074,19 @@ not. A list must be either enclosed in parentheses or start with
   (cond ((looking-at "\n") (forward-line 1) (beginning-of-line))
 	(t (forward-sexp))))
 
+(defun scala-syntax:try-beginning-of-definition ()
+  (let ((max-indent (current-indentation))
+        (new-indent nil)
+        (pos nil))
+    (while (or (not new-indent) (and pos (>= new-indent max-indent)))
+      (scala-syntax:backward-sexp-forcing)
+      (setq pos (scala-syntax:movement-function-until-re
+                 scala-syntax:all-definition-re
+                 #'scala-syntax:backward-sexp-forcing))
+      (when pos (goto-char pos) (back-to-indentation))
+      (setq new-indent (current-indentation)))
+    pos))
+
 (defun scala-syntax:beginning-of-definition ()
   "This function may not work properly with certain types of Scala definitions.
 For example, no care has been taken to support multiple assignments to vals such as
@@ -1071,12 +1094,8 @@ For example, no care has been taken to support multiple assignments to vals such
 val a, b = (1, 2)
 "
   (interactive)
-  (let ((found-position
-	 (save-excursion
-	   (scala-syntax:backward-sexp-forcing)
-	   (scala-syntax:movement-function-until-re scala-syntax:all-definition-re
-						    'scala-syntax:backward-sexp-forcing))))
-    (when found-position (progn (goto-char found-position) (back-to-indentation)))))
+  (let ((found-position (save-excursion (scala-syntax:try-beginning-of-definition))))
+    (when found-position (goto-char found-position) (back-to-indentation))))
 
 (defun scala-syntax:end-of-definition ()
   "This function may not work properly with certain types of Scala definitions.
