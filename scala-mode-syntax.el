@@ -1049,6 +1049,8 @@ not. A list must be either enclosed in parentheses or start with
   ;; not?
   ;; TODO Also, is it necessary to worry about which is introduced by which of
   ;; these is introduced by `:`, `=`, `with`, &c?
+  ;; TODO what about `new`? Following by a trait or abstract class name and a
+  ;; colon, it can now introduce a block.
   (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type" "enum" "given") "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)

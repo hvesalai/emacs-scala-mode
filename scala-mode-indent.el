@@ -573,7 +573,7 @@ keyword, or nil if not."
         (progn
           ;; TODO this is crude and not quite right yet
           (scala-syntax:beginning-of-definition)
-          (point)))))
+          (+ scala-indent:step (point))))))
 
 (defun scala-indent:goto-body-anchor (&optional point)
   ;; TODO this does not work right in indentation syntax
@@ -771,9 +771,10 @@ cannot be determined."
          (scala-indent:goto-for-enumerators-anchor scala-indent:resolve-list-step)
          (scala-indent:goto-forms-align-anchor scala-indent:resolve-forms-align-step)
          (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
-         (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
          (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
          (scala-indent:goto-block-anchor scala-indent:resolve-block-step)
+         ;; TODO how order-sensitive is this logic?
+         (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
      )
        point)
       0))
