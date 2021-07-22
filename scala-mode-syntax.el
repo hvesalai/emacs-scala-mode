@@ -170,11 +170,14 @@
           "\\|" scala-syntax:charEscapeSeq-re
           "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
 
+(defconst scala-syntax:string-escape-re
+  (concat scala-syntax:charEscapeSeq-re
+          "\\|" scala-syntax:UnicodeEscape-re))
+
 ;; String Literals
 (defconst scala-syntax:stringElement-re
   (concat "\\(" "[^\n\"\\\\]"
-          "\\|" scala-syntax:charEscapeSeq-re
-          "\\|" scala-syntax:UnicodeEscape-re  "\\)"))
+         "\\|" scala-syntax:string-escape-re  "\\)"))
 
 (defconst scala-syntax:oneLineStringLiteral-re
   (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
@@ -1020,7 +1023,7 @@ not. A list must be either enclosed in parentheses or start with
   '("private" "protected"))
 
 (defconst scala-syntax:modifiers-re
-  (regexp-opt (concat '("override" "opaque")
+  (regexp-opt (append '("override" "opaque")
                       scala-syntax:local-modifiers
                       scala-syntax:access-modifiers)
               'words))
