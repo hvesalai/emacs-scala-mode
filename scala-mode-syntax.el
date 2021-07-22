@@ -21,7 +21,7 @@
 (defun scala-syntax:alt (&rest res)
   (concat "\\(" (string-join res "\\|") "\\)"))
 
-;; single letter matching groups (Chapter 1)
+;; single letter matching groups
 (defconst scala-syntax:hexDigit-group "0-9A-Fa-f")
 (defconst scala-syntax:UnicodeEscape-re
   ;; using `format' allows editing these regexes with one step closer to a sane
@@ -67,9 +67,8 @@
 ;; We may not need it though, because e.g. in the definition of
 ;; `characterLiteral' we use some faster regex.
 
-;; Escape Sequences (Chapter 1.3.6)
-;; NOTE BNF calls this `charEscapeSeq'
-(defconst scala-syntax:escapeSequence-re "\\\\['btnfr\"\\\\]")
+;; Escape Sequences
+(defconst scala-syntax:charEscapeSeq-re "\\\\['btnfr\"\\\\]")
 
 (defconst scala-syntax:op-re
   (concat "[" scala-syntax:opchar-group "]+" ))
@@ -138,7 +137,7 @@
                                                  "\\|" scala-syntax:decimalNumeral-re
                                                  "\\)[Ll]?"))
 
-;; Floating Point Literal (Chapter 1.3.2)
+;; Floating Point Literal
 (defconst scala-syntax:exponentPart-re
   (concat "\\([eE][+-]?["
           scala-syntax:digit-group
@@ -161,32 +160,26 @@
 (defconst scala-syntax:number-safe-start-re
   (concat "[^_" scala-syntax:letter-group "]"))
 
-;; Boolean Literals (Chapter 1.3.3)
+;; Boolean Literals
 (defconst scala-syntax:booleanLiteral-re "true|false")
 
-;; TODO resume here (`characterLiteral' in the BNF)
-
-;; Octal Escape Sequences (Chapter 1.3.6)
-(defconst scala-syntax:octalDigit-group "0-7")
-(defconst scala-syntax:octalEscape-re (concat "\\\\[" scala-syntax:octalDigit-group "\\]\\{1,3\\}"))
-
-;; Character Literals (Chapter 1.3.4)
+;; Character Literals
 (defconst scala-syntax:characterLiteral-re
+  ;; TODO Scala 3 character literal does not mention Unicode escape. Is that a
+  ;; mistake?
   (concat "\\('\\)\\(" "[^\\\\]" ;; should be just printable char, but this is faster
-          "\\|" scala-syntax:escapeSequence-re
-          "\\|" scala-syntax:octalEscape-re
+          "\\|" scala-syntax:charEscapeSeq-re
           "\\|" scala-syntax:UnicodeEscape-re "\\)\\('\\)"))
 
-(defconst scala-syntax:string-escape-re
-  (concat scala-syntax:escapeSequence-re
-          "\\|" scala-syntax:octalEscape-re
-          "\\|" scala-syntax:UnicodeEscape-re))
-
-;; String Literals (Chapter 1.3.5)
+;; String Literals
 (defconst scala-syntax:stringElement-re
   (concat "\\(" "[^\n\"\\\\]"
-          "\\|" scala-syntax:string-escape-re  "\\)"))
-(defconst scala-syntax:oneLineStringLiteral-re (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
+          "\\|" scala-syntax:charEscapeSeq-re
+          "\\|" scala-syntax:UnicodeEscape-re  "\\)"))
+
+(defconst scala-syntax:oneLineStringLiteral-re
+  (concat "\\(\"\\)" scala-syntax:stringElement-re "*\\(\"\\)"))
+
 (defconst scala-syntax:multiLineStringLiteral-start-re
   "\\(\"\\)\"\"\\(\"?\"?[^\"]\\)*")
 (defconst scala-syntax:multiLineStringLiteral-end-re
@@ -198,30 +191,30 @@
   (concat "\\(" scala-syntax:multiLineStringLiteral-re
           "\\|" scala-syntax:oneLineStringLiteral-re "\\)" ))
 
-;; If you change this or any of the used regex, be sure to
-;; maintain this or update propertize function accordingly:
-;; group 1 = char start, 3 = char end
-;; group 4 = multi-line string start, 6 = end
-;; group 7 = string start, 9 = end
+;; If you change this or any of the used regex, be sure to maintain this or
+;; update propertize function accordingly. Start and end group numbers:
+;; |-------------------+-------+-----|
+;; | Syntax item       | Start | End |
+;; |-------------------+-------+-----|
+;; | Character         |     1 |   3 |
+;; | Multi-line string |     4 |   6 |
+;; | One-line string   |     7 |   9 |
+;; |-------------------+-------+-----|
 (defconst scala-syntax:relaxed-char-and-string-literal-re
   (concat scala-syntax:characterLiteral-re
           "\\|" scala-syntax:multiLineStringLiteral-start-re
           "\\(?:" scala-syntax:multiLineStringLiteral-end-re "\\)?"
           "\\|\\(\"\\)" "\\(\\\\.\\|[^\"\n\\]\\)*" "\\(\"\\)"))
 
-(defconst scala-syntax:capitalid-re
-  (concat "[" scala-syntax:upperAndUnderscore-group "]" scala-syntax:idrest-re))
-(defconst scala-syntax:id-first-char-group
-  (concat scala-syntax:lower-group
-          scala-syntax:upperAndUnderscore-group
-          scala-syntax:opchar-group))
-
-;; Symbol literals (Chapter 1.3.7)
+;; Symbol literals
 (defconst scala-syntax:symbolLiteral-re
-  ;; must end with non-' to not conflict with scala-syntax:characterLiteral-re
+  ;; NOTE must end with non-' to not conflict with
+  ;; `scala-syntax:characterLiteral-re'
   (concat "\\('" scala-syntax:plainid-re "\\)\\([^']\\|$\\)"))
 
-;; Literals (Chapter 1.3)
+;; Literals
+;; TODO Scala 3 distinguishes between Literal and SimpleLiteral; if that becomes
+;; important below, then distinguish here.
 (defconst scala-syntax:literal-re
   (concat "\\(" scala-syntax:integerLiteral-re
           "\\|" scala-syntax:floatingPointLiteral-re
@@ -231,6 +224,11 @@
           "\\|" scala-syntax:symbolLiteral-re
           "\\|" "null" "\\)"))
 
+;; TODO Scala 3 defines QualId, ids and SimpleRef here. SimpleRef seems to bear
+;; a relation to what was before called "path".
+
+;; TODO does not occur under this name in Scala 3 BNF; is this was what is there
+;; called escape, processedStringLiteral, processedStringPart, &c?
 (defconst scala-syntax:interpolation-re
   (concat "\\(" "\\$"  scala-syntax:id-re "\\|" "\\${[^}\n\\\\]*}" "\\)"))
 
@@ -254,18 +252,9 @@
               t))) ;; keep going
     pos))
 
-;; Paths (Chapter 3.1)
-;; emacs has a problem with these regex, don't use them
-;; (defconst scala-syntax:classQualifier-re (concat "[[]" scala-syntax:id-re "[]]"))
-;; (defconst scala-syntax:stableId-re
-;;   (concat "\\(\\(" "this"
-;;           "\\|" "super" scala-syntax:classQualifier-re
-;;           "\\|" scala-syntax:id-re
-;;           "\\)\\.\\)*"
-;;           scala-syntax:id-re))
-;; (defconst scala-syntax:path-re
-;;   (concat "\\(" scala-syntax:stableId-re
-;;           "\\|" "\\(" scala-syntax:id-re "\\." "\\)?" "this" "\\)"))
+;; NOTE Emacs has a problem with these regexes; don't use them.
+;; (defconst scala-syntax:classQualifier-re
+;;   (concat "[[]" scala-syntax:id-re "[]]"))
 
 (defun scala-syntax:looking-at-super ()
   (save-excursion
@@ -292,6 +281,8 @@
           (set-match-data `(,beg ,(match-end 0)))
           t)))))
 
+;; NOTE written as a function because Emacs struggled with the regex
+;; TODO I don't see references to "stable" identifiers in Scala 3 BNF
 (defun scala-syntax:looking-at-stableIdOrPath (&optional path-p beg)
   (unless beg (setq beg (point)))
   (save-excursion
@@ -312,20 +303,11 @@
              (set-match-data `(,beg ,(match-end 0)))
              (point))))))
 
+;; TODO update per SimplePattern in Scala 3 BNF
 (defun scala-syntax:looking-at-simplePattern-beginning ()
   (or (looking-at "[_(]")
       (looking-at scala-syntax:literal-re)
       (scala-syntax:looking-at-stableIdOrPath)))
-
-
-(defun scala-syntax:regexp-for-id (id)
-  (let ((prefix-regex
-         (if (string-match scala-syntax:alphaid-re id)
-             "\\b" (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)")))
-        (suffix-regex
-         (if (string-match scala-syntax:op-re (substring id -1 nil))
-             (concat "\\([^" scala-syntax:opchar-group "]\\|$\\)") "\\b")))
-    (concat prefix-regex id suffix-regex)))
 
 ;;;
 ;;; Other regular expressions
@@ -346,6 +328,8 @@
   expression when used with `scala-syntax:looking-back-token'. Not
   meaningful in other contexts.")
 
+;; TODO there is only one reference to the word "path" in the Scala 3 BNF. Is
+;; that a vestige? Should this be renamed?
 (defconst scala-syntax:path-keywords-unsafe-re
   (regexp-opt '("super" "this") 'words))
 
@@ -385,19 +369,17 @@
   (concat "$\\|" scala-syntax:comment-start-re
           "\\|[^" scala-syntax:letterOrDigit-group "]"))
 
+;; Reserved symbol _
 (defconst scala-syntax:reserved-symbol-underscore-re
-  ;; reserved symbol _
   (concat "\\(^\\|[^" scala-syntax:letterOrDigit-group "]\\)"
           "\\(_\\)"
           "\\(" scala-syntax:after-reserved-symbol-underscore-re "\\)"))
 
+;; Reserved symbols. The regexp is unsafe as it does not check the context.
 (defconst scala-syntax:reserved-symbols-unsafe-re
-  ;; reserved symbols. The regexp is unsafe as it does not
-  ;; check the context.
-  "\\([:#@\u21D2\u2190]\\|=>?\\|<[:%!?\\-]\\|>:\\)" )
+  "\\([:#@]\\|=>?\\|<[:%!?\\-]\\|>:\\)" )
 
-(defconst scala-syntax:double-arrow-unsafe-re
-  "\\(=>\\|\u21D2\\)")
+(defconst scala-syntax:double-arrow-unsafe-re "=>")
 
 (defconst scala-syntax:after-reserved-symbol-re
   (concat "\\($\\|" scala-syntax:comment-start-re
@@ -409,12 +391,6 @@
   (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)"
           scala-syntax:reserved-symbols-unsafe-re
           "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
-
-(defconst scala-syntax:colon-re
-  (concat "\\(^\\|[^" scala-syntax:opchar-group "]\\)"
-          "\\(:\\)"
-          "\\(" scala-syntax:after-reserved-symbol-re "\\)"))
-
 
 (defconst scala-syntax:override-unsafe-re
   (regexp-opt '("override") 'words))
@@ -482,6 +458,9 @@
   (concat "=" scala-syntax:end-of-code-line-re)
   "A regexp for detecting if a line ends with '='")
 
+;; NOTE "list" here seems to refer to the Emacs S-Expr concept of a List, not
+;; anything that is considered a list in Scala.
+;; TODO what might be new here for Scala 3?
 (defconst scala-syntax:list-keywords-re
   (regexp-opt '("var" "val" "import") 'words)
   ("Keywords that can start a list"))
@@ -499,17 +478,16 @@
 ;;;; Character syntax table and related syntax-propertize functions
 ;;;;
 
-;;; The syntax table relies havily on the syntax-propertize-functions being
-;;; run. Hence this syntax requires at least emacs 24, which introduced
-;;; this new facility.
+;;; The syntax table relies havily on the `syntax-propertize-function's being
+;;; run. Hence this syntax requires at least Emacs 24.
 
 (defvar scala-syntax:syntax-table nil
   "Syntax table used in `scala-mode' buffers.")
 (when (not scala-syntax:syntax-table)
   (let ((syntab (make-syntax-table)))
-    ;; 1. start by reseting the syntax table: only (){}[] are parentheses, so
-    ;; all others marked as parentheses in the parent table must be marked as
-    ;; symbols, nothing is a punctuation unless otherwise stated
+    ;; Start by reseting the syntax table: only (){}[] are parentheses, so all
+    ;; others marked as parentheses in the parent table must be marked as
+    ;; symbols. Nothing is a punctuation unless otherwise stated.
     (map-char-table
      #'(lambda (key value)
          (when (or (= (syntax-class value) 4) ; open
@@ -522,7 +500,7 @@
     ;; whitespace, unless otherwise stated below.
     (modify-syntax-entry '(0 . 32) " " syntab)
 
-    ;; The scala parentheses
+    ;; The Scala parentheses
     (modify-syntax-entry ?\( "()" syntab)
     (modify-syntax-entry ?\[ "(]" syntab)
     (modify-syntax-entry ?\{ "(}" syntab)
@@ -536,7 +514,7 @@
 
     ;; By default all opchars are punctuation, but they will be modified by
     ;; `syntax-propertize-function' to be symbol constituents when a part of
-    ;; varid or capitalid
+    ;; varid or capitalid ;; TODO capitalid not mentioned in Scala 3 BNF
     (dolist (char (mapcar #'identity "!#%&*+/:<=>?@^|~-")) ;; TODO: Sm, So
       (modify-syntax-entry char "." syntab))
 
@@ -549,7 +527,7 @@
     (modify-syntax-entry ?\" "." syntab)
 
     ;; Backquote is given paired delimiter syntax so that quoted ids are parsed
-    ;; as one sexp. Fontification is done separately.
+    ;; as one S-expression. Fontification is done separately.
     (modify-syntax-entry ?\` "$" syntab)
 
     ;; ' is considered an expression prefix, since it can both start a Symbol
@@ -577,21 +555,20 @@
   nil)
 
 (defmacro scala-syntax:put-syntax-table-property (match-group value)
-  "Add 'syntax-table entry 'value' to the region marked by the
-match-group 'match-group'"
+  "Add `syntax-table' entry VALUE to the region marked by MATCH-GROUP"
   `(put-text-property (match-beginning ,match-group)
                       (match-end ,match-group)
                       'syntax-table
                       ,value))
 
 (defun scala-syntax:propertize-char-and-string-literals (start end)
-  "Mark start and end of character literals as well as one-line
-and multi-line string literals. One-line strings and characters
-use syntax class 7 (string quotes), while multi-line strings are
-marked with 15 (generic string delimiter). Multi-line string
-literals are marked even if they are unbalanced. One-line string
-literals have to be balanced to get marked. This means invalid
-characters and one-line strings will not be fontified."
+  "Mark start and end of character and string literals.
+
+One-line strings and characters use syntax class 7 (string quotes), while
+multi-line strings are marked with 15 (generic string delimiter). Multi-line
+string literals are marked even if they are unbalanced. One-line string literals
+have to be balanced to get marked. This means invalid characters and one-line
+strings will not be fontified."
 
   (let* ((string-state (nth 3 (syntax-ppss start)))
          (unbalanced-p (eq string-state t)))
@@ -650,6 +627,7 @@ characters and one-line strings will not be fontified."
       (when (re-search-forward "\n" end t)
         (scala-syntax:put-syntax-table-property 0 '(12 . nil))))))
 
+;; TODO what makes underscores to be considered uppercase?
 (defun scala-syntax:propertize-underscore-and-idrest (start end)
   "Mark all underscores (_) as symbol constituents (syntax 3) or
 upper case letter (syntax 2). Also mark opchars in idrest as
@@ -685,7 +663,8 @@ symbol constituents (syntax 3)."
         (unless (or
                  (string-suffix-p "*/" match)
                  (member match '("</"))
-                 (member 0 (mapcar (lambda (regexp) (string-match regexp match)) '("^*+/$" "^//.*$" "^/\\*+$")))
+                 (member 0 (mapcar (lambda (regexp) (string-match regexp match))
+                                   '("^*+/$" "^//.*$" "^/\\*+$")))
                  (equal 2 (syntax-class (syntax-after match-end)))
                  (equal 2 (syntax-class (syntax-after (1- match-beg)))))
           (put-text-property match-beg match-end 'syntax-table '(3 . nil)))))))
@@ -739,9 +718,9 @@ line."
       (skip-syntax-forward " " eol)
       (point))))
 
+;; TODO Scala 3: nothing called stable
 (defun scala-syntax:looking-at-varid-p (&optional point)
-  "Return true if looking-at varid, and it is not the start of a
-stableId"
+  "Return true if `looking-at' varid, and it is not the start of a stableId"
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:skip-forward-ignorable)
@@ -871,8 +850,7 @@ one."
         (point) nil)))
 
 (defun scala-syntax:newlines-disabled-p (&optional point)
-  "Return true if newlines are disabled at the current point (or
-point 'point') as specified by SLS chapter 1.2"
+  "Whether newlines are disabled at the current point (or point POINT)"
   ;; newlines are disabled if
   ;; - in '()' or '[]'
   ;; - between 'case' and '=>'
@@ -912,15 +890,15 @@ point 'point') as specified by SLS chapter 1.2"
                              (not (looking-at scala-syntax:class-or-object-re)))))))))))))
 
 (defun scala-syntax:forward-sexp ()
-  "Move forward one scala expression. It can be: parameter list (value or type),
-id, reserved symbol, keyword, block, or literal. Punctuation (.,;)
-and comments are skipped silently. Position is placed at the
-end of the skipped expression."
+  "Move forward one Scala expression.
+
+It can be: parameter list (value or type), id, reserved symbol, keyword, block,
+or literal. Punctuation (.,;) and comments are skipped silently. Position is
+placed at the end of the skipped expression."
   (interactive)
   (syntax-propertize (point-max))
-  ;; emacs knows how to properly skip: lists, varid, capitalid,
-  ;; strings, symbols, chars, quotedid. What we have to handle here is
-  ;; most of all ids made of op chars
+  ;; Emacs knows how to properly skip: lists, varid, strings, symbols, chars,
+  ;; quotedid. What we have to handle here is most of all ids made of op chars.
 
   ;; skip comments, whitespace and scala delimiter chars .,; so we
   ;; will be at the start of something interesting
@@ -933,11 +911,11 @@ end of the skipped expression."
     (goto-char (or (scan-sexps (point) 1) (buffer-end 1)))))
 
 (defun scala-syntax:forward-token ()
-  "Move forward one scala token, comment word or string word. It
-can be: start or end of list (value or type), id, reserved
-symbol, keyword, block, or literal. Punctuation (.,;), comment
-delimiters and string delimiters are skipped silently. Position
-is placed at the end of the skipped token."
+  "Move forward one Scala token, comment word or string word.
+
+It can be: start or end of list (value or type), id, reserved symbol, keyword,
+block, or literal. Punctuation (.,;), comment delimiters and string delimiters
+are skipped silently. Position is placed at the end of the skipped token."
   (interactive)
   (syntax-propertize (point-max))
   (skip-syntax-forward " >" (point-max))
@@ -1009,8 +987,8 @@ is returned, otherwise nil is returned"
     (when found (goto-char found))))
 
 (defun scala-syntax:list-p (&optional point)
-  "Returns the start of the list, if the current point (or point
-'point') is on the first line of a list element > 1, or nil if
+  "Returns the start of the list, if the current point (or POINT)
+is on the first line of a list element > 1, or nil if
 not. A list must be either enclosed in parentheses or start with
 'val', 'var' or 'import'."
   (save-excursion
@@ -1032,11 +1010,21 @@ not. A list must be either enclosed in parentheses or start with
           (when (looking-at scala-syntax:list-keywords-re)
             (goto-char (match-end 0))))))))
 
-;; Functions to help with finding the beginning and end of scala definitions.
+;; Functions to help with finding the beginning and end of Scala definitions.
+
+(defconst scala-syntax:local-modifiers
+  ;; TODO what about case, extension?
+  '("abstract" "final" "sealed" "open" "implicit" "lazy" "inline"))
+;; TODO Scala 3 BNF has:
+;;   (‘private’ | ‘protected’) [AccessQualifier]
+(defconst scala-syntax:access-modifiers
+  '("private" "protected"))
 
 (defconst scala-syntax:modifiers-re
-  (regexp-opt '("override" "abstract" "final" "sealed" "implicit" "lazy" "using" "extension"
-                "private" "protected" "case") 'words))
+  (regexp-opt (concat '("override" "opaque")
+                      scala-syntax:local-modifiers
+                      scala-syntax:access-modifiers)
+              'words))
 
 (defconst scala-syntax:whitespace-delimited-modifiers-re
   ;; NOTE this is sloppy because not all of these modifiers play together.
@@ -1044,6 +1032,7 @@ not. A list must be either enclosed in parentheses or start with
   ;; its behavior be fragile in the face of partially incorrect code.
   (concat "\\(?:" scala-syntax:modifiers-re "\\(?: *\\)" "\\)*"))
 
+;; TODO work on the "Declarations and Definitions" section of the Scala 3 BNF
 (defconst scala-syntax:definition-words-re
   ;; TODO is `type` the odd man out here? That is, can it introduce a block, or
   ;; not?
@@ -1051,7 +1040,9 @@ not. A list must be either enclosed in parentheses or start with
   ;; these is introduced by `:`, `=`, `with`, &c?
   ;; TODO what about `new`? Following by a trait or abstract class name and a
   ;; colon, it can now introduce a block.
-  (mapconcat 'regexp-quote '("class" "object" "trait" "val" "var" "def" "type" "enum" "given") "\\|"))
+  (mapconcat 'regexp-quote
+             '("class" "object" "trait" "val" "var" "def" "type" "enum" "given")
+             "\\|"))
 
 (defun scala-syntax:build-definition-re (words-re)
   (concat scala-syntax:whitespace-delimited-modifiers-re
