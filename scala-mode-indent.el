@@ -87,11 +87,11 @@ val x = if (foo)
   :group 'scala)
 
 (defconst scala-indent:eager-strategy 0
-  "See 'scala-indent:run-on-strategy'")
+  "See `scala-indent:run-on-strategy'")
 (defconst scala-indent:operator-strategy 1
-  "See 'scala-indent:run-on-strategy'")
+  "See `scala-indent:run-on-strategy'")
 (defconst scala-indent:reluctant-strategy 2
-  "See 'scala-indent:run-on-strategy'")
+  "See `scala-indent:run-on-strategy'")
 (defconst scala-indent:keywords-only-strategy 3
   "A strategy used internally by indent engine")
 
@@ -484,7 +484,7 @@ special word found. Special words include 'yield', 'else',
 
 (defun scala-indent:goto-list-anchor (&optional point)
   "Moves back to the point whose column will be used to indent
-list rows at current point (or point `point'). Returns the new
+list rows at current point (or POINT). Returns the new
 point or nil if the point is not in a list element > 1."
   (let ((list-beg (scala-syntax:list-p point)))
     (when list-beg
@@ -601,8 +601,8 @@ keyword, or nil if not."
 
 (defun scala-indent:goto-block-anchor (&optional point)
   "Moves back to the point whose column will be used as the
-anchor for calculating block indent for current point (or point
-'point'). Returns point or (point-min) if not inside a block."
+anchor for calculating block indent for current point (or POINT).
+Returns point or (point-min) if not inside a block."
   (when-let ((block-beg (nth 1 (syntax-ppss
                                 (scala-lib:point-after (beginning-of-line))))))
     ;; Check if the opening paren is the first on the line, if so, it is the
@@ -650,75 +650,6 @@ anchor for calculating block indent for current point (or point
 ;;; Open parentheses
 ;;;
 
-(defun scala-indent:open-parentheses-line-p (&optional point)
-  "Returns the position of the first character of the line,
-if the current point (or point 'point') is on a line that starts
-with an opening parentheses, or nil if not."
-  (save-excursion
-    (when point (goto-char point))
-    (scala-syntax:beginning-of-code-line)
-    (if (looking-at "\\s(") (point) nil)))
-
-(defun scala-indent:goto-open-parentheses-anchor (&optional point)
-  "Moves back to the point whose column will be used as the
-anchor for calculating opening parenthesis indent for the current
-point (or point 'point'). Returns point or nil, if line does not
-start with opening parenthesis."
-  ;; There are five cases we need to consider:
-  ;; 1. curry parentheses, i.e. 2..n parentheses groups.
-  ;; 2. value body parentheses (follows '=').
-  ;; 3. parameters, etc on separate line (who would be so mad?)
-  ;; 4. non-value body parentheses (follows class, trait, new, def, etc).
-  (let ((parentheses-beg (scala-indent:open-parentheses-line-p point)))
-    (when parentheses-beg
-      (goto-char parentheses-beg)
-      (cond
-       ;; case 1
-       ((and scala-indent:align-parameters
-             (= (char-after) ?\()
-             (scala-indent:run-on-p)
-             (scala-syntax:looking-back-token ")" 1))
-        (scala-syntax:backward-parameter-groups)
-        (let ((curry-beg (point)))
-          (forward-char)
-          (forward-comment (buffer-size))
-          (if (= (line-number-at-pos curry-beg)
-                 (line-number-at-pos))
-              (goto-char curry-beg)
-            nil)))
-       ;; case 2
-       ((scala-syntax:looking-back-token "=" 1)
-        nil) ; let body rule handle it
-       ;; case 4
-       ((and (= (char-after) ?\{)
-             (scala-indent:goto-run-on-anchor
-              nil scala-indent:keywords-only-strategy)) ; use customized strategy
-        (point))
-       ;; case 3
-       ;;((scala-indent:run-on-p)
-       ;; (scala-syntax:skip-backward-ignorable)
-       ;; (back-to-indentation)
-       ;; (point))
-       (t
-        nil)
-       ))))
-
-(defun scala-indent:resolve-open-parentheses-step (start anchor)
-  "Resolves the appropriate indent step for an open paren
-anchored at 'anchor'."
-  (cond ((scala-syntax:looking-back-token ")")
-;         (message "curry")
-         0)
-        ((save-excursion
-           (goto-char anchor)
-           ;; find =
-           (scala-syntax:has-char-before ?= start))
-;         (message "=")
-         scala-indent:step)
-        (t
-;         (message "normal at %d" (current-column))
-         0)))
-
 (defun scala-indent:goto-line-comment-anchor (&optional point)
   "Goto and return the position relative to which a line comment
 will be indented. This will be the start of the line-comment on
@@ -762,19 +693,17 @@ nothing was applied."
           (scala-indent:apply-indent-rules (cdr rule-indents)))))))
 
 (defun scala-indent:calculate-indent-for-line (&optional point)
-  "Calculate the appropriate indent for the current point or the
-point 'point'. Returns the new column, or nil if the indent
-cannot be determined."
+  "Calculate the appropriate indent for the current point or POINT.
+
+Returns the new column, or nil if the indent cannot be determined."
   (or (scala-indent:apply-indent-rules
-       `((scala-indent:goto-line-comment-anchor 0)
-         (scala-indent:goto-open-parentheses-anchor scala-indent:resolve-open-parentheses-step)
-         (scala-indent:goto-for-enumerators-anchor scala-indent:resolve-list-step)
-         (scala-indent:goto-forms-align-anchor scala-indent:resolve-forms-align-step)
-         (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
-         (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
+       `(;;(scala-indent:goto-line-comment-anchor 0)
          (scala-indent:goto-block-anchor scala-indent:resolve-block-step)
-         ;; TODO how order-sensitive is this logic?
-         (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
+         ;; (scala-indent:goto-for-enumerators-anchor scala-indent:resolve-list-step)
+         ;; (scala-indent:goto-forms-align-anchor scala-indent:resolve-forms-align-step)
+         ;; (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
+         ;; (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
+         ;; (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
      )
        point)
       0))

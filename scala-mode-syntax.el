@@ -9,14 +9,13 @@
 ;;;; Scala syntax regular expressions
 ;;;;
 
-;;; Based on the Scala language specification 3.0.  Note: order is not
-;;; the same as in the document, as here things are declared before
-;;; used.
+;;; Based on the Scala language specification 3.0. Note: order is not the same
+;;; as in the document, as here things are declared before used.
 
-;;; A note on naming. Things that end with `-re' are regular
-;;; expressions.  Things that end with `-group' are regular expression
-;;; character groups without the enclosing [], i.e. they are not
-;;; regular expressions, but can be used in declaring one.
+;;; A note on naming. Things that end with `-re' are regular expressions. Things
+;;; that end with `-group' are regular expression character groups without the
+;;; enclosing [], i.e. they are not regular expressions, but can be used in
+;;; declaring one.
 
 (defun scala-syntax:alt (&rest res)
   (concat "\\(" (string-join res "\\|") "\\)"))
