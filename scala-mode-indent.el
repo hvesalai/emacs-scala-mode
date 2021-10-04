@@ -421,7 +421,7 @@ Returns point or (point-min) if not inside a block."
 (defun scala-indent:analyze-syntax-stack (stack)
   "TODO document"
   (pcase stack
-    ('(?.) 'dot)
+    ('(?\n ?.) 'dot-chain)
     ('(final) 'decl)
     ('(override) 'decl)
     ('(class) 'decl)
@@ -452,20 +452,23 @@ Returns point or (point-min) if not inside a block."
 (defun scala-indent:relative-indent-by-elem (syntax-elem)
   "TODO document"
   (pcase syntax-elem
-    (`(dedented decl . ,_) 'maintain)
+    (`(dedented decl . ,_) :maintain)
     ('(dedented) 2)
-    ('(dedented dot) 2)
-    ('(decl-lhs dot) 2)
+    ('(dedented dot-chain) 4)
+    ('(decl-lhs dot-chain) 4)
     (`(decl-lhs decl . ,_) 0)
     (`(decl-lhs for-comp) 0)
     (`(decl-lhs generator) 0) ;; TODO for comprehensions are problematic
     ('(for-comp yield-from-comp) 0)
+    ('(dedented yield-from-comp) :maintain)
+    ('(decl-lhs yield-from-comp) -2)
     (`(for-body . ,_) 2)
     (`(decl-lhs . ,_) 2)
     (`(match case . ,_) 2)
     ('(arrow-lhs) 2)
     ('(block) 2)
     ('(decl) 2)
+    ('(generator yield-from-comp) -2)
     (`(generator . ,_) 0)
     (`(block . ,_) 2)
     ('(case case) 0) ;; e.g. in enums
@@ -476,24 +479,30 @@ Returns point or (point-min) if not inside a block."
   "TODO document"
   (save-excursion
     (when point (goto-char point))
-    ;; Always look at a token on the current for starters
-    (when (> (current-indentation) (current-column))
-      (scala-syntax:forward-token))
-    (if (= (line-beginning-position) (line-end-position))
-        ;; Handle blank lines
-        (scala-syntax:backward-sexp-forcing)
-      ;; (beginning-of-thing 'sexp) gets confused by `.'
-      (unless (looking-at-p "\.")
-        ;; Avoid double-reading curent symbol
-        (beginning-of-thing 'sexp)))
-    (list (point)
-          (current-indentation))))
+    (let (stack)
+      ;; Always look at a token on the current for starters
+      (when (> (current-indentation) (current-column))
+        (scala-syntax:forward-token)
+        (setq stack (cons ?\n stack)))
+      (if (= (line-beginning-position) (line-end-position))
+          ;; Handle blank lines
+          (progn
+            (scala-syntax:backward-sexp-forcing)
+            (setq stack (cons ?\n stack)))
+        ;; (beginning-of-thing 'sexp) gets confused by `.'
+        (unless (looking-at-p "\\.")
+          ;; Avoid double-reading curent symbol
+          (beginning-of-thing 'sexp)))
+      (list (point)
+            (current-indentation)
+            stack))))
 
-(defun scala-indent:analyze-context (orig-indent point)
+(defun scala-indent:analyze-context (orig-indent point &optional init-stack)
   "TODO document"
   (save-excursion
     (goto-char point)
-    (let (result stack)
+    (let (result
+          (stack init-stack))
       ;; TODO probably want to bound this much more tightly than the beginning
       ;; of the buffer. This means worse case performance could be bad.
       (while (and (not result) (> (point) 1))
@@ -508,6 +517,16 @@ Returns point or (point-min) if not inside a block."
           (setq result
                 (scala-indent:analyze-syntax-stack stack))
           ;(message (format "result: %s" result))
+          (when (and (not result)
+                     (save-excursion (= (point)
+                                        (scala-syntax:beginning-of-code-line))))
+            (setq stack (cons ?\n stack))
+            ;(message (format "stack: %s" stack))
+            (setq result
+                  (scala-indent:analyze-syntax-stack stack))
+            ;(message (format "result: %s" result))
+            (when result
+              (scala-syntax:backward-sexp-forcing)))
           (unless result
             (while (looking-at-p "\\.") (backward-char))
             (scala-syntax:backward-sexp-forcing))))
@@ -518,11 +537,12 @@ Returns point or (point-min) if not inside a block."
 
 (defun scala-indent:new-calculate-indent-for-line (&optional point)
   "TODO document"
-  (let* ((pointAndIndent (scala-indent:find-analysis-start point))
-         (point (car pointAndIndent))
-         (orig-indent (cadr pointAndIndent))
+  (let* ((initResult (scala-indent:find-analysis-start point))
+         (point (car initResult))
+         (orig-indent (cadr initResult))
+         (stack (caddr initResult))
          (line-no (line-number-at-pos point))
-         (analysis (scala-indent:analyze-context orig-indent point))
+         (analysis (scala-indent:analyze-context orig-indent point stack))
          (syntax-elem (list (car analysis)))
          (ctxt-line (cadr analysis))
          (ctxt-indent (caddr analysis))
@@ -531,6 +551,7 @@ Returns point or (point-min) if not inside a block."
     (while (and (= ctxt-line line-no) (> line-no 1))
       (setq analysis
             (scala-indent:analyze-context
+             orig-indent
              (save-excursion
                (goto-char stopped-point)
                (scala-syntax:backward-sexp-forcing)
@@ -543,7 +564,7 @@ Returns point or (point-min) if not inside a block."
     ;(message "syntax-elem: %s" syntax-elem)
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
-      (if (eq 'maintain relative)
+      (if (eq :maintain relative)
           (current-indentation)
         (+ ctxt-indent relative)))))
 
