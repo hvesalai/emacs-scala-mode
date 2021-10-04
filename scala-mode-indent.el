@@ -418,6 +418,63 @@ Returns point or (point-min) if not inside a block."
       (scala-indent:align-anchor)
       (point))))
 
+(defun scala-indent:analyze-syntax-stack (stack)
+  "TODO document"
+  (pcase stack
+    (`(val . ,_) 'decl)
+    (`(= ,_) 'decl-lhs)))
+
+(defun scala-indent:analyze-context (&optional point)
+  "TODO document"
+  (save-excursion
+    (when point (goto-char point))
+    (let (result stack)
+      ;; TODO probably want to bound this much more tightly than the beginning
+      ;; of the buffer
+      (while (and (not result) (> (point) 1))
+        (setq stack
+              (cons (sexp-at-point)
+                    stack))
+        (message (format "stack: %s" stack))
+        (setq result
+              (scala-indent:analyze-syntax-stack stack))
+        (message (format "result: %s" result))
+        (unless result
+          (scala-syntax:backward-sexp-forcing)))
+      (list result
+            (line-number-at-pos)
+            (current-indentation)
+            (point)))))
+
+(defun scala-indent:relative-indent-by-elem (syntax-elem)
+  "TODO document"
+  (pcase syntax-elem
+    ('decl-lhs 2)
+    ('(decl decl) 0)))
+
+(defun scala-indent:new-calculate-indent-for-line (&optional point)
+  "TODO document"
+  (let* ((line-no (line-number-at-pos))
+         (analysis (scala-indent:analyze-context point))
+         (syntax-elem (list (car analysis)))
+         (ctxt-line (cadr analysis))
+         (ctxt-indent (caddr analysis))
+         (stopped-point (cadddr analysis)))
+    (while (and (= ctxt-line line-no) (> line-no 1))
+      (setq analysis
+            (scala-indent:analyze-context
+             (save-excursion
+               (goto-char stopped-point)
+               (scala-syntax:backward-sexp-forcing)
+               (point))))
+      (setq syntax-elem (cons (car analysis) syntax-elem))
+      (setq ctxt-line (cadr analysis))
+      (setq ctxt-indent (caddr analysis))
+      (setq stopped-point (cadddr analysis)))
+    (when-let ((_ (< ctxt-line line-no))
+               (relative (scala-indent:relative-indent-by-elem syntax-elem)))
+      (+ ctxt-indent relative))))
+
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
 'start' relative to the block anchor 'anchor'."
@@ -476,11 +533,13 @@ nothing was applied."
   "Calculate the appropriate indent for the current point or POINT.
 
 Returns the new column, or nil if the indent cannot be determined."
-  (or (scala-indent:apply-indent-rules
-       `((scala-indent:goto-block-anchor scala-indent:resolve-block-step)
-         )
-       point)
-      0))
+  (or
+   (scala-indent:new-calculate-indent-for-line point)
+   (scala-indent:apply-indent-rules
+    `((scala-indent:goto-block-anchor scala-indent:resolve-block-step)
+      )
+    point)
+   0))
 
 (defun scala-indent:indent-line-to (column)
   "Indent the line to column and move cursor to the indent
