@@ -429,6 +429,10 @@ Returns point or (point-min) if not inside a block."
     ('(while) 'decl)
     ('(enum) 'decl)
     ('(trait) 'decl)
+    (`(for) 'for-comp)
+    (`(for . ,_) 'for-body)
+    (`(yield . ,_) 'yield-from-comp)
+    (`(<- . ,_) 'generator)
     (`(def . ,_) 'decl)
     (`(val . ,_) 'decl)
     (`(var . ,_) 'decl)
@@ -448,37 +452,48 @@ Returns point or (point-min) if not inside a block."
   "TODO document"
   (pcase syntax-elem
     (`(dedented decl . ,_) 'maintain)
-    ('(dedented blank) 2)
     ('(dedented) 2)
     (`(decl-lhs decl . ,_) 0)
+    (`(decl-lhs for-comp) 0)
+    (`(decl-lhs generator) 0) ;; TODO for comprehensions are problematic
+    ('(for-comp yield-from-comp) 0)
+    (`(for-body . ,_) 2)
     (`(decl-lhs . ,_) 2)
     (`(match case . ,_) 2)
     ('(arrow-lhs) 2)
     ('(block) 2)
+    ('(decl) 2)
+    (`(generator . ,_) 0)
     (`(block . ,_) 2)
     ('(case case) 0) ;; e.g. in enums
     (`(arrow-lhs case . ,_) 0) ;; within match
     (`(decl decl . ,_) 2)))
 
-(defun scala-indent:analyze-context (&optional point)
+(defun scala-indent:find-analysis-start (&optional point)
   "TODO document"
   (save-excursion
-    (let ((line-indent (current-indentation))
+    (when point (goto-char point))
+    ;; Always look at a token on the current for starters
+    (when (> (current-indentation) (current-column))
+      (scala-syntax:forward-token))
+    (if (= (line-beginning-position) (line-end-position))
+        ;; Handle blank lines
+        (scala-syntax:backward-sexp-forcing)
+      ;; Avoid double-reading curent symbol
+      (beginning-of-thing 'sexp))
+    (point)))
+
+(defun scala-indent:analyze-context (point)
+  "TODO document"
+  (save-excursion
+    (goto-char point)
+    (let ((orig-indent (current-indentation))
           result
           stack)
-      (when point (goto-char point))
-      ;; Always look at a token on the current for starters
-      (when (> line-indent (current-column))
-        (scala-syntax:forward-token))
-      (if (= (line-beginning-position) (line-end-position))
-          ;; Handle blank lines
-          (setq result 'blank)
-        ;; Avoid double-reading curent symbol
-        (beginning-of-thing 'sexp))
       ;; TODO probably want to bound this much more tightly than the beginning
       ;; of the buffer. This means worse case performance could be bad.
       (while (and (not result) (> (point) 1))
-        (if (< line-indent (current-indentation))
+        (if (< orig-indent (current-indentation))
             (setq result 'dedented)
           (setq stack
                 (cons (sexp-at-point)
@@ -496,7 +511,8 @@ Returns point or (point-min) if not inside a block."
 
 (defun scala-indent:new-calculate-indent-for-line (&optional point)
   "TODO document"
-  (let* ((line-no (line-number-at-pos))
+  (let* ((point (scala-indent:find-analysis-start point))
+         (line-no (line-number-at-pos point))
          (analysis (scala-indent:analyze-context point))
          (syntax-elem (list (car analysis)))
          (ctxt-line (cadr analysis))
@@ -581,11 +597,11 @@ nothing was applied."
 
 Returns the new column, or nil if the indent cannot be determined."
   (or
-   (scala-indent:new-calculate-indent-for-line point)
    (scala-indent:apply-indent-rules
     `((scala-indent:goto-block-anchor scala-indent:resolve-block-step)
       )
     point)
+   (scala-indent:new-calculate-indent-for-line point)
    0))
 
 (defun scala-indent:indent-line-to (column)
