@@ -418,46 +418,77 @@ Returns point or (point-min) if not inside a block."
       (scala-indent:align-anchor)
       (point))))
 
-(defun scala-indent:relative-indent-by-elem (syntax-elem)
-  "TODO document"
-  (pcase syntax-elem
-    (`(decl-lhs . ,_) 2)
-    ('(match case) 2)
-    ('(block) 2)
-    ('(case case) 0)
-    ('(decl decl) 0)))
-
 (defun scala-indent:analyze-syntax-stack (stack)
   "TODO document"
   (pcase stack
+    ('(final) 'decl)
+    ('(override) 'decl)
+    ('(class) 'decl)
+    ('(object) 'decl)
+    ('(implicit) 'decl)
+    ('(while) 'decl)
+    ('(enum) 'decl)
+    ('(trait) 'decl)
+    (`(def . ,_) 'decl)
     (`(val . ,_) 'decl)
+    (`(var . ,_) 'decl)
+    (`(given . ,_) 'decl)
     ('(match) 'match)
+    ('(with) 'block)
+    (`(do . ,_) 'block)
+    ((and `(class . ,tail) (guard (memq ': tail))) 'block)
     (`(case . ,_) 'case)
-    (`(= . ,_) 'decl-lhs)
+    (`(= ,_ . ,_) 'decl-lhs)
+    (`(=> . ,_) 'arrow-lhs)
     ((and `(enum . ,tail) (guard (memq ': tail))) 'block)
+    ((and `(trait . ,tail) (guard (memq ': tail))) 'block)
     ((and `(object . ,tail) (guard (memq ': tail))) 'block)))
+
+(defun scala-indent:relative-indent-by-elem (syntax-elem)
+  "TODO document"
+  (pcase syntax-elem
+    (`(dedented decl . ,_) 'maintain)
+    ('(dedented blank) 2)
+    ('(dedented) 2)
+    (`(decl-lhs decl . ,_) 0)
+    (`(decl-lhs . ,_) 2)
+    (`(match case . ,_) 2)
+    ('(arrow-lhs) 2)
+    ('(block) 2)
+    (`(block . ,_) 2)
+    ('(case case) 0) ;; e.g. in enums
+    (`(arrow-lhs case . ,_) 0) ;; within match
+    (`(decl decl . ,_) 2)))
 
 (defun scala-indent:analyze-context (&optional point)
   "TODO document"
   (save-excursion
-    (when point (goto-char point))
-    (when (> (current-indentation) (current-column))
-      (scala-syntax:forward-token))
-    (when (looking-at-p " ")
-      (scala-syntax:backward-sexp-forcing))
-    (let (result stack)
+    (let ((line-indent (current-indentation))
+          result
+          stack)
+      (when point (goto-char point))
+      ;; Always look at a token on the current for starters
+      (when (> line-indent (current-column))
+        (scala-syntax:forward-token))
+      (if (= (line-beginning-position) (line-end-position))
+          ;; Handle blank lines
+          (setq result 'blank)
+        ;; Avoid double-reading curent symbol
+        (beginning-of-thing 'sexp))
       ;; TODO probably want to bound this much more tightly than the beginning
       ;; of the buffer. This means worse case performance could be bad.
       (while (and (not result) (> (point) 1))
-        (setq stack
-              (cons (sexp-at-point)
-                    stack))
-        ;(message (format "stack: %s" stack))
-        (setq result
-              (scala-indent:analyze-syntax-stack stack))
-        ;(message (format "result: %s" result))
-        (unless result
-          (scala-syntax:backward-sexp-forcing)))
+        (if (< line-indent (current-indentation))
+            (setq result 'dedented)
+          (setq stack
+                (cons (sexp-at-point)
+                      stack))
+          ;(message (format "stack: %s" stack))
+          (setq result
+                (scala-indent:analyze-syntax-stack stack))
+          ;(message (format "result: %s" result))
+          (unless result
+            (scala-syntax:backward-sexp-forcing))))
       (list result
             (line-number-at-pos)
             (current-indentation)
@@ -471,6 +502,7 @@ Returns point or (point-min) if not inside a block."
          (ctxt-line (cadr analysis))
          (ctxt-indent (caddr analysis))
          (stopped-point (cadddr analysis)))
+    ;(message "analysis: %s" analysis)
     (while (and (= ctxt-line line-no) (> line-no 1))
       (setq analysis
             (scala-indent:analyze-context
@@ -478,13 +510,17 @@ Returns point or (point-min) if not inside a block."
                (goto-char stopped-point)
                (scala-syntax:backward-sexp-forcing)
                (point))))
+      ;(message "analysis: %s" analysis)
       (setq syntax-elem (cons (car analysis) syntax-elem))
       (setq ctxt-line (cadr analysis))
       (setq ctxt-indent (caddr analysis))
       (setq stopped-point (cadddr analysis)))
+    ;(message "syntax-elem: %s" syntax-elem)
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
-      (+ ctxt-indent relative))))
+      (if (eq 'maintain relative)
+          (current-indentation)
+        (+ ctxt-indent relative)))))
 
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
