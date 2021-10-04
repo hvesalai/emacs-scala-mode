@@ -422,7 +422,8 @@ Returns point or (point-min) if not inside a block."
   "TODO document"
   (pcase stack
     (`(val . ,_) 'decl)
-    (`(= ,_) 'decl-lhs)))
+    (`(= ,_) 'decl-lhs)
+    (`(object ,_ : . ,_) 'block)))
 
 (defun scala-indent:analyze-context (&optional point)
   "TODO document"
@@ -435,10 +436,10 @@ Returns point or (point-min) if not inside a block."
         (setq stack
               (cons (sexp-at-point)
                     stack))
-        (message (format "stack: %s" stack))
+        ;(message (format "stack: %s" stack))
         (setq result
               (scala-indent:analyze-syntax-stack stack))
-        (message (format "result: %s" result))
+        ;(message (format "result: %s" result))
         (unless result
           (scala-syntax:backward-sexp-forcing)))
       (list result
@@ -449,7 +450,8 @@ Returns point or (point-min) if not inside a block."
 (defun scala-indent:relative-indent-by-elem (syntax-elem)
   "TODO document"
   (pcase syntax-elem
-    ('decl-lhs 2)
+    ('(decl-lhs) 2)
+    ('(block) 2)
     ('(decl decl) 0)))
 
 (defun scala-indent:new-calculate-indent-for-line (&optional point)
