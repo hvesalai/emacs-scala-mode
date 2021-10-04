@@ -418,11 +418,22 @@ Returns point or (point-min) if not inside a block."
       (scala-indent:align-anchor)
       (point))))
 
+(defun scala-indent:relative-indent-by-elem (syntax-elem)
+  "TODO document"
+  (pcase syntax-elem
+    (`(decl-lhs . ,_) 2)
+    ('(match case) 2)
+    ('(block) 2)
+    ('(case case) 0)
+    ('(decl decl) 0)))
+
 (defun scala-indent:analyze-syntax-stack (stack)
   "TODO document"
   (pcase stack
     (`(val . ,_) 'decl)
-    (`(= ,_) 'decl-lhs)
+    ('(match) 'match)
+    (`(case . ,_) 'case)
+    (`(= . ,_) 'decl-lhs)
     ((and `(enum . ,tail) (guard (memq ': tail))) 'block)
     ((and `(object . ,tail) (guard (memq ': tail))) 'block)))
 
@@ -430,9 +441,11 @@ Returns point or (point-min) if not inside a block."
   "TODO document"
   (save-excursion
     (when point (goto-char point))
+    (when (> (current-indentation) (current-column))
+      (scala-syntax:forward-token))
     (let (result stack)
       ;; TODO probably want to bound this much more tightly than the beginning
-      ;; of the buffer
+      ;; of the buffer. This means worse case performance could be bad.
       (while (and (not result) (> (point) 1))
         (setq stack
               (cons (sexp-at-point)
@@ -447,13 +460,6 @@ Returns point or (point-min) if not inside a block."
             (line-number-at-pos)
             (current-indentation)
             (point)))))
-
-(defun scala-indent:relative-indent-by-elem (syntax-elem)
-  "TODO document"
-  (pcase syntax-elem
-    ('(decl-lhs) 2)
-    ('(block) 2)
-    ('(decl decl) 0)))
 
 (defun scala-indent:new-calculate-indent-for-line (&optional point)
   "TODO document"
