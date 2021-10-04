@@ -423,7 +423,8 @@ Returns point or (point-min) if not inside a block."
   (pcase stack
     (`(val . ,_) 'decl)
     (`(= ,_) 'decl-lhs)
-    (`(object ,_ : . ,_) 'block)))
+    ((and `(enum . ,tail) (guard (memq ': tail))) 'block)
+    ((and `(object . ,tail) (guard (memq ': tail))) 'block)))
 
 (defun scala-indent:analyze-context (&optional point)
   "TODO document"
