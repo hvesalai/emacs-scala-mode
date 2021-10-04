@@ -421,6 +421,7 @@ Returns point or (point-min) if not inside a block."
 (defun scala-indent:analyze-syntax-stack (stack)
   "TODO document"
   (pcase stack
+    ('(?.) 'dot)
     ('(final) 'decl)
     ('(override) 'decl)
     ('(class) 'decl)
@@ -453,6 +454,8 @@ Returns point or (point-min) if not inside a block."
   (pcase syntax-elem
     (`(dedented decl . ,_) 'maintain)
     ('(dedented) 2)
+    ('(dedented dot) 2)
+    ('(decl-lhs dot) 2)
     (`(decl-lhs decl . ,_) 0)
     (`(decl-lhs for-comp) 0)
     (`(decl-lhs generator) 0) ;; TODO for comprehensions are problematic
@@ -479,30 +482,34 @@ Returns point or (point-min) if not inside a block."
     (if (= (line-beginning-position) (line-end-position))
         ;; Handle blank lines
         (scala-syntax:backward-sexp-forcing)
-      ;; Avoid double-reading curent symbol
-      (beginning-of-thing 'sexp))
-    (point)))
+      ;; (beginning-of-thing 'sexp) gets confused by `.'
+      (unless (looking-at-p "\.")
+        ;; Avoid double-reading curent symbol
+        (beginning-of-thing 'sexp)))
+    (list (point)
+          (current-indentation))))
 
-(defun scala-indent:analyze-context (point)
+(defun scala-indent:analyze-context (orig-indent point)
   "TODO document"
   (save-excursion
     (goto-char point)
-    (let ((orig-indent (current-indentation))
-          result
-          stack)
+    (let (result stack)
       ;; TODO probably want to bound this much more tightly than the beginning
       ;; of the buffer. This means worse case performance could be bad.
       (while (and (not result) (> (point) 1))
         (if (< orig-indent (current-indentation))
             (setq result 'dedented)
           (setq stack
-                (cons (sexp-at-point)
+                (cons (if (looking-at-p "\\.")
+                          ?.
+                        (sexp-at-point))
                       stack))
           ;(message (format "stack: %s" stack))
           (setq result
                 (scala-indent:analyze-syntax-stack stack))
           ;(message (format "result: %s" result))
           (unless result
+            (while (looking-at-p "\\.") (backward-char))
             (scala-syntax:backward-sexp-forcing))))
       (list result
             (line-number-at-pos)
@@ -511,9 +518,11 @@ Returns point or (point-min) if not inside a block."
 
 (defun scala-indent:new-calculate-indent-for-line (&optional point)
   "TODO document"
-  (let* ((point (scala-indent:find-analysis-start point))
+  (let* ((pointAndIndent (scala-indent:find-analysis-start point))
+         (point (car pointAndIndent))
+         (orig-indent (cadr pointAndIndent))
          (line-no (line-number-at-pos point))
-         (analysis (scala-indent:analyze-context point))
+         (analysis (scala-indent:analyze-context orig-indent point))
          (syntax-elem (list (car analysis)))
          (ctxt-line (cadr analysis))
          (ctxt-indent (caddr analysis))
