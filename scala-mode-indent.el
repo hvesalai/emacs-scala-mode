@@ -443,6 +443,8 @@ Returns point or (point-min) if not inside a block."
     (when point (goto-char point))
     (when (> (current-indentation) (current-column))
       (scala-syntax:forward-token))
+    (when (looking-at-p " ")
+      (scala-syntax:backward-sexp-forcing))
     (let (result stack)
       ;; TODO probably want to bound this much more tightly than the beginning
       ;; of the buffer. This means worse case performance could be bad.
