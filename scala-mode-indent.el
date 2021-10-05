@@ -439,6 +439,8 @@ Returns point or (point-min) if not inside a block."
     ((and `(class . ,tail) (guard (memq ': tail))) 'block)
     (`(class . ,_) 'decl)
     ;; def
+    ((and `(def . ,tail) (guard (memq '= tail)))
+     (if (memq ?\n tail) 'after-decl 'block))
     (`(def . ,_) 'decl)
     ;; do
     (`(do ,_ . ,_) 'block)
@@ -481,6 +483,8 @@ Returns point or (point-min) if not inside a block."
     ((and `(trait . ,tail) (guard (memq ': tail))) 'block)
     (`(trait . ,_) 'decl)
     ;; val
+    ((and `(val . ,tail) (guard (memq '= tail)))
+     (if (memq ?\n tail) 'after-decl 'block))
     (`(val . ,_) 'decl)
     ;; var
     (`(var . ,_) 'decl)
@@ -506,9 +510,12 @@ Returns point or (point-min) if not inside a block."
     (`(block) 2)
     (`(block . ,_) 2)
     ;; case
+    (`(case) :maintain)
     (`(case case) 0) ;; e.g. in enums
+    (`(case ,_) 2) ;; e.g. in enums
     ;; decl
     (`(decl decl) 0)
+    (`(decl else) -2)
     (`(decl . ,_) 2)
     ;; decl-lhs
     (`(decl-lhs decl . ,_) 0)
@@ -519,7 +526,7 @@ Returns point or (point-min) if not inside a block."
     (`(decl-lhs) 2)
     (`(decl-lhs . ,_) 0)
     ;; else
-    (`(else decl) 2)
+    (`(else ,_) 2)
     ;; else-conseq
     (`(else-conseq) 2)
     (`(else-conseq . ,_) :maintain)
@@ -535,21 +542,28 @@ Returns point or (point-min) if not inside a block."
     ;; if
     (`(if then) 0)
     (`(if then-inline) 0)
+    (`(if . ,_) 2)
     ;; if-cond
     (`(if-cond then) 0)
     (`(if-cond) 2)
     ;; match
     (`(match case . ,_) 2)
     ;; then
-    (`(then decl) 2)
     (`(then else) 0)
     (`(then else-inline) 0)
+    (`(then ,_) 2)
     ;; then-conseq
     (`(then-conseq else) 0)
     (`(then-conseq) 2)
+    (`(then-conseq ,_) 2)
     ;; then-inline
     (`(then-inline else) 0)
     (`(then-inline else-inline) 0)
+    ;; yield-from-comp
+    (`(yield-from-comp) 0)
+    ;; <fallbacks>
+    (`(,_ then) -2)
+    (`(,_ else) -2)
     ))
 
 (defun scala-indent:find-analysis-start (&optional point)
@@ -584,18 +598,18 @@ Returns point or (point-min) if not inside a block."
                         ?.
                       (sexp-at-point))
                     stack))
-        (message (format "stack: %s" stack))
+        ;(message (format "stack: %s" stack))
         (setq result
               (scala-indent:analyze-syntax-stack stack))
-        (message (format "result: %s" result))
+        ;(message (format "result: %s" result))
         (when (and (not result)
                    (save-excursion (= (point)
                                       (scala-syntax:beginning-of-code-line))))
           (setq stack (cons ?\n stack))
-          (message (format "stack: %s" stack))
+          ;(message (format "stack: %s" stack))
           (setq result
                 (scala-indent:analyze-syntax-stack stack))
-          (message (format "result: %s" result))
+          ;(message (format "result: %s" result))
           (when result
             (scala-syntax:backward-sexp-forcing)))
         (unless result
@@ -604,7 +618,20 @@ Returns point or (point-min) if not inside a block."
       (list result
             (line-number-at-pos)
             (current-indentation)
-            (point)))))
+            (point)
+            stack))))
+
+(defun scala-indent:need-more-context (syntax-elem stopped-point)
+  (and
+   (consp syntax-elem)
+   ;; read a full statement
+   (pcase (car syntax-elem)
+     ('after-decl t)
+     ('after-arrow t))
+   (save-excursion
+     (goto-char stopped-point)
+     ;; but that statement took up less than a line
+     (> (current-column) (current-indentation)))))
 
 (defun scala-indent:new-calculate-indent-for-line (&optional point)
   "TODO document"
@@ -613,24 +640,38 @@ Returns point or (point-min) if not inside a block."
          (stack (cadr initResult))
          (line-no (line-number-at-pos point))
          (analysis (scala-indent:analyze-context point stack))
-         (syntax-elem (list (car analysis)))
-         (ctxt-line (cadr analysis))
-         (ctxt-indent (caddr analysis))
-         (stopped-point (cadddr analysis)))
-    (message "analysis: %s" analysis)
-    (while (and (= ctxt-line line-no) (> line-no 1))
+         (syntax-elem (list (nth 0 analysis)))
+         (ctxt-line (nth 1 analysis))
+         (ctxt-indent (nth 2 analysis))
+         (stopped-point (nth 3 analysis))
+         (end-stack (nth 4 analysis))
+         )
+    ;(message "analysis: %s" analysis)
+    (while (or (and (= ctxt-line line-no) (> line-no 1)
+                    ;; If we keep reading for this reason, we've accepted the
+                    ;; existing tokens and so need to clear the stack
+                    (or (setq stack nil)
+                        t))
+               (and (scala-indent:need-more-context syntax-elem stopped-point)
+                    ;; If we read a full statement that was only part of a line,
+                    ;; drop it and try again for more context
+                    (or (setq syntax-elem (cdr syntax-elem))
+                        ;; restart with the existing stack
+                        (setq stack end-stack)
+                        t)))
       (setq analysis
             (scala-indent:analyze-context
              (save-excursion
                (goto-char stopped-point)
                (scala-syntax:backward-sexp-forcing)
-               (point))))
-      (message "analysis: %s" analysis)
+               (point))
+             stack))
+      ;(message "analysis: %s" analysis)
       (setq syntax-elem (cons (car analysis) syntax-elem))
       (setq ctxt-line (cadr analysis))
       (setq ctxt-indent (caddr analysis))
       (setq stopped-point (cadddr analysis)))
-    (message "syntax-elem: %s" syntax-elem)
+    ;(message "syntax-elem: %s" syntax-elem)
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
       (if (eq :maintain relative)
