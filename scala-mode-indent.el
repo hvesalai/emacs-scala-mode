@@ -421,66 +421,135 @@ Returns point or (point-min) if not inside a block."
 (defun scala-indent:analyze-syntax-stack (stack)
   "TODO document"
   (pcase stack
+    ;; <dot chaining>
     ('(?\n ?.) 'dot-chain)
+    ;; =
+    (`(= ?\n . ,_) 'decl-lhs)
+    ((and `(= ,_ . ,tail) (guard (memq ?\n tail))) 'after-decl)
+    (`(= ,_ . ,_) 'decl-lhs)
+    ;; =>
+    (`(=> ?\n . ,_) 'arrow-lhs)
+    ((and `(=> ,_ . ,tail) (guard (memq ?\n tail))) 'after-arrow)
+    (`(=> ,_ . ,_) 'arrow-lhs)
+    ;; <-
+    (`(<- . ,_) 'generator)
+    ;; case
+    (`(case . ,_) 'case)
+    ;; class
+    ((and `(class . ,tail) (guard (memq ': tail))) 'block)
+    (`(class . ,_) 'decl)
+    ;; def
+    (`(def . ,_) 'decl)
+    ;; do
+    (`(do ,_ . ,_) 'block)
+    ;; else
+    (`(else ?\n . ,_) 'else-conseq)
+    ('(else) 'else)
+    (`(else . ,_) 'else-inline)
+    ;; enum
+    ((and `(enum . ,tail) (guard (memq ': tail))) 'block)
+    (`(enum . ,_) 'decl)
+    ;; final
     ('(final) 'decl)
-    ('(override) 'decl)
-    ('(class) 'decl)
-    ('(object) 'decl)
-    ('(implicit) 'decl)
-    ('(while) 'decl)
-    ('(enum) 'decl)
-    ('(trait) 'decl)
-    (`(if . ,_) 'if)
-    (`(then . ,_) 'then)
-    (`(else . ,_) 'else)
+    ;; for
     (`(for) 'for-comp)
     (`(for . ,_) 'for-body)
-    (`(yield . ,_) 'yield-from-comp)
-    (`(<- . ,_) 'generator)
-    (`(def . ,_) 'decl)
-    (`(val . ,_) 'decl)
-    (`(var . ,_) 'decl)
+    ;; given
     (`(given . ,_) 'decl)
+    ;; if
+    (`(if ?\n . ,_) 'if-cond)
+    (`(if . ,_) 'if)
+    ;; implicit
+    ('(implicit) 'decl)
+    ;; import
+    ((and `(import . ,tail) (guard (memq ?\n tail))) 'after-decl)
+    (`(import . ,_) 'decl)
+    ;; match
     (`(,_ match) 'match)
-    ('(with) 'block)
-    (`(do . ,_) 'block)
-    ((and `(class . ,tail) (guard (memq ': tail))) 'block)
-    (`(case . ,_) 'case)
-    (`(= ,_ . ,_) 'decl-lhs)
-    (`(=> . ,_) 'arrow-lhs)
-    ((and `(enum . ,tail) (guard (memq ': tail))) 'block)
+    ;; object
+    ((and `(object . ,tail) (guard (memq ': tail))) 'block)
+    (`(object . ,_) 'decl)
+    ;; override
+    ('(override) 'decl)
+    ;; package
+    (`(package . ,_) 'decl)
+    ;; then
+    (`(then ?\n . ,_) 'then-conseq)
+    ('(then) 'then)
+    (`(then . ,_) 'then-inline)
+    ;; trait
     ((and `(trait . ,tail) (guard (memq ': tail))) 'block)
-    ((and `(object . ,tail) (guard (memq ': tail))) 'block)))
+    (`(trait . ,_) 'decl)
+    ;; val
+    (`(val . ,_) 'decl)
+    ;; var
+    (`(var . ,_) 'decl)
+    ;; while
+    ('(while) 'decl)
+    ;; with
+    ('(with) 'block)
+    ;; yield
+    (`(yield . ,_) 'yield-from-comp)
+    ))
 
 (defun scala-indent:relative-indent-by-elem (syntax-elem)
   "TODO document"
   (pcase syntax-elem
-    (`(dedented decl . ,_) :maintain)
-    ('(dedented) 2)
-    ('(dedented then) 0)
-    ('(dedented else) 0)
-    ('(dedented dot-chain) 4)
-    ('(decl-lhs dot-chain) 4)
+    ;; after-decl
+    (`(after-decl else) -2)
+    (`(after-decl) 0)
+    ;; arrow-lhs
+    (`(arrow-lhs) 2)
+    (`(arrow-lhs case . ,_) 0) ;; within match
+    (`(arrow-lhs . ,_) :maintain)
+    ;; block
+    (`(block) 2)
+    (`(block . ,_) 2)
+    ;; case
+    (`(case case) 0) ;; e.g. in enums
+    ;; decl
+    (`(decl decl) 0)
+    (`(decl . ,_) 2)
+    ;; decl-lhs
     (`(decl-lhs decl . ,_) 0)
+    (`(decl-lhs dot-chain) 4)
     (`(decl-lhs for-comp) 0)
-    (`(decl-lhs generator) 0) ;; TODO for comprehensions are problematic
-    ('(for-comp yield-from-comp) 0)
-    ('(dedented yield-from-comp) :maintain)
-    ('(decl-lhs yield-from-comp) -2)
-    (`(for-body . ,_) 2)
-    ('(if then) 0)
-    ('(then else) 0)
+    (`(decl-lhs generator) 0)
+    (`(decl-lhs yield-from-comp) -2)
     (`(decl-lhs) 2)
     (`(decl-lhs . ,_) 0)
-    (`(match case . ,_) 2)
-    ('(arrow-lhs) 2)
-    ('(block) 2)
-    (`(decl . ,_) 2)
-    ('(generator yield-from-comp) -2)
+    ;; else
+    (`(else decl) 2)
+    ;; else-conseq
+    (`(else-conseq) 2)
+    (`(else-conseq . ,_) :maintain)
+    ;; else-inline
+    (`(else-inline . ,_) 0)
+    ;; for-body
+    (`(for-body . ,_) 2)
+    ;; for-comp
+    (`(for-comp yield-from-comp) 0)
+    ;; generator
+    (`(generator yield-from-comp) -2)
     (`(generator . ,_) 0)
-    (`(block . ,_) 2)
-    ('(case case) 0) ;; e.g. in enums
-    (`(arrow-lhs case . ,_) 0) ;; within match
+    ;; if
+    (`(if then) 0)
+    (`(if then-inline) 0)
+    ;; if-cond
+    (`(if-cond then) 0)
+    (`(if-cond) 2)
+    ;; match
+    (`(match case . ,_) 2)
+    ;; then
+    (`(then decl) 2)
+    (`(then else) 0)
+    (`(then else-inline) 0)
+    ;; then-conseq
+    (`(then-conseq else) 0)
+    (`(then-conseq) 2)
+    ;; then-inline
+    (`(then-inline else) 0)
+    (`(then-inline else-inline) 0)
     ))
 
 (defun scala-indent:find-analysis-start (&optional point)
@@ -490,8 +559,7 @@ Returns point or (point-min) if not inside a block."
     (let (stack)
       ;; Always look at a token on the current for starters
       (when (> (current-indentation) (current-column))
-        (scala-syntax:forward-token)
-        (setq stack (cons ?\n stack)))
+        (scala-syntax:forward-token))
       (if (= (line-beginning-position) (line-end-position))
           ;; Handle blank lines
           (progn
@@ -502,42 +570,37 @@ Returns point or (point-min) if not inside a block."
           ;; Avoid double-reading curent symbol
           (beginning-of-thing 'sexp)))
       (list (point)
-            (current-indentation)
             stack))))
 
-(defun scala-indent:analyze-context (orig-indent point &optional init-stack)
+(defun scala-indent:analyze-context (point &optional init-stack)
   "TODO document"
   (save-excursion
     (goto-char point)
     (let (result
           (stack init-stack))
-      ;; TODO probably want to bound this much more tightly than the beginning
-      ;; of the buffer. This means worse case performance could be bad.
       (while (and (not result) (> (point) 1))
-        (if (< orig-indent (current-indentation))
-            (setq result 'dedented)
-          (setq stack
-                (cons (if (looking-at-p "\\.")
-                          ?.
-                        (sexp-at-point))
-                      stack))
-          ;(message (format "stack: %s" stack))
+        (setq stack
+              (cons (if (looking-at-p "\\.")
+                        ?.
+                      (sexp-at-point))
+                    stack))
+        (message (format "stack: %s" stack))
+        (setq result
+              (scala-indent:analyze-syntax-stack stack))
+        (message (format "result: %s" result))
+        (when (and (not result)
+                   (save-excursion (= (point)
+                                      (scala-syntax:beginning-of-code-line))))
+          (setq stack (cons ?\n stack))
+          (message (format "stack: %s" stack))
           (setq result
                 (scala-indent:analyze-syntax-stack stack))
-          ;(message (format "result: %s" result))
-          (when (and (not result)
-                     (save-excursion (= (point)
-                                        (scala-syntax:beginning-of-code-line))))
-            (setq stack (cons ?\n stack))
-            ;(message (format "stack: %s" stack))
-            (setq result
-                  (scala-indent:analyze-syntax-stack stack))
-            ;(message (format "result: %s" result))
-            (when result
-              (scala-syntax:backward-sexp-forcing)))
-          (unless result
-            (while (looking-at-p "\\.") (backward-char))
-            (scala-syntax:backward-sexp-forcing))))
+          (message (format "result: %s" result))
+          (when result
+            (scala-syntax:backward-sexp-forcing)))
+        (unless result
+          (while (looking-at-p "\\.") (backward-char))
+          (scala-syntax:backward-sexp-forcing)))
       (list result
             (line-number-at-pos)
             (current-indentation)
@@ -547,29 +610,27 @@ Returns point or (point-min) if not inside a block."
   "TODO document"
   (let* ((initResult (scala-indent:find-analysis-start point))
          (point (car initResult))
-         (orig-indent (cadr initResult))
-         (stack (caddr initResult))
+         (stack (cadr initResult))
          (line-no (line-number-at-pos point))
-         (analysis (scala-indent:analyze-context orig-indent point stack))
+         (analysis (scala-indent:analyze-context point stack))
          (syntax-elem (list (car analysis)))
          (ctxt-line (cadr analysis))
          (ctxt-indent (caddr analysis))
          (stopped-point (cadddr analysis)))
-    ;(message "analysis: %s" analysis)
+    (message "analysis: %s" analysis)
     (while (and (= ctxt-line line-no) (> line-no 1))
       (setq analysis
             (scala-indent:analyze-context
-             orig-indent
              (save-excursion
                (goto-char stopped-point)
                (scala-syntax:backward-sexp-forcing)
                (point))))
-      ;(message "analysis: %s" analysis)
+      (message "analysis: %s" analysis)
       (setq syntax-elem (cons (car analysis) syntax-elem))
       (setq ctxt-line (cadr analysis))
       (setq ctxt-indent (caddr analysis))
       (setq stopped-point (cadddr analysis)))
-    ;(message "syntax-elem: %s" syntax-elem)
+    (message "syntax-elem: %s" syntax-elem)
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
       (if (eq :maintain relative)
