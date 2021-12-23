@@ -281,8 +281,8 @@ and are in fact a sign of run-on. Reserved-symbols not included.")
        ((looking-at scala-indent:mustNotContinue-re)
         nil)
        ;; NO: this line is the start of value body
-       ((scala-indent:body-p)
-        nil)
+       ;; ((scala-indent:body-p) ;; TODO did I delete this function when I shouldn't have?
+       ;;  nil)
        ;; YES: eager strategy can stop here, everything is a run-on if no
        ;; counter evidence
        ((= strategy scala-indent:eager-strategy)
@@ -506,6 +506,7 @@ Returns point or (point-min) if not inside a block."
     ;; arrow-lhs
     (`(arrow-lhs) 2)
     (`(arrow-lhs case . ,_) 0) ;; within match
+    (`(arrow-lhs dot-chain) 4)
     (`(arrow-lhs . ,_) :maintain)
     ;; block
     (`(block) 2)
@@ -593,10 +594,10 @@ Returns point or (point-min) if not inside a block."
   (save-excursion
     (goto-char point)
     (let (result
-          (stack init-stack))
+          (stack init-stack)
+          last-indentation)
       (while (and (not result) (> (point) 1))
         (setq stack
-        ;(message (format "stack: %s" stack))
               (if (looking-at-p "\\.")
                   (cons ?. stack)
                 (let ((s (sexp-at-point)))
@@ -621,13 +622,16 @@ Returns point or (point-min) if not inside a block."
                 (scala-indent:analyze-syntax-stack stack))
           ;(message (format "result: %s" result))
           (when result
+            (setq last-indentation (current-indentation))
             (scala-syntax:backward-sexp-forcing)))
         (unless result
+          (setq last-indentation (current-indentation))
           (while (looking-at-p "\\.") (backward-char))
           (scala-syntax:backward-sexp-forcing)))
       (list result
             (line-number-at-pos)
             (current-indentation)
+            last-indentation
             (point)
             stack))))
 
@@ -643,8 +647,15 @@ Returns point or (point-min) if not inside a block."
      ;; but that statement took up less than a line
      (> (current-column) (current-indentation)))))
 
-(defun scala-indent:new-calculate-indent-for-line (&optional point)
-  "TODO document"
+(defun scala-indent:whitespace-biased-indent (&optional point)
+  "Whitespace-syntax-friendly heuristic indentation engine.
+
+The basic idea is to look back a relatively short distance (one semantic line
+back with some hand-waving) to parse the context based on a two-level
+tokenization. The parser is not anything like well-formalized, but it can start
+at an arbitrary point in the buffer, and except in pathological cases, look at
+relatively few lines in order to make a good guess; and it is tolerant to a
+certain amount of incorrect or in-progress syntactic forms."
   (let* ((initResult (scala-indent:find-analysis-start point))
          (point (car initResult))
          (stack (cadr initResult))
@@ -653,8 +664,9 @@ Returns point or (point-min) if not inside a block."
          (syntax-elem (list (nth 0 analysis)))
          (ctxt-line (nth 1 analysis))
          (ctxt-indent (nth 2 analysis))
-         (stopped-point (nth 3 analysis))
-         (end-stack (nth 4 analysis))
+         (prev-indent (nth 3 analysis))
+         (stopped-point (nth 4 analysis))
+         (end-stack (nth 5 analysis))
          )
     ;(message "analysis: %s" analysis)
     (while (or (and (= ctxt-line line-no) (> line-no 1)
@@ -682,26 +694,25 @@ Returns point or (point-min) if not inside a block."
                (point))
              stack))
       ;(message "analysis: %s" analysis)
-    ;(message "syntax-elem: %s" syntax-elem)
       (setq syntax-elem (cons (nth 0 analysis) syntax-elem))
       (setq ctxt-line (nth 1 analysis))
       (setq ctxt-indent (nth 2 analysis))
-      (setq stopped-point (nth 3 analysis))
-      (setq end-stack (nth 4 analysis)))
+      (setq prev-indent (nth 3 analysis))
+      (setq stopped-point (nth 4 analysis))
+      (setq end-stack (nth 5 analysis)))
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
-      (if (eq :maintain relative)
-          (current-indentation)
-        (+ (if (eq ?\n (car end-stack))
-               ;; Oops, moved a bit too far back while determining context.
-               ;; Don't really want to determine our indentation based on the
-               ;; line whose newline we are looking at, but rather the next one.
-               (save-excursion
-                 (goto-char stopped-point)
-                 (forward-line)
-                 (current-indentation))
-             ctxt-indent)
-           relative)))))
+      (list (if (eq :maintain relative)
+                (current-indentation)
+              (+ (if (eq ?\n (car end-stack))
+                     ;; Oops, moved a bit too far back while determining
+                     ;; context. Don't really want to determine our indentation
+                     ;; based on the line whose newline we are looking at, but
+                     ;; rather the next one.
+                     prev-indent
+                   ctxt-indent)
+                 relative))
+            stopped-point))))
 
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
@@ -732,42 +743,57 @@ Returns point or (point-min) if not inside a block."
 ;;; Indentation engine
 ;;;
 
-(defun scala-indent:apply-indent-rules (rule-indents &optional point)
-  "Evaluates each rule, until one returns non-nil value. Returns
-the sum of the value and the respective indent step, or nil if
-nothing was applied."
-  (when rule-indents
-    (save-excursion
-      (when point (goto-char point))
-      (let* ((pos (scala-syntax:beginning-of-code-line))
-             (rule-indent (car rule-indents))
-             (rule-statement (car rule-indent))
-             (indent-statement (cadr rule-indent))
-             (anchor (funcall rule-statement point)))
-        (if anchor
-            (progn
-              (if scala-mode:debug-messages
-                  (message "indenting acording to %s at %d for pos %d for point %s" rule-statement anchor pos point))
-              (when (/= anchor (point))
-                (error (format "Assertion error: anchor=%d, point=%d" anchor (point))))
-              (+ (current-column)
-                 (save-excursion
-                   (if (functionp indent-statement)
-                       (funcall indent-statement pos anchor)
-                     (eval indent-statement)))))
-          (scala-indent:apply-indent-rules (cdr rule-indents)))))))
+(defun scala-indent:block-biased-indent (point)
+  "TODO."
+  (save-excursion
+    (when point (goto-char point))
+    (let* ((pos (scala-syntax:beginning-of-code-line))
+           (anchor (scala-indent:goto-block-anchor point)))
+      (when anchor
+        (when (/= anchor (point))
+          (error (format "Assertion error: anchor=%d, point=%d" anchor (point))))
+        (list
+         (+ (current-column)
+            (save-excursion
+              (scala-indent:resolve-block-step pos anchor)))
+         anchor
+        )
+        ))))
+
+(defun scala-indent:reconcile (whitespace block)
+  (let ((ws-indent (nth 0 whitespace))
+        (ws-lookback-point (nth 1 whitespace))
+        (blk-indent-point (nth 0 block))
+        (blk-lookback (nth 1 block)))
+    (cond
+     ;; Nothing to reconcile
+     ((eq ws-indent blk-indent-point) ws-indent)
+     ;; Counterintuitive as it may be, the algorithm that had to look the
+     ;; farthest back (and so has the smallest lookback point) is least likely
+     ;; to have gotten the answer right. This is because both algorithms have
+     ;; bias toward not giving up; but the more remote they get from their
+     ;; starting point, the more likely it is that they did not understand the
+     ;; local syntax, and are going to suggest a large and unpleasant change in
+     ;; indentation. Or from another perspective: we want to bias toward local
+     ;; correctness. If they stopped on the same character, then we know from
+     ;; the behavior of the block algorithm that it is a parenthetical
+     ;; character; in which case the block algorithm most likely got the right
+     ;; answer.
+     ((> ws-lookback-point blk-lookback) ws-indent)
+     (t blk-indent-point))))
 
 (defun scala-indent:calculate-indent-for-line (&optional point)
   "Calculate the appropriate indent for the current point or POINT.
 
 Returns the new column, or nil if the indent cannot be determined."
-  (or
-   (scala-indent:apply-indent-rules
-    `((scala-indent:goto-block-anchor scala-indent:resolve-block-step)
-      )
-    point)
-   (scala-indent:new-calculate-indent-for-line point)
-   0))
+  (let ((whitespace (ignore-errors
+                      (scala-indent:whitespace-biased-indent point)))
+        (block (scala-indent:block-biased-indent point)))
+    (pcase (cons whitespace block)
+      (`(nil . ,x) (nth 0 x))
+      (`(,x . nil) (nth 0 x))
+      (`(,x . ,y) (scala-indent:reconcile x y)))
+   ))
 
 (defun scala-indent:indent-line-to (column)
   "Indent the line to column and move cursor to the indent
