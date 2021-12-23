@@ -419,10 +419,11 @@ Returns point or (point-min) if not inside a block."
       (point))))
 
 (defun scala-indent:analyze-syntax-stack (stack)
-  "TODO document"
+  "A kind of tokenize step of the hand-wavy parse"
   (pcase stack
     ;; <dot chaining>
     ('(?\n ?.) 'dot-chain)
+    (`(?\n ?. . ,_) 'dot-chain)
     ;; =
     (`(= ?\n . ,_) 'decl-lhs)
     ((and `(= ,_ . ,tail) (guard (memq ?\n tail))) 'after-decl)
@@ -512,7 +513,7 @@ Returns point or (point-min) if not inside a block."
     ;; case
     (`(case) :maintain)
     (`(case case) 0) ;; e.g. in enums
-    (`(case ,_) 2) ;; e.g. in enums
+    (`(case ,_) 2)
     ;; decl
     (`(decl decl) 0)
     (`(decl else) -2)
@@ -520,6 +521,7 @@ Returns point or (point-min) if not inside a block."
     ;; decl-lhs
     (`(decl-lhs decl . ,_) 0)
     (`(decl-lhs dot-chain) 4)
+    (`(dot-chain dot-chain) 0)
     (`(decl-lhs for-comp) 0)
     (`(decl-lhs generator) 0)
     (`(decl-lhs yield-from-comp) -2)
@@ -567,7 +569,7 @@ Returns point or (point-min) if not inside a block."
     ))
 
 (defun scala-indent:find-analysis-start (&optional point)
-  "TODO document"
+  "Find a place to start tokenizing in a consistent manner"
   (save-excursion
     (when point (goto-char point))
     (let (stack)
@@ -594,11 +596,19 @@ Returns point or (point-min) if not inside a block."
           (stack init-stack))
       (while (and (not result) (> (point) 1))
         (setq stack
-              (cons (if (looking-at-p "\\.")
-                        ?.
-                      (sexp-at-point))
-                    stack))
         ;(message (format "stack: %s" stack))
+              (if (looking-at-p "\\.")
+                  (cons ?. stack)
+                (let ((s (sexp-at-point)))
+                  (backward-char)
+                  (if (looking-at-p "\\.")
+                      ;; Try hard to notice dot-chaining
+                      (cons ?. (cons s stack))
+                    (if (looking-at-p "\"")
+                        ;; A little hack in case we are inside of a string
+                        stack
+                      (forward-char)
+                      (cons s stack))))))
         (setq result
               (scala-indent:analyze-syntax-stack stack))
         ;(message (format "result: %s" result))
@@ -621,7 +631,7 @@ Returns point or (point-min) if not inside a block."
             (point)
             stack))))
 
-(defun scala-indent:need-more-context (syntax-elem stopped-point)
+(defun scala-indent:full-stmt-less-than-line (syntax-elem stopped-point)
   (and
    (consp syntax-elem)
    ;; read a full statement
@@ -652,13 +662,18 @@ Returns point or (point-min) if not inside a block."
                     ;; existing tokens and so need to clear the stack
                     (or (setq stack nil)
                         t))
-               (and (scala-indent:need-more-context syntax-elem stopped-point)
+               (and (scala-indent:full-stmt-less-than-line syntax-elem stopped-point)
                     ;; If we read a full statement that was only part of a line,
                     ;; drop it and try again for more context
                     (or (setq syntax-elem (cdr syntax-elem))
                         ;; restart with the existing stack
                         (setq stack end-stack)
-                        t)))
+                        t))
+               ;; We know we have a dot-chain, but we need to get more context
+               ;; to know how to position it
+               (when (equal syntax-elem '(dot-chain))
+                 (setq stack end-stack)
+                 t))
       (setq analysis
             (scala-indent:analyze-context
              (save-excursion
@@ -667,16 +682,26 @@ Returns point or (point-min) if not inside a block."
                (point))
              stack))
       ;(message "analysis: %s" analysis)
-      (setq syntax-elem (cons (car analysis) syntax-elem))
-      (setq ctxt-line (cadr analysis))
-      (setq ctxt-indent (caddr analysis))
-      (setq stopped-point (cadddr analysis)))
     ;(message "syntax-elem: %s" syntax-elem)
+      (setq syntax-elem (cons (nth 0 analysis) syntax-elem))
+      (setq ctxt-line (nth 1 analysis))
+      (setq ctxt-indent (nth 2 analysis))
+      (setq stopped-point (nth 3 analysis))
+      (setq end-stack (nth 4 analysis)))
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
       (if (eq :maintain relative)
           (current-indentation)
-        (+ ctxt-indent relative)))))
+        (+ (if (eq ?\n (car end-stack))
+               ;; Oops, moved a bit too far back while determining context.
+               ;; Don't really want to determine our indentation based on the
+               ;; line whose newline we are looking at, but rather the next one.
+               (save-excursion
+                 (goto-char stopped-point)
+                 (forward-line)
+                 (current-indentation))
+             ctxt-indent)
+           relative)))))
 
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
