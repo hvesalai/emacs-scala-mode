@@ -421,8 +421,11 @@ Returns point or (point-min) if not inside a block."
 (defun scala-indent:analyze-syntax-stack (stack)
   "A kind of tokenize step of the hand-wavy parse"
   (pcase stack
+    ;; <hitting the beginning of a block when starting in the middle> { (
+    (`(?\{ ,_ . ,_) 'left-boundary)
+    (`(?\( ,_ . ,_) 'left-boundary)
     ;; <dot chaining>
-    ('(?\n ?.) 'dot-chain)
+    (`(?\n ?.) 'dot-chain)
     (`(?\n ?. . ,_) 'dot-chain)
     ;; =
     (`(= ?\n . ,_) 'decl-lhs)
@@ -447,13 +450,13 @@ Returns point or (point-min) if not inside a block."
     (`(do ,_ . ,_) 'block)
     ;; else
     (`(else ?\n . ,_) 'else-conseq)
-    ('(else) 'else)
+    (`(else) 'else)
     (`(else . ,_) 'else-inline)
     ;; enum
     ((and `(enum . ,tail) (guard (memq ': tail))) 'block)
     (`(enum . ,_) 'decl)
     ;; final
-    ('(final) 'decl)
+    (`(final) 'decl)
     ;; for
     (`(for) 'for-comp)
     (`(for . ,_) 'for-body)
@@ -463,7 +466,7 @@ Returns point or (point-min) if not inside a block."
     (`(if ?\n . ,_) 'if-cond)
     (`(if . ,_) 'if)
     ;; implicit
-    ('(implicit) 'decl)
+    (`(implicit) 'decl)
     ;; import
     ((and `(import . ,tail) (guard (memq ?\n tail))) 'after-decl)
     (`(import . ,_) 'decl)
@@ -473,12 +476,12 @@ Returns point or (point-min) if not inside a block."
     ((and `(object . ,tail) (guard (memq ': tail))) 'block)
     (`(object . ,_) 'decl)
     ;; override
-    ('(override) 'decl)
+    (`(override) 'decl)
     ;; package
     (`(package . ,_) 'decl)
     ;; then
     (`(then ?\n . ,_) 'then-conseq)
-    ('(then) 'then)
+    (`(then) 'then)
     (`(then . ,_) 'then-inline)
     ;; trait
     ((and `(trait . ,tail) (guard (memq ': tail))) 'block)
@@ -490,9 +493,9 @@ Returns point or (point-min) if not inside a block."
     ;; var
     (`(var . ,_) 'decl)
     ;; while
-    ('(while) 'decl)
+    (`(while) 'decl)
     ;; with
-    ('(with) 'block)
+    (`(with) 'block)
     ;; yield
     (`(yield . ,_) 'yield-from-comp)
     ))
@@ -549,6 +552,8 @@ Returns point or (point-min) if not inside a block."
     ;; if-cond
     (`(if-cond then) 0)
     (`(if-cond) 2)
+    ;; left-boundary
+    (`(left-boundary dot-chain) 4)
     ;; match
     (`(match case . ,_) 2)
     ;; then
@@ -600,7 +605,7 @@ Returns point or (point-min) if not inside a block."
         (setq stack
               (if (looking-at-p "\\.")
                   (cons ?. stack)
-                (let ((s (sexp-at-point)))
+                (let ((s (or (sexp-at-point) (char-after))))
                   (backward-char)
                   (if (looking-at-p "\\.")
                       ;; Try hard to notice dot-chaining
@@ -612,15 +617,12 @@ Returns point or (point-min) if not inside a block."
                       (cons s stack))))))
         (setq result
               (scala-indent:analyze-syntax-stack stack))
-        ;(message (format "result: %s" result))
         (when (and (not result)
                    (save-excursion (= (point)
                                       (scala-syntax:beginning-of-code-line))))
           (setq stack (cons ?\n stack))
-          ;(message (format "stack: %s" stack))
           (setq result
                 (scala-indent:analyze-syntax-stack stack))
-          ;(message (format "result: %s" result))
           (when result
             (setq last-indentation (current-indentation))
             (scala-syntax:backward-sexp-forcing)))
@@ -668,11 +670,15 @@ certain amount of incorrect or in-progress syntactic forms."
          (stopped-point (nth 4 analysis))
          (end-stack (nth 5 analysis))
          )
-    ;(message "analysis: %s" analysis)
     (while (or (and (= ctxt-line line-no) (> line-no 1)
                     ;; If we keep reading for this reason, we've accepted the
                     ;; existing tokens and so need to clear the stack
                     (or (setq stack nil)
+                        (setq point
+                              (save-excursion
+                                (goto-char stopped-point)
+                                (scala-syntax:backward-sexp-forcing)
+                                (point)))
                         t))
                (and (scala-indent:full-stmt-less-than-line syntax-elem stopped-point)
                     ;; If we read a full statement that was only part of a line,
@@ -680,20 +686,19 @@ certain amount of incorrect or in-progress syntactic forms."
                     (or (setq syntax-elem (cdr syntax-elem))
                         ;; restart with the existing stack
                         (setq stack end-stack)
+                        (setq point
+                              (save-excursion
+                                (goto-char stopped-point)
+                                (scala-syntax:backward-sexp-forcing)
+                                (point)))
                         t))
                ;; We know we have a dot-chain, but we need to get more context
                ;; to know how to position it
                (when (equal syntax-elem '(dot-chain))
-                 (setq stack end-stack)
+                 (setq stack nil)
+                 (setq point stopped-point)
                  t))
-      (setq analysis
-            (scala-indent:analyze-context
-             (save-excursion
-               (goto-char stopped-point)
-               (scala-syntax:backward-sexp-forcing)
-               (point))
-             stack))
-      ;(message "analysis: %s" analysis)
+      (setq analysis (scala-indent:analyze-context point stack))
       (setq syntax-elem (cons (nth 0 analysis) syntax-elem))
       (setq ctxt-line (nth 1 analysis))
       (setq ctxt-indent (nth 2 analysis))
