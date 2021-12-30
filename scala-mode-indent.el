@@ -649,6 +649,37 @@ Returns point or (point-min) if not inside a block."
      ;; but that statement took up less than a line
      (> (current-column) (current-indentation)))))
 
+(defun scala-indent:continue-lookback? (syntax-elem
+                                       ctxt-line
+                                       line-no
+                                       stopped-point
+                                       end-stack)
+  (or (and (= ctxt-line line-no) (> line-no 1)
+           ;; If we keep reading for this reason, we've accepted the
+           ;; existing tokens and so need to clear the stack
+           (list nil ;; syntax-elem
+                 nil ;; stack
+                 (save-excursion ;; point
+                   (goto-char stopped-point)
+                   (scala-syntax:backward-sexp-forcing)
+                   (point))))
+      (when (scala-indent:full-stmt-less-than-line syntax-elem stopped-point)
+        ;; If we read a full statement that was only part of a line,
+        ;; drop it and try again for more context
+        (list (cdr syntax-elem) ;; syntax-elem
+              end-stack ;; restart with the existing stack
+              (save-excursion ;; point
+                (goto-char stopped-point)
+                (scala-syntax:backward-sexp-forcing)
+                (point))))
+      ;; We know we have a dot-chain, but we need to get more context to know
+      ;; how to position it
+      (when (equal syntax-elem '(dot-chain))
+        (list nil ;; syntax-elem
+              nil ;; stack
+              stopped-point ;; point
+              ))))
+
 (defun scala-indent:whitespace-biased-indent (&optional point)
   "Whitespace-syntax-friendly heuristic indentation engine.
 
@@ -670,34 +701,13 @@ certain amount of incorrect or in-progress syntactic forms."
          (stopped-point (nth 4 analysis))
          (end-stack (nth 5 analysis))
          )
-    (while (or (and (= ctxt-line line-no) (> line-no 1)
-                    ;; If we keep reading for this reason, we've accepted the
-                    ;; existing tokens and so need to clear the stack
-                    (or (setq stack nil)
-                        (setq point
-                              (save-excursion
-                                (goto-char stopped-point)
-                                (scala-syntax:backward-sexp-forcing)
-                                (point)))
-                        t))
-               (and (scala-indent:full-stmt-less-than-line syntax-elem stopped-point)
-                    ;; If we read a full statement that was only part of a line,
-                    ;; drop it and try again for more context
-                    (or (setq syntax-elem (cdr syntax-elem))
-                        ;; restart with the existing stack
-                        (setq stack end-stack)
-                        (setq point
-                              (save-excursion
-                                (goto-char stopped-point)
-                                (scala-syntax:backward-sexp-forcing)
-                                (point)))
-                        t))
-               ;; We know we have a dot-chain, but we need to get more context
-               ;; to know how to position it
-               (when (equal syntax-elem '(dot-chain))
-                 (setq stack nil)
-                 (setq point stopped-point)
-                 t))
+    (message "analysis: %s" analysis)
+    (while (when-let ((x (scala-indent:continue-lookback?
+                        syntax-elem ctxt-line line-no stopped-point end-stack)))
+             (setq syntax-elem (or (nth 0 x) syntax-elem))
+             (setq stack (nth 1 x))
+             (setq point (nth 2 x))
+             t)
       (setq analysis (scala-indent:analyze-context point stack))
       (setq syntax-elem (cons (nth 0 analysis) syntax-elem))
       (setq ctxt-line (nth 1 analysis))
