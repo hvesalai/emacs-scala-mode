@@ -599,8 +599,8 @@ Returns point or (point-min) if not inside a block."
   (save-excursion
     (goto-char point)
     (let (result
-          (stack init-stack)
-          last-indentation)
+          last-indentation
+          (stack init-stack))
       (while (and (not result) (> (point) 1))
         (setq stack
               (if (looking-at-p "\\.")
