@@ -703,7 +703,12 @@ certain amount of incorrect or in-progress syntactic forms."
       (setq ctxt-line (nth 1 analysis))
       (setq ctxt-indent (nth 2 analysis))
       (setq prev-indent (nth 3 analysis))
-      (setq stopped-point (nth 4 analysis))
+      (let ((old-stopped-point stopped-point))
+        (setq stopped-point (nth 4 analysis))
+        (when (eq old-stopped-point stopped-point)
+          (message
+           "Whitespace-friendly indentation algorithm not making progress :(")
+          (error "Got stuck at %s" stopped-point)))
       (setq end-stack (nth 5 analysis)))
     (when-let ((_ (< ctxt-line line-no))
                (relative (scala-indent:relative-indent-by-elem syntax-elem)))
