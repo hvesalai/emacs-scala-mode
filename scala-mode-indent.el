@@ -282,6 +282,8 @@ and are in fact a sign of run-on. Reserved-symbols not included.")
         nil)
        ;; NO: this line is the start of value body
        ;; ((scala-indent:body-p) ;; TODO did I delete this function when I shouldn't have?
+       ;; TODO or even if I did, maybe it just doesn't matter because the
+       ;; heuristics that union this algorithm with the other will compensate?
        ;;  nil)
        ;; YES: eager strategy can stop here, everything is a run-on if no
        ;; counter evidence
@@ -422,6 +424,7 @@ Returns point or (point-min) if not inside a block."
   "A kind of tokenize step of the hand-wavy parse"
   (pcase stack
     ;; <hitting the beginning of a block when starting in the middle> { (
+    (`(?\{) 'left-boundary) ;; too aggressive?
     (`(?\{ ,_ . ,_) 'left-boundary)
     (`(?\( ,_ . ,_) 'left-boundary)
     ;; <dot chaining>
@@ -430,7 +433,7 @@ Returns point or (point-min) if not inside a block."
     ;; =
     (`(= ?\n . ,_) 'decl-lhs)
     ((and `(= ,_ . ,tail) (guard (memq ?\n tail))) 'after-decl)
-    (`(= ,_ . ,_) 'decl-lhs)
+    (`(= ,_ . ,_) 'decl-inline-lhs)
     ;; =>
     (`(=> ?\n . ,_) 'arrow-lhs)
     ((and `(=> ,_ . ,tail) (guard (memq ?\n tail))) 'after-arrow)
@@ -479,6 +482,8 @@ Returns point or (point-min) if not inside a block."
     (`(override) 'decl)
     ;; package
     (`(package . ,_) 'decl)
+    ;; sealed
+    (`(sealed) 'decl)
     ;; then
     (`(then ?\n . ,_) 'then-conseq)
     (`(then) 'then)
@@ -520,6 +525,7 @@ Returns point or (point-min) if not inside a block."
     (`(case ,_) 2)
     ;; decl
     (`(decl decl) 0)
+    (`(decl decl decl-inline-lhs) 0)
     (`(decl else) -2)
     (`(decl . ,_) 2)
     ;; decl-lhs
@@ -589,10 +595,19 @@ Returns point or (point-min) if not inside a block."
             (setq stack (cons ?\n stack)))
         ;; (beginning-of-thing 'sexp) gets confused by `.'
         (unless (looking-at-p "\\.")
-          ;; Avoid double-reading curent symbol
+          ;; Avoid double-reading current symbol
           (beginning-of-thing 'sexp)))
-      (list (point)
-            stack))))
+      ;; handle the occurence of case in various contexts
+      (or (save-excursion
+            (when-let ((_ (looking-at-p (concat "case *"
+                                              scala-syntax:class-or-object-re)))
+                     (point (progn (forward-to-word 1) (point)))
+                     (class-or-object (sexp-at-point)))
+              ;; This throws away the stack we've built up above. The assumption
+              ;; here is that this case is mutually exclusive with those above.
+              (scala-indent:skip-back-over-modifiers point
+                                                     (list class-or-object))))
+       (list (point) stack)))))
 
 (defun scala-indent:analyze-context (point &optional init-stack)
   "TODO document"
@@ -629,13 +644,19 @@ Returns point or (point-min) if not inside a block."
         (unless result
           (setq last-indentation (current-indentation))
           (while (looking-at-p "\\.") (backward-char))
+          ;; ")." is a funny case where we actually do want to be on the dot
+          (if (looking-at-p ")") (forwar-char))
           (scala-syntax:backward-sexp-forcing)))
-      (list result
-            (line-number-at-pos)
-            (current-indentation)
-            last-indentation
-            (point)
-            stack))))
+      (let* ((x (or (scala-indent:skip-back-over-modifiers (point) stack)
+                    (list (point) stack)))
+             (point (nth 0 x))
+             (stack (nth 1 x)))
+        (list result
+              (line-number-at-pos)
+              (current-indentation)
+              last-indentation
+              point
+              stack)))))
 
 (defun scala-indent:full-stmt-less-than-line (syntax-elem stopped-point)
   (and
@@ -657,7 +678,7 @@ Returns point or (point-min) if not inside a block."
   (or (and (= ctxt-line line-no) (> line-no 1)
            ;; If we keep reading for this reason, we've accepted the
            ;; existing tokens and so need to clear the stack
-           (list nil ;; syntax-elem
+           (list syntax-elem ;; syntax-elem
                  nil ;; stack
                  (save-excursion ;; point
                    (goto-char stopped-point)
@@ -675,10 +696,28 @@ Returns point or (point-min) if not inside a block."
       ;; We know we have a dot-chain, but we need to get more context to know
       ;; how to position it
       (when (equal syntax-elem '(dot-chain))
-        (list nil ;; syntax-elem
+        (list syntax-elem ;; syntax-elem
               nil ;; stack
               stopped-point ;; point
               ))))
+
+(defun scala-indent:skip-back-over-modifiers (point stack)
+  (if-let* ((head (car stack))
+            (_ (memq head '(trait class object)))
+            (new-point point)
+            (new-sexp t)
+            (new-stack stack))
+      (save-excursion
+        (goto-char new-point)
+        (scala-syntax:backward-sexp-forcing)
+        (setq new-sexp (sexp-at-point))
+        (while (memq new-sexp
+                     '(final sealed case open abstract implicit private))
+          (setq new-point (point))
+          (setq new-stack (cons new-sexp new-stack))
+          (scala-syntax:backward-sexp-forcing)
+          (setq new-sexp (sexp-at-point)))
+        (list new-point new-stack))))
 
 (defun scala-indent:whitespace-biased-indent (&optional point)
   "Whitespace-syntax-friendly heuristic indentation engine.
@@ -704,7 +743,7 @@ certain amount of incorrect or in-progress syntactic forms."
     (message "analysis: %s" analysis)
     (while (when-let ((x (scala-indent:continue-lookback?
                         syntax-elem ctxt-line line-no stopped-point end-stack)))
-             (setq syntax-elem (or (nth 0 x) syntax-elem))
+             (setq syntax-elem (nth 0 x))
              (setq stack (nth 1 x))
              (setq point (nth 2 x))
              t)
