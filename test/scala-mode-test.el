@@ -176,3 +176,29 @@ comment. A concrete example may be viewed at https://github.com/scala/scala/blob
    "/* &*/"
    "110111"
    "DDDOOO"))
+
+(ert-deftest scala-indent:scala-indent:use-cycle-indent-test-1 ()
+  "Custom \"scala-indent:use-cycle-indent\" should be nil by default."
+  
+  (should-not scala-indent:use-cycle-indent ))
+
+(ert-deftest scala-indent:scala-indent:use-cycle-indent-test-2 ()
+  "Custom \"scala-indent:use-cycle-indent\" must be a boolean."
+  
+  :expected-result :failed
+  (custom-set-variables '(scala-indent:use-cycle-indent "gobbledygook"))
+  (should (= 'scala-indent:use-cycle-indent "gobbledygook")))
+
+(ert-deftest scala-indent:scala-indent:use-cycle-indent-test-3 ()
+  "Custom \"scala-indent:use-cycle-indent\" should be settable to a boolean value."
+  
+  (custom-set-variables '(scala-indent:use-cycle-indent t))
+  (should 'scala-indent:use-cycle-indent )
+  (custom-set-variables '(scala-indent:use-cycle-indent nil)))
+
+(ert-deftest scala-indent:scala-indent:cycle-indent-stack-test-1 ()
+  "\"scala-indent:cycle-indent-stack\" should be 0 current-indentation after one call."
+  (custom-set-variables '(scala-indent:use-cycle-indent t))
+  (call-interactively (scala-indent:indent-line))
+  (should (buffer-local-value 'scala-indent:cycle-indent-stack))
+  (custom-set-variables '(scala-indent:use-cycle-indent nil)))
