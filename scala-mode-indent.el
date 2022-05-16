@@ -905,7 +905,7 @@ strings"
           (beginning-of-line)
           (when (looking-at "^\\s +$") (point)))))
 
-(defvar-local scala-indent:cycle-indent-stack nil
+(defvar-local scala-indent:cycle-indent-stack (list)
   "The automatically buffer local scala indent cycle stack.
 
 The stack is initialized as (left-margin, (current-indentation))
@@ -931,20 +931,21 @@ Will fail if INDENTATION is not an integer"
 
  Modifies the stack in-place."
 
-  (pop 'scala-indent:cycle-indent-stack))
+  (pop (buffer-local-value 'scala-indent:cycle-indent-stack (current-buffer))))
 
 (defun scala-indent:cycle-indent-stack-depth ()
   "The current depth of the \"scala-indent:cycle-indent-stack\" stack"
   
-  (length 'scala-indent:cycle-indent-stack))
+  (length (buffer-local-value 'scala-indent:cycle-indent-stack (current-buffer))))
 
-(defun scala-indent:cycle-indent-stack-emptyp ()
+
+(defun scala-indent:cycle-indent-stack-emptyp (x)
   "Check if the \"scala-indent:cycle-indent-stack\" is empty.
 
 Returns t if the \"scala-indent:cycle-indent-stack\" is empty,
 nil otherwise."
-  
-  (eql (length 'scala-indent:cycle-indent-stack) 0))
+
+  (= (length (buffer-local-value 'scala-indent:cycle-indent-stack (current-buffer))) 0))
 
 (defun scala-indent:cycle-indent-line (&optional strategy)
   "Cycle scala indentation using optionally passed STRATEGY.
@@ -955,7 +956,7 @@ the optionally passed STRATEGY.  Indent to the top of
 \"scala-indent:cycle-indent-stack\" when non-empty."
   
   (interactive "*")
-  (cond (((scala-indent:cycle-indent-stack-emptyp))
+  (cond ((scala-indent:cycle-indent-stack-emptyp nil)
 	 (scala-indent:cycle-indent-stack-push (current-indentation))
 	 (scala-indent:cycle-indent-stack-push 0)
 	 (call-interactively 'scala-indent:strategy-indent-line t))
