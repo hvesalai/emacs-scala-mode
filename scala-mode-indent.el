@@ -133,6 +133,14 @@ Scaladoc behavior of indenting comment lines to the second asterisk."
   :safe #'booleanp
   :group 'scala)
 
+(defcustom scala-indent:use-cycle-indent nil
+  "When non-nil, indentation will cycle from the new indent
+  strategy indent, the last known indent, and the left margin on
+  subsequent indent-line calls."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'scala)
+
 (defun scala-indent:run-on-strategy ()
   "Returns the currently effecti run-on strategy"
   (or scala-indent:effective-run-on-strategy
@@ -897,8 +905,66 @@ strings"
           (beginning-of-line)
           (when (looking-at "^\\s +$") (point)))))
 
-(defun scala-indent:indent-line (&optional strategy)
-  "Indents the current line."
+(defvar-local scala-indent:cycle-indent-stack (list)
+  "The automatically buffer local scala indent cycle stack.
+
+The stack is initialized as (left-margin, (current-indentation))
+when the custom var \"scala-indent:use-cycle-indent\" is non-nil
+and \"scala-indent:indent-line\" is called. Subsequent
+\"scala-indent:indent-line\" calls pop the indentation value from
+the stack, until it is empty, resetting the indentation cycle.")
+
+
+
+(defun scala-indent:cycle-indent-stack-push (indentation)
+  "Pushes an integer value onto the \"scala-indent:cycle-indent-stack\".
+
+Will fail if INDENTATION is not an integer"
+
+  (if (integerp indentation)
+      (add-to-list 'scala-indent:cycle-indent-stack indentation)
+    (error "\"scala-indent:cycle-indent-stack-push\": Invalid INDENTATION argument %s"
+	   indentation)))
+
+(defun scala-indent:cycle-indent-stack-pop ()
+  "Gets the top value of the \"scala-indent:cycle-indent-stack\" stack.
+
+ Modifies the stack in-place."
+
+  (pop (buffer-local-value 'scala-indent:cycle-indent-stack (current-buffer))))
+
+(defun scala-indent:cycle-indent-stack-depth ()
+  "The current depth of the \"scala-indent:cycle-indent-stack\" stack"
+  
+  (length (buffer-local-value 'scala-indent:cycle-indent-stack (current-buffer))))
+
+
+(defun scala-indent:cycle-indent-stack-emptyp (x)
+  "Check if the \"scala-indent:cycle-indent-stack\" is empty.
+
+Returns t if the \"scala-indent:cycle-indent-stack\" is empty,
+nil otherwise."
+
+  (= (length (buffer-local-value 'scala-indent:cycle-indent-stack (current-buffer))) 0))
+
+(defun scala-indent:cycle-indent-line (&optional strategy)
+  "Cycle scala indentation using optionally passed STRATEGY.
+
+When the \"scala-indent:cycle-indent-stack\" is empty, push 0 and
+the current indentation onto the stack, then indent according to
+the optionally passed STRATEGY.  Indent to the top of
+\"scala-indent:cycle-indent-stack\" when non-empty."
+  
+  (interactive "*")
+  (cond ((scala-indent:cycle-indent-stack-emptyp nil)
+	 (scala-indent:cycle-indent-stack-push (current-indentation))
+	 (scala-indent:cycle-indent-stack-push 0)
+	 (call-interactively 'scala-indent:strategy-indent-line t))
+	(t (scala-indent:indent-line-to (scala-indent:cycle-indent-stack-pop)))))
+
+;; the previously-named scala-indent:indent-line
+(defun scala-indent:strategy-indent-line (&optional strategy)
+  "Indent lines according to the OPTIONAL scala indentation STRATEGY."
   (interactive "*")
   (let ((state (save-excursion (syntax-ppss (line-beginning-position)))))
     (if (nth 8 state) ;; 8 = start pos of comment or string
@@ -917,6 +983,18 @@ strings"
                (t (current-indentation))))
       (scala-indent:indent-code-line strategy)))
   )
+
+(defun scala-indent:indent-line (&optional strategy)
+  "Indent the current line with cycling.
+
+If the custom var \"scala-indent:use-cycle-indent\" is non-nil,
+cycle-indent using the optionally passed STRATEGY.  Indent using
+the optionally passed STRATEGY without cycling otherwise."
+  
+  (interactive "*")
+  (if scala-indent:use-cycle-indent
+      (call-interactively t 'scala-indent:cycle-indent-line)
+    (call-interactively t 'scala-indent:strategy-indent-line)))
 
 (defun scala-indent:indent-with-reluctant-strategy ()
   (interactive "*")
