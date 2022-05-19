@@ -993,8 +993,8 @@ the optionally passed STRATEGY without cycling otherwise."
   
   (interactive "*")
   (if scala-indent:use-cycle-indent
-      (call-interactively t 'scala-indent:cycle-indent-line)
-    (call-interactively t 'scala-indent:strategy-indent-line)))
+      (call-interactively 'scala-indent:cycle-indent-line t)
+    (call-interactively 'scala-indent:strategy-indent-line t)))
 
 (defun scala-indent:indent-with-reluctant-strategy ()
   (interactive "*")
