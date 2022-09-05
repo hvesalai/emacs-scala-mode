@@ -176,3 +176,15 @@ comment. A concrete example may be viewed at https://github.com/scala/scala/blob
    "/* &*/"
    "110111"
    "DDDOOO"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-24 ()
+  (smt:test
+   "val c = s\"$$sum $$$sum $$$$sum\""
+   "2220201027112220111222011112227"
+   "KKK-V-K--SSSSSSSSSVVVVSSSSSSSSS"))
+
+(ert-deftest smt:syntax-class-and-font-lock-test-25 ()
+  (smt:test
+   "val c = s\"$sum$sum $sum$$sum\""
+   "22202010271222122201222112227"
+   "KKK-V-K--SVVVVVVVVSVVVVSSSSSS"))
