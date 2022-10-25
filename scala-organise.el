@@ -28,7 +28,7 @@
     (goto-char 0)
     (let (;; alist of the form ("prefix." ("Symbol", "_", "etc"))
           (imports))
-      (when (re-search-forward (rx line-start "import "))
+      (when (re-search-forward (rx line-start "import ") nil t)
         (forward-line 0)
         (let ((start (point)))
           (while (looking-at (rx (or "\n" (: "import " (group (+ (not (or "{" "\n"))))))))
@@ -62,10 +62,9 @@
             (dolist (key keys)
               (insert (scala-organise--render (assoc key imports))))
             (when keys
-              (insert "\n"))))))
-
-    (when (re-search-forward (rx line-start (* space) "import "))
-      (message "Inline imports, starting at line %i, have not been organised." (line-number-at-pos)))))
+              (insert "\n")))))
+      (when (re-search-forward (rx line-start (* space) "import ") nil t)
+        (message "Inline imports, starting at line %i, have not been organised." (line-number-at-pos))))))
 
 (defun scala-organise--special-p (entry setting)
   "Return non-nil if the ENTRY string matches the SETTING (a string
