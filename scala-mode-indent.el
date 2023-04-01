@@ -537,7 +537,7 @@ Returns point or (point-min) if not inside a block."
     (`(decl else) -2)
     (`(decl . ,_) 2)
     ;; decl-lhs
-    (`(decl-lhs decl . ,_) 0)
+    (`(decl-lhs decl . ,_) 2)
     (`(decl-lhs dot-chain) 4)
     (`(dot-chain dot-chain) 0)
     (`(decl-lhs for-comp) 0)
