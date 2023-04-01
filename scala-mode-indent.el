@@ -756,7 +756,10 @@ certain amount of incorrect or in-progress syntactic forms."
              (setq point (nth 2 x))
              t)
       (setq analysis (scala-indent:analyze-context point stack))
-      (setq syntax-elem (cons (nth 0 analysis) syntax-elem))
+      (setq syntax-elem
+	    (if (nth 0 analysis)
+		(cons (nth 0 analysis) syntax-elem)
+	      syntax-elem))
       (setq ctxt-line (nth 1 analysis))
       (setq ctxt-indent (nth 2 analysis))
       (setq prev-indent (nth 3 analysis))
