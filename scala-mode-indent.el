@@ -653,7 +653,7 @@ Returns point or (point-min) if not inside a block."
           (setq last-indentation (current-indentation))
           (while (looking-at-p "\\.") (backward-char))
           ;; ")." is a funny case where we actually do want to be on the dot
-          (if (looking-at-p ")") (forwar-char))
+          (if (looking-at-p ")") (forward-char))
           (scala-syntax:backward-sexp-forcing)))
       (let* ((x (or (scala-indent:skip-back-over-modifiers (point) stack)
                     (list (point) stack)))
