@@ -434,7 +434,7 @@ Returns point or (point-min) if not inside a block."
     ;; <hitting the beginning of a block when starting in the middle> { (
     (`(?\{) 'left-boundary) ;; too aggressive?
     (`(?\{ ,_ . ,_) 'left-boundary)
-    (`(?\( ,_ . ,_) 'left-boundary)
+    ; (`(?\( ,_ . ,_) 'left-boundary)
     ;; <dot chaining>
     (`(?\n ?.) 'dot-chain)
     (`(?\n ?. . ,_) 'dot-chain)
