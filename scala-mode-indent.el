@@ -746,10 +746,17 @@ tokenization. The parser is not anything like well-formalized, but it can start
 at an arbitrary point in the buffer, and except in pathological cases, look at
 relatively few lines in order to make a good guess; and it is tolerant to a
 certain amount of incorrect or in-progress syntactic forms."
-  (let* ((initResult (scala-indent:find-analysis-start point))
+  (let* ((line-no
+          ;; Get the line number while taking blanks into account.  This allows
+          ;; differentiating between indenting at a blank line and re-indenting
+          ;; at the line right before it.
+          (line-number-at-pos
+           (save-excursion
+             (when point (goto-char point))
+             (point))))
+         (initResult (scala-indent:find-analysis-start point))
          (point (car initResult))
          (stack (cadr initResult))
-         (line-no (line-number-at-pos point))
          (analysis (scala-indent:analyze-context point stack))
          (syntax-elem (list (nth 0 analysis)))
          (ctxt-line (nth 1 analysis))
