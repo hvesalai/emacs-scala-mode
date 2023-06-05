@@ -250,7 +250,9 @@ and the empty line")
   (regexp-opt '("abstract" "catch" "case" "class" "def" "do" "else" "final"
                 "finally" "for" "if" "implicit" "import" "lazy" "new" "object"
                 "override" "package" "private" "protected" "return" "sealed"
-                "throw" "trait" "try" "type" "val" "var" "while" "yield" "inline")
+                "throw" "trait" "try" "type" "val" "var" "while" "yield" "inline"
+                "extension"
+                )
               'words)
   "Words that we don't want to continue the previous line")
 
@@ -438,6 +440,13 @@ Returns point or (point-min) if not inside a block."
     ;; <dot chaining>
     (`(?\n ?.) 'dot-chain)
     (`(?\n ?. . ,_) 'dot-chain)
+    ;; extension
+    ;;
+    ;; FIXME: This is a hack that just checks if the previous line contains
+    ;; extension.  The check for extension should check whether this is a
+    ;; single-def extension and for balanced parentheses, etc. to determine
+    ;; whether we emit a block token.
+    ((and `(extension . ,tail) (guard (memq ?\n tail))) 'block)
     ;; =
     (`(= ?\n . ,_) 'decl-lhs)
     ((and `(= ,_ . ,tail) (guard (memq ?\n tail))) 'after-decl)
