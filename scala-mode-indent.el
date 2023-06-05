@@ -372,7 +372,7 @@ is not on a run-on line."
           "\\|:\\("  scala-syntax:after-reserved-symbol-re "\\)"))
 
 (defconst scala-indent:forms-align-re
-  (regexp-opt '("yield" "then" "else" "catch" "finally") 'words))
+  (regexp-opt '("do" "yield" "then" "else" "catch" "finally") 'words))
 
 (defun scala-indent:forms-align-p (&optional point)
   "Returns `scala-syntax:beginning-of-code-line' for the line on
@@ -520,6 +520,7 @@ Returns point or (point-min) if not inside a block."
     (`(with) 'block)
     ;; yield
     (`(yield . ,_) 'yield-from-comp)
+    (`(do . ,_) 'yield-from-comp)
     ))
 
 (defun scala-indent:relative-indent-by-elem (syntax-elem)
