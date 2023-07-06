@@ -250,7 +250,9 @@ and the empty line")
   (regexp-opt '("abstract" "catch" "case" "class" "def" "do" "else" "final"
                 "finally" "for" "if" "implicit" "import" "lazy" "new" "object"
                 "override" "package" "private" "protected" "return" "sealed"
-                "throw" "trait" "try" "type" "val" "var" "while" "yield" "inline")
+                "throw" "trait" "try" "type" "val" "var" "while" "yield" "inline"
+                "extension"
+                )
               'words)
   "Words that we don't want to continue the previous line")
 
@@ -370,7 +372,7 @@ is not on a run-on line."
           "\\|:\\("  scala-syntax:after-reserved-symbol-re "\\)"))
 
 (defconst scala-indent:forms-align-re
-  (regexp-opt '("yield" "then" "else" "catch" "finally") 'words))
+  (regexp-opt '("do" "yield" "then" "else" "catch" "finally") 'words))
 
 (defun scala-indent:forms-align-p (&optional point)
   "Returns `scala-syntax:beginning-of-code-line' for the line on
@@ -434,10 +436,17 @@ Returns point or (point-min) if not inside a block."
     ;; <hitting the beginning of a block when starting in the middle> { (
     (`(?\{) 'left-boundary) ;; too aggressive?
     (`(?\{ ,_ . ,_) 'left-boundary)
-    (`(?\( ,_ . ,_) 'left-boundary)
+    ; (`(?\( ,_ . ,_) 'left-boundary)
     ;; <dot chaining>
     (`(?\n ?.) 'dot-chain)
     (`(?\n ?. . ,_) 'dot-chain)
+    ;; extension
+    ;;
+    ;; FIXME: This is a hack that just checks if the previous line contains
+    ;; extension.  The check for extension should check whether this is a
+    ;; single-def extension and for balanced parentheses, etc. to determine
+    ;; whether we emit a block token.
+    ((and `(extension . ,tail) (guard (memq ?\n tail))) 'block)
     ;; =
     (`(= ?\n . ,_) 'decl-lhs)
     ((and `(= ,_ . ,tail) (guard (memq ?\n tail))) 'after-decl)
@@ -511,6 +520,7 @@ Returns point or (point-min) if not inside a block."
     (`(with) 'block)
     ;; yield
     (`(yield . ,_) 'yield-from-comp)
+    (`(do . ,_) 'yield-from-comp)
     ))
 
 (defun scala-indent:relative-indent-by-elem (syntax-elem)
@@ -537,7 +547,7 @@ Returns point or (point-min) if not inside a block."
     (`(decl else) -2)
     (`(decl . ,_) 2)
     ;; decl-lhs
-    (`(decl-lhs decl . ,_) 0)
+    (`(decl-lhs decl . ,_) 2)
     (`(decl-lhs dot-chain) 4)
     (`(dot-chain dot-chain) 0)
     (`(decl-lhs for-comp) 0)
@@ -653,7 +663,7 @@ Returns point or (point-min) if not inside a block."
           (setq last-indentation (current-indentation))
           (while (looking-at-p "\\.") (backward-char))
           ;; ")." is a funny case where we actually do want to be on the dot
-          (if (looking-at-p ")") (forwar-char))
+          (if (looking-at-p ")") (forward-char))
           (scala-syntax:backward-sexp-forcing)))
       (let* ((x (or (scala-indent:skip-back-over-modifiers (point) stack)
                     (list (point) stack)))
@@ -736,10 +746,17 @@ tokenization. The parser is not anything like well-formalized, but it can start
 at an arbitrary point in the buffer, and except in pathological cases, look at
 relatively few lines in order to make a good guess; and it is tolerant to a
 certain amount of incorrect or in-progress syntactic forms."
-  (let* ((initResult (scala-indent:find-analysis-start point))
+  (let* ((line-no
+          ;; Get the line number while taking blanks into account.  This allows
+          ;; differentiating between indenting at a blank line and re-indenting
+          ;; at the line right before it.
+          (line-number-at-pos
+           (save-excursion
+             (when point (goto-char point))
+             (point))))
+         (initResult (scala-indent:find-analysis-start point))
          (point (car initResult))
          (stack (cadr initResult))
-         (line-no (line-number-at-pos point))
          (analysis (scala-indent:analyze-context point stack))
          (syntax-elem (list (nth 0 analysis)))
          (ctxt-line (nth 1 analysis))
@@ -756,7 +773,10 @@ certain amount of incorrect or in-progress syntactic forms."
              (setq point (nth 2 x))
              t)
       (setq analysis (scala-indent:analyze-context point stack))
-      (setq syntax-elem (cons (nth 0 analysis) syntax-elem))
+      (setq syntax-elem
+	    (if (nth 0 analysis)
+		(cons (nth 0 analysis) syntax-elem)
+	      syntax-elem))
       (setq ctxt-line (nth 1 analysis))
       (setq ctxt-indent (nth 2 analysis))
       (setq prev-indent (nth 3 analysis))
