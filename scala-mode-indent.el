@@ -868,7 +868,7 @@ a word that needs to be indented specially."
              (= (char-before) ?\s)
              (= (char-syntax (char-before (- (point) 1))) ?w)
              (save-excursion (backward-char)
-                             (looking-back scala-indent:indent-on-words-re 7))
+                             (looking-back scala-indent:indent-on-words-re (line-beginning-position)))
              (not (nth 8 (syntax-ppss))))
     (scala-indent:indent-line-to (scala-indent:calculate-indent-for-line))))
 
