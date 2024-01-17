@@ -88,15 +88,17 @@ If there is no plausible default, return nil."
 
 ;;;###autoload
 (defun scala-mode:goto-start-of-code ()
-  "Go to the start of the real code in the file: object, class or trait."
+  "Go to the start of the real code in the file.
+
+Object, class, trait, enum, def, val, or given."
   (interactive)
   (let* ((case-fold-search nil))
-    (search-forward-regexp "\\([[:space:]]+\\|^\\)\\(class\\|object\\|trait\\)" nil t)
+    (search-forward-regexp "\\([[:space:]]+\\|^\\)\\(class\\|enum\\|object\\|trait\\|def\\|val\\|given\\)" nil t)
     (move-beginning-of-line nil)))
 
 ;;;###autoload
 (define-derived-mode scala-mode prog-mode "Scala"
-  "Major mode for editing scala code.
+  "Major mode for editing Scala code.
 
 When started, runs `scala-mode-hook'.
 

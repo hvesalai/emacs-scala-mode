@@ -5,9 +5,10 @@
 (require 'scala-mode-syntax)
 
 (defcustom scala-font-lock:constant-list '()
-  "A list of strigs that should be fontified in constant
-face. This customization property takes effect only after the
-scala-mode has been reloaded."
+  "A list of strings that should be fontified in constant face.
+
+This customization property takes effect only after the `scala-mode' has been
+reloaded."
   :type '(repeat string)
   :group 'scala)
 
@@ -21,8 +22,6 @@ scala-mode has been reloaded."
 (defun scala-font-lock:mark-underscore (limit)
   (when (re-search-forward scala-syntax:reserved-symbol-underscore-re limit t)
       (goto-char (match-end 2)))) ;; step back to the match (re matches futher)
-
-;(defun scala-font-lock:extend-region-function ()
 
 (defun scala-font-lock:limit-pattern2 (&optional start)
   (save-excursion
@@ -363,20 +362,9 @@ Does not continue past limit.
               "\\)")
      2 font-lock-type-face)
 
-    ;; ;; extends, with, new
-    ;; (,(concat "\\<\\(extends\\|with\\|new\\)[ \t]+\\([("
-    ;;           scala-syntax:id-first-char-group "]\\)")
-    ;;  (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType
-    ;;                                    (goto-char (match-beginning 2)))
-    ;;                                   nil
-    ;;                                   (0 font-lock-type-face nil t)))
+    ;; TODO extends, with, new
 
-    ;; ;; ':'
-    ;; (,scala-syntax:colon-re
-    ;;  (scala-font-lock:mark-simpleType (scala-font-lock:limit-simpleType
-    ;;                                    (goto-char (match-end 2)))
-    ;;                                   nil
-    ;;                                   (0 font-lock-type-face nil t)))
+    ;; TODO ':'
 
     ;; def
     (,(concat "\\<def[ \t]+\\(" scala-syntax:id-re "\\)") 1 font-lock-function-name-face)
