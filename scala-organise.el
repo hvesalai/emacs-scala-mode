@@ -49,7 +49,8 @@
             (forward-line 1))
 
           (delete-region start (point))
-          (let* ((keys (sort (delete-dups (mapcar #'car imports)) #'string<)))
+          (let* ((keys (sort (delete-dups (mapcar #'car imports)) #'string<))
+                 deferred)
             (dolist (setting scala-organise-first)
               (let (done)
                 (dolist (key keys)
@@ -59,9 +60,17 @@
                 (when done
                   (insert "\n"))
                 (setq keys (seq-difference keys done))))
-            (dolist (key keys)
-              (insert (scala-organise--render (assoc key imports))))
             (when keys
+              (dolist (key keys)
+                (if (let (case-fold-search)
+                      (string-match-p (rx line-start upper) key))
+                    (push key deferred)
+                  (insert (scala-organise--render (assoc key imports)))))
+              (when (length> keys (length deferred))
+                (insert "\n")))
+            (when deferred
+              (dolist (key (reverse deferred))
+                (insert (scala-organise--render (assoc key imports))))
               (insert "\n")))))
       (when (re-search-forward (rx line-start (* space) "import ") nil t)
         (message "Inline imports, starting at line %i, have not been organised." (line-number-at-pos))))))
