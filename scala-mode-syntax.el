@@ -1018,6 +1018,25 @@ val a, b = (1, 2)
   (scala-syntax:find-brace-equals-or-next)
   (scala-syntax:handle-brace-equals-or-next))
 
+(defun scala-syntax:in-definition-parameter-list (anchor start)
+  "Return t if the (anchor, start) region is the parameter list
+of a definition(class, def, etc.)"
+  (save-excursion
+    (goto-char anchor)
+    (when
+	(or (string= "class" (current-word))
+	    (string= "def" (current-word)))
+      ;; try to find (
+      (while (and (< (point) start)
+		  (/= (char-after) ?\())
+	(forward-char))
+      (when (< (point) start)
+	;; And we haven't see ) yet.
+	(while (and (< (point) start)
+		    (/= (char-after) ?\)))
+	  (forward-char))
+	(= (point) start)))))
+
 (defun scala-syntax:find-brace-equals-or-next ()
   (scala-syntax:go-to-pos
    (save-excursion

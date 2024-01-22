@@ -16,6 +16,14 @@ indentation will be one or two steps depending on context."
   :safe #'integerp
   :group 'scala)
 
+(defcustom scala-indent:defition-parameter-scaling-factor 1
+  "Scale the number of spaces used to indent the parameter list
+of class/function definitions. See also
+https://github.com/hvesalai/emacs-scala-mode/issues/172"
+  :type 'integer
+  :safe #'integerp
+  :group 'scala)
+
 (defcustom scala-indent:indent-value-expression nil
   "Whether or not to indent multi-line value expressions, with
 one extra step. When true, indenting will be
@@ -629,6 +637,9 @@ anchor for calculating block indent for current point (or point
              (> (line-number-at-pos) (line-number-at-pos anchor))
              (> start (match-beginning 0))))
       (+ (* 2 scala-indent:step) lead))
+     ;; optionally double the step for parameter list
+     ((scala-syntax:in-definition-parameter-list anchor start)
+      (+ (* scala-indent:defition-parameter-scaling-factor scala-indent:step) lead))
      ;; normal block line
      (t  (+ scala-indent:step lead)))))
 
