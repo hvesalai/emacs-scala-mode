@@ -4,8 +4,8 @@
 
 ;; Homepage: https://github.com/hvesalai/emacs-scala-mode
 ;; Keywords: languages
-;; Package-Version:  0.23
-;; Package-Requires: ()
+;; Package-Version:  1.1.0
+;; Package-Requires: ((emacs "24.2"))
 
 ;;; Commentary:
 ;;
