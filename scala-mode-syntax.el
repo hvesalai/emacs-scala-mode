@@ -647,12 +647,12 @@ symbol constituents (syntax 3)."
 ;;;;
 
 (defun scala-syntax:beginning-of-code-line ()
-  (interactive)
   "Move to the beginning of code on the line, or to the end of
 the line, if the line is empty. Return the new point.  Not to be
 called on a line whose start is inside a comment, i.e. a comment
 begins on the previous line and continues past the start of this
 line."
+  (interactive)
   ;; TODO: make it work even if the start IS inside a comment
   (beginning-of-line)
   (let ((eol (line-end-position))
