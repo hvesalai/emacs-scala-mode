@@ -506,8 +506,8 @@
   nil)
 
 (defmacro scala-syntax:put-syntax-table-property (match-group value)
-  "Add 'syntax-table entry 'value' to the region marked by the
-match-group 'match-group'"
+  "Add syntax-table entry `value' to the region marked by the
+match-group `match-group'"
   `(put-text-property (match-beginning ,match-group)
                       (match-end ,match-group)
                       'syntax-table
@@ -797,7 +797,7 @@ one."
 
 (defun scala-syntax:newlines-disabled-p (&optional point)
   "Return true if newlines are disabled at the current point (or
-point 'point') as specified by SLS chapter 1.2"
+point `point') as specified by SLS chapter 1.2"
   ;; newlines are disabled if
   ;; - in '()' or '[]'
   ;; - between 'case' and '=>'
@@ -936,9 +936,9 @@ is returned, otherwise nil is returned"
 
 (defun scala-syntax:list-p (&optional point)
   "Returns the start of the list, if the current point (or point
-'point') is on the first line of a list element > 1, or nil if
+`point') is on the first line of a list element > 1, or nil if
 not. A list must be either enclosed in parentheses or start with
-'val', 'var' or 'import'."
+`val', `var' or `import'."
   (save-excursion
     ;; first check that the previous line ended with ','
     (when point (goto-char point))
