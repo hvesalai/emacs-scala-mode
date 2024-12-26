@@ -995,7 +995,8 @@ not. A list must be either enclosed in parentheses or start with
 
 (defun scala-syntax:beginning-of-definition ()
   "This function may not work properly with certain types of scala definitions.
-For example, no care has been taken to support multiple assignments to vals such as
+For example, no care has been taken to support multiple assignments to
+vals such as
 
 val a, b = (1, 2)
 "
@@ -1009,7 +1010,8 @@ val a, b = (1, 2)
 
 (defun scala-syntax:end-of-definition ()
   "This function may not work properly with certain types of scala definitions.
-For example, no care has been taken to support multiple assignments to vals such as
+For example, no care has been taken to support multiple assignments to
+vals such as
 
 val a, b = (1, 2)
 "
