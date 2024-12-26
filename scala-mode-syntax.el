@@ -986,7 +986,7 @@ not. A list must be either enclosed in parentheses or start with
 ;; Functions to help with beginning and end of definitions.
 
 (defun scala-syntax:backward-sexp-forcing ()
-  (condition-case ex (backward-sexp) ('error (backward-char))))
+  (condition-case nil (backward-sexp) (error (backward-char))))
 
 (defun scala-syntax:forward-sexp-or-next-line ()
   (interactive)
@@ -1026,7 +1026,7 @@ val a, b = (1, 2)
      (scala-syntax:movement-function-until-cond-function
       (lambda () (or (looking-at "[[:space:]]*[{=]")
 		     (looking-at scala-syntax:all-definition-re)))
-      (lambda () (condition-case ex (scala-syntax:forward-sexp-or-next-line) ('error nil)))))))
+      (lambda () (condition-case nil (scala-syntax:forward-sexp-or-next-line) (error nil)))))))
 
 (defun scala-syntax:handle-brace-equals-or-next ()
   (cond ((eobp) nil)
