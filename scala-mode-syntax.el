@@ -407,7 +407,7 @@
 
 (defconst scala-syntax:list-keywords-re
   (regexp-opt '("var" "val" "import") 'words)
-  ("Keywords that can start a list"))
+  "Keywords that can start a list")
 
 (defconst scala-syntax:case-re
   "\\<case\\>")
