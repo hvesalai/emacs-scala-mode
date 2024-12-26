@@ -407,7 +407,7 @@
 
 (defconst scala-syntax:list-keywords-re
   (regexp-opt '("var" "val" "import") 'words)
-  ("Keywords that can start a list"))
+  "Keywords that can start a list")
 
 (defconst scala-syntax:case-re
   "\\<case\\>")
@@ -647,12 +647,12 @@ symbol constituents (syntax 3)."
 ;;;;
 
 (defun scala-syntax:beginning-of-code-line ()
-  (interactive)
   "Move to the beginning of code on the line, or to the end of
 the line, if the line is empty. Return the new point.  Not to be
 called on a line whose start is inside a comment, i.e. a comment
 begins on the previous line and continues past the start of this
 line."
+  (interactive)
   ;; TODO: make it work even if the start IS inside a comment
   (beginning-of-line)
   (let ((eol (line-end-position))
@@ -995,7 +995,8 @@ not. A list must be either enclosed in parentheses or start with
 
 (defun scala-syntax:beginning-of-definition ()
   "This function may not work properly with certain types of scala definitions.
-For example, no care has been taken to support multiple assignments to vals such as
+For example, no care has been taken to support multiple assignments to
+vals such as
 
 val a, b = (1, 2)
 "
@@ -1009,7 +1010,8 @@ val a, b = (1, 2)
 
 (defun scala-syntax:end-of-definition ()
   "This function may not work properly with certain types of scala definitions.
-For example, no care has been taken to support multiple assignments to vals such as
+For example, no care has been taken to support multiple assignments to
+vals such as
 
 val a, b = (1, 2)
 "

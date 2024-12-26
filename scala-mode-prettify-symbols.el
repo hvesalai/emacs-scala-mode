@@ -76,7 +76,8 @@
     (">>" . ?≫)
     ("followedBy" . ?≫)
     ("<+>" . ?⊕))
-  "Prettify rules for category theory related operators (for use with cats/scalaz/...).")
+  "Prettify rules for category theory related operators (for use with
+cats/scalaz/...).")
 
 (defcustom
   scala-prettify-symbols-alist
