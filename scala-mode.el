@@ -66,9 +66,9 @@ If there is no plausible default, return nil."
 (defun scala-mode:forward-sexp-function (&optional count)
   (unless count (setq count 1))
   (if (< count 0)
-      (dotimes (n (abs count))
+      (dotimes (_ (abs count))
         (scala-syntax:backward-sexp))
-    (dotimes (n count)
+    (dotimes (_ count)
       (scala-syntax:forward-sexp))))
 
 ;;;###autoload
