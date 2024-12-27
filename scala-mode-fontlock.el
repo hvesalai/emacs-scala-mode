@@ -1,4 +1,4 @@
-;;; scala-mode-fontlock.el - Major mode for editing scala, font-lock
+;;; scala-mode-fontlock.el - Major mode for editing scala, font-lock -*- lexical-binding: t -*-
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 

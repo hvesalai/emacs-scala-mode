@@ -1,4 +1,4 @@
-;;; scala-mode-lib.el - Major mode for editing scala, common functions
+;;; scala-mode-lib.el - Major mode for editing scala, common functions -*- lexical-binding: t -*-
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 

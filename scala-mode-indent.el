@@ -1,4 +1,4 @@
-;;; scala-mode.el - Major mode for editing scala, indenting
+;;; scala-mode.el - Major mode for editing scala, indenting -*- lexical-binding: t -*-
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
@@ -583,7 +583,7 @@ keyword, or nil if not."
 ;;; Block
 ;;;
 
-(defun scala-indent:goto-block-anchor (&optional point)
+(defun scala-indent:goto-block-anchor ()
   "Moves back to the point whose column will be used as the
 anchor for calculating block indent for current point (or point
 `point'). Returns point or (point-min) if not inside a block."
@@ -759,7 +759,7 @@ cannot be determined."
          (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
          (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
          (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
-         (scala-indent:goto-block-anchor scala-indent:resolve-block-step)
+         (scala-indent:goto-block-anchor)
      )
        point)
       0))
@@ -921,10 +921,6 @@ of a line inside a multi-line comment "
       (skip-syntax-forward " ")
       (insert "*")
       (scala-indent:indent-on-scaladoc-asterisk))))
-
-(defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
-  (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
-
 
 (defun scala-indent:fixup-whitespace ()
   "scala-mode version of `fixup-whitespace'"
