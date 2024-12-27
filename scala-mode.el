@@ -4,8 +4,8 @@
 
 ;; Homepage: https://github.com/hvesalai/emacs-scala-mode
 ;; Keywords: languages
-;; Package-Version:  1.1.0
-;; Package-Requires: ((emacs "24.2"))
+;; Package-Version:  1.1.1
+;; Package-Requires: ((emacs "25.1"))
 
 ;;; Commentary:
 ;;
@@ -23,10 +23,10 @@
 (defvar fixup-whitespace) ;; for compilation
 (defvar delete-indentation) ;; for compilation
 
-;; Tested only for emacs 24
-(unless (<= 24 emacs-major-version)
+;; Tested only for emacs 25
+(unless (<= 25 emacs-major-version)
   (error
-   (format "The Scala mode has been tested only on Emacs version 24.2 (and not your Emacs version %s.%s)"
+   (format "The Scala mode has been tested only on Emacs version 25.1 (and not your Emacs version %s.%s)"
            emacs-major-version  emacs-minor-version)))
 
 (defgroup scala nil
