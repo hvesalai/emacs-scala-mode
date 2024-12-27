@@ -83,7 +83,7 @@ entries."
                       (cons "_" (seq-filter (lambda (e) (string-match-p (rx "=>") e)) parts))
                     parts))
          (clean (lambda (s) (replace-regexp-in-string (rx (* space) "=>" (* space)) " => " s)))
-         (rendered (if (and (length= parts_ 1)
+         (rendered (if (and (= (length parts_) 1)
                             (not (string-match-p (rx "=>") (car parts_))) )
                        (car parts_)
                      (concat "{ " (mapconcat clean parts_ ", ") " }"))))
