@@ -67,7 +67,7 @@ val x = foo(1, List(1, 2, 3) map (i =>
   :group 'scala)
 
 (defcustom scala-indent:align-forms nil
-  "Whether or not to align 'else', 'yield', 'catch', 'finally'
+  "Whether or not to align `else', `yield', `catch', `finally'
 below their respective expression start. When non-nil, identing
 will be
 
@@ -87,11 +87,11 @@ val x = if (foo)
   :group 'scala)
 
 (defconst scala-indent:eager-strategy 0
-  "See 'scala-indent:run-on-strategy'")
+  "See `scala-indent:run-on-strategy'")
 (defconst scala-indent:operator-strategy 1
-  "See 'scala-indent:run-on-strategy'")
+  "See `scala-indent:run-on-strategy'")
 (defconst scala-indent:reluctant-strategy 2
-  "See 'scala-indent:run-on-strategy'")
+  "See `scala-indent:run-on-strategy'")
 (defconst scala-indent:keywords-only-strategy 3
   "A strategy used internally by indent engine")
 
@@ -100,15 +100,15 @@ val x = if (foo)
 that continue a statement from the previous line. Possible values
 are:
 
-'reluctant', which marks only lines that begin with -- or
+`reluctant', which marks only lines that begin with -- or
 that follow a line that ends with -- a reserved word that cannot start
-or end a line, such as 'with'.
+or end a line, such as `with'.
 
-'operators', which extends the previous strategy by marking also
+`operators', which extends the previous strategy by marking also
 lines that begin with -- or that follow a line that ends with --
-an operator character. For example, '+', '-', etc.
+an operator character. For example, `+', `-', etc.
 
-'eager', which marks all rows which could be run-ons, i.e. which
+`eager', which marks all rows which could be run-ons, i.e. which
 are not ruled out by the language specification.
 "
   :type `(choice (const :tag "eager" ,scala-indent:eager-strategy)
@@ -336,7 +336,7 @@ and are infact a sign of run-on. Reserved-symbols not included.")
        (t nil)))))
 
 (defun scala-indent:run-on-line-p (&optional point strategy)
-  "Returns t if the current point (or point at 'point) is on a
+  "Returns t if the current point (or point at `point') is on a
 line that is a run-on from a previous line."
   (save-excursion
     (when point (goto-char point))
@@ -346,7 +346,7 @@ line that is a run-on from a previous line."
 (defun scala-indent:goto-run-on-anchor (&optional point strategy)
   "Moves back to the point whose column will be used as the
 anchor relative to which indenting for current point (or point
-'point') is calculated. Returns the new point or nil if the point
+`point') is calculated. Returns the new point or nil if the point
 is not on a run-on line."
   (when (scala-indent:run-on-line-p point strategy)
     (when point (goto-char point))
@@ -363,7 +363,7 @@ is not on a run-on line."
 
 (defun scala-indent:resolve-run-on-step (start &optional anchor)
   "Resolves the appropriate indent step for run-on line at position
-'start'"
+`start'"
   (save-excursion
     (goto-char anchor)
     (if (scala-syntax:looking-at-case-p)
@@ -396,9 +396,9 @@ is not on a run-on line."
 
 (defun scala-indent:forms-align-p (&optional point)
   "Returns scala-syntax:beginning-of-code-line for the line on
-which current point (or point 'point') is, if the line starts
-with one of 'yield', 'else', 'catch' and 'finally', otherwise
-nil. Also, the previous line must not be with '}'"
+which current point (or point `point') is, if the line starts
+with one of `yield', `else', `catch' and `finally', otherwise
+nil. Also, the previous line must not be with `}'"
   (save-excursion
     (when point (goto-char point))
     (scala-syntax:beginning-of-code-line)
@@ -410,9 +410,9 @@ nil. Also, the previous line must not be with '}'"
 (defun scala-indent:goto-forms-align-anchor (&optional point)
   "Moves back to the point whose column will be used as the
 anchor relative to which indenting of special words on beginning
-of the line on which point (or point 'point') is, or nul if not
-special word found. Special words include 'yield', 'else',
-'catch' and 'finally'"
+of the line on which point (or point `point') is, or nul if not
+special word found. Special words include `yield', `else',
+`catch' and `finally'"
   (let ((special-beg (scala-indent:forms-align-p point)))
     (when special-beg
       (goto-char special-beg)
@@ -492,7 +492,7 @@ point or nil if the point is not in a list element > 1."
 
 (defun scala-indent:for-enumerators-p (&optional point)
   "Returns the point after opening parentheses if the current
-point (or point 'point') is in a block of enumerators. Return nil
+point (or point `point') is in a block of enumerators. Return nil
 if not in a list of enumerators or at the first enumerator."
   (unless point (setq point (point)))
   (save-excursion
@@ -510,7 +510,7 @@ if not in a list of enumerators or at the first enumerator."
 
 (defun scala-indent:goto-for-enumerators-anchor (&optional point)
   "Moves back to the point whose column will be used to indent
-for enumerator at current point (or point 'point'). Returns the new
+for enumerator at current point (or point `point'). Returns the new
 point or nil if the point is not in a enumerator element > 1."
   (let ((enumerators-beg (scala-indent:for-enumerators-p point)))
     (when enumerators-beg
@@ -523,7 +523,7 @@ point or nil if the point is not in a enumerator element > 1."
 (defconst scala-indent:control-keywords-cond-re
   (regexp-opt '("if" "while" "for") 'words)
   "All the flow control keywords that are followed by a
-condition (or generators in the case of 'for') in parentheses.")
+condition (or generators in the case of `for') in parentheses.")
 
 (defconst scala-indent:control-keywords-other-re
   (regexp-opt '("else" "do" "yield" "try" "finally" "catch") 'words)
@@ -534,10 +534,10 @@ condition (or generators in the case of 'for') in parentheses.")
           "\\|" scala-indent:control-keywords-other-re "\\)"))
 
 (defun scala-indent:body-p (&optional point)
-  "Returns the position of '=' symbol, or one of the
+  "Returns the position of `=' symbol, or one of the
 scala-indent:control-keywords-re or
 scala-indent:control-keywords-cond-re keywords if current
-point (or point 'point) is on a line that follows said symbol or
+point (or point `point') is on a line that follows said symbol or
 keyword, or nil if not."
   (save-excursion
     (when point (goto-char point))
@@ -586,7 +586,7 @@ keyword, or nil if not."
 (defun scala-indent:goto-block-anchor (&optional point)
   "Moves back to the point whose column will be used as the
 anchor for calculating block indent for current point (or point
-'point'). Returns point or (point-min) if not inside a block."
+`point'). Returns point or (point-min) if not inside a block."
   (let ((block-beg (nth 1 (syntax-ppss
                            (scala-lib:point-after (beginning-of-line))))))
     (when block-beg
@@ -609,7 +609,7 @@ anchor for calculating block indent for current point (or point
 
 (defun scala-indent:resolve-block-step (start anchor)
   "Resolves the appropriate indent step for block line at position
-'start' relative to the block anchor 'anchor'."
+`start' relative to the block anchor `anchor'."
   (let
       ((lead (scala-indent:value-expression-lead start anchor)))
     (cond
@@ -638,7 +638,7 @@ anchor for calculating block indent for current point (or point
 
 (defun scala-indent:open-parentheses-line-p (&optional point)
   "Returns the position of the first character of the line,
-if the current point (or point 'point') is on a line that starts
+if the current point (or point `point') is on a line that starts
 with an opening parentheses, or nil if not."
   (save-excursion
     (when point (goto-char point))
@@ -648,7 +648,7 @@ with an opening parentheses, or nil if not."
 (defun scala-indent:goto-open-parentheses-anchor (&optional point)
   "Moves back to the point whose column will be used as the
 anchor for calculating opening parenthesis indent for the current
-point (or point 'point'). Returns point or nil, if line does not
+point (or point `point'). Returns point or nil, if line does not
 start with opening parenthesis."
   ;; There are five cases we need to consider:
   ;; 1. curry parentheses, i.e. 2..n parentheses groups.
@@ -691,7 +691,7 @@ start with opening parenthesis."
 
 (defun scala-indent:resolve-open-parentheses-step (start anchor)
   "Resolves the appropriate indent step for an open paren
-anchored at 'anchor'."
+anchored at `anchor'."
   (cond ((scala-syntax:looking-back-token ")")
 ;         (message "curry")
          0)
@@ -749,7 +749,7 @@ nothing was applied."
 
 (defun scala-indent:calculate-indent-for-line (&optional point)
   "Calculate the appropriate indent for the current point or the
-point 'point'. Returns the new column, or nil if the indent
+point `point'. Returns the new column, or nil if the indent
 cannot be determined."
   (or (scala-indent:apply-indent-rules
        `((scala-indent:goto-line-comment-anchor 0)
@@ -891,7 +891,7 @@ the line."
 (defun scala-indent:fix-scaladoc-close ()
   "This function is meant to be used with post-self-insert-hook.
 
-Changes 'asterisk space slash' to 'asterisk slash' in a
+Changes \"asterisk space slash\" to \"asterisk slash\" in a
 multi-line comment if position is right after that slash and
 scala-indent:add-space-for-scaladoc-asterisk is t."
   (let ((state (syntax-ppss)))

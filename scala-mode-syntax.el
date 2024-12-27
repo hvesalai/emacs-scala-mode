@@ -506,8 +506,8 @@
   nil)
 
 (defmacro scala-syntax:put-syntax-table-property (match-group value)
-  "Add 'syntax-table entry 'value' to the region marked by the
-match-group 'match-group'"
+  "Add syntax-table entry `value' to the region marked by the
+match-group `match-group'"
   `(put-text-property (match-beginning ,match-group)
                       (match-end ,match-group)
                       'syntax-table
@@ -797,7 +797,7 @@ one."
 
 (defun scala-syntax:newlines-disabled-p (&optional point)
   "Return true if newlines are disabled at the current point (or
-point 'point') as specified by SLS chapter 1.2"
+point `point') as specified by SLS chapter 1.2"
   ;; newlines are disabled if
   ;; - in '()' or '[]'
   ;; - between 'case' and '=>'
@@ -936,9 +936,9 @@ is returned, otherwise nil is returned"
 
 (defun scala-syntax:list-p (&optional point)
   "Returns the start of the list, if the current point (or point
-'point') is on the first line of a list element > 1, or nil if
+`point') is on the first line of a list element > 1, or nil if
 not. A list must be either enclosed in parentheses or start with
-'val', 'var' or 'import'."
+`val', `var' or `import'."
   (save-excursion
     ;; first check that the previous line ended with ','
     (when point (goto-char point))
@@ -986,7 +986,7 @@ not. A list must be either enclosed in parentheses or start with
 ;; Functions to help with beginning and end of definitions.
 
 (defun scala-syntax:backward-sexp-forcing ()
-  (condition-case ex (backward-sexp) ('error (backward-char))))
+  (condition-case nil (backward-sexp) (error (backward-char))))
 
 (defun scala-syntax:forward-sexp-or-next-line ()
   (interactive)
@@ -1026,7 +1026,7 @@ val a, b = (1, 2)
      (scala-syntax:movement-function-until-cond-function
       (lambda () (or (looking-at "[[:space:]]*[{=]")
 		     (looking-at scala-syntax:all-definition-re)))
-      (lambda () (condition-case ex (scala-syntax:forward-sexp-or-next-line) ('error nil)))))))
+      (lambda () (condition-case nil (scala-syntax:forward-sexp-or-next-line) (error nil)))))))
 
 (defun scala-syntax:handle-brace-equals-or-next ()
   (cond ((eobp) nil)
