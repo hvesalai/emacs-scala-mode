@@ -1,4 +1,4 @@
-;;;; scala-mode-syntax.el - Major mode for editing scala, syntax
+;;;; scala-mode-syntax.el - Major mode for editing scala, syntax -*- lexical-binding: t -*-
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 

@@ -1,4 +1,4 @@
-;;; scala-mode.el - Major mode for editing scala, indenting
+;;; scala-mode.el - Major mode for editing scala, indenting -*- lexical-binding: t -*-
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 

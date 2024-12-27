@@ -1,4 +1,4 @@
-;;; scala-mode-prettify-symbols.el --- Prettifying scala symbols -*- coding: utf-8; -*-
+;;; scala-mode-prettify-symbols.el --- Prettifying scala symbols -*- coding: utf-8; lexical-binding: t -*-
 
 ;; Copyright (c) 2016 Merlin Göttlinger
 ;; License: http://www.gnu.org/licenses/gpl.html
@@ -92,4 +92,4 @@ cats/scalaz/...).")
   :group 'scala)
 
 (provide 'scala-mode-prettify-symbols)
-;;; scala-mode-prettify-symbols.el ends here
+;;; scala-mode-prettify-symbols.el ends here -*- lexical-binding: t -*-

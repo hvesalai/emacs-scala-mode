@@ -1,4 +1,4 @@
-;;; scala-mode.el --- Major mode for editing Scala
+;;; scala-mode.el --- Major mode for editing Scala -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2012 Heikki Vesalainen
 
@@ -182,4 +182,4 @@ When started, runs `scala-mode-hook'.
   (modify-coding-system-alist 'file "\\.\\(scala\\|sbt\\|worksheet\\.sc\\)\\'" 'utf-8))
 
 (provide 'scala-mode)
-;;; scala-mode.el ends here
+;;; scala-mode.el ends here -*- lexical-binding: t -*-

@@ -1,4 +1,4 @@
-;;; scala-mode-paragraph.el - Major mode for editing scala, paragraph
+;;; scala-mode-paragraph.el - Major mode for editing scala, paragraph -*- lexical-binding: t -*-
 ;;; detection and fill
 ;;; Copyright (c) 2012 Heikki Vesalainen For information on the License,
 ;;; see the LICENSE file

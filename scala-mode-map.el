@@ -1,4 +1,4 @@
-;;; scala-mode-map.el - Major mode for editing scala, keyboard map
+;;; scala-mode-map.el - Major mode for editing scala, keyboard map -*- lexical-binding: t -*-
 ;;; Copyright (c) 2012 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 

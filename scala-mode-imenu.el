@@ -1,4 +1,4 @@
-;;; scala-mode-imenu.el - Major mode for editing scala
+;;; scala-mode-imenu.el - Major mode for editing scala -*- lexical-binding: t -*-
 ;;; Copyright (c) 2014 Heikki Vesalainen
 ;;; For information on the License, see the LICENSE file
 
@@ -131,4 +131,4 @@
 
 
 (provide 'scala-mode-imenu)
-;;; scala-mode-imenu.el ends here
+;;; scala-mode-imenu.el ends here -*- lexical-binding: t -*-

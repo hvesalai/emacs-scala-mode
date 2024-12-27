@@ -1,4 +1,4 @@
-;;; scala-organise.el --- organise scala imports -*- lexical-binding: t -*-
+;;; scala-organise.el --- organise scala imports -*- lexical-binding: t -*- -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Sam Halliday
 ;; License: GPL 3 or any later version
@@ -100,4 +100,4 @@ converted into a single element list before being appended."
     (cons (cons key update) alist)))
 
 (provide 'scala-organise)
-;;; scala-organise.el ends here
+;;; scala-organise.el ends here -*- lexical-binding: t -*-
