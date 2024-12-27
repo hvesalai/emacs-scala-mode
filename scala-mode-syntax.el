@@ -751,8 +751,7 @@ further than max-chars starting after skipping any ignorable."
   (save-excursion
     ;; skip back all comments
     (scala-syntax:skip-backward-ignorable)
-    (let ((end (point))
-          (limit (when max-chars (- (point) max-chars))))
+    (let ((limit (when max-chars (- (point) max-chars))))
       ;; skip back punctuation or ids (words and related symbols and delimiters)
       (if (or (/= 0 (skip-chars-backward scala-syntax:delimiter-group limit))
               (/= 0 (skip-syntax-backward "." limit))
