@@ -500,7 +500,7 @@
 
     (setq scala-syntax:syntax-table syntab)))
 
-(defun scala-syntax:propertize-extend-region (start end)
+(defun scala-syntax:propertize-extend-region (_start _end)
   "See syntax-propertize-extend-region-functions"
   ;; nothing yet
   nil)
