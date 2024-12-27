@@ -922,10 +922,6 @@ of a line inside a multi-line comment "
       (insert "*")
       (scala-indent:indent-on-scaladoc-asterisk))))
 
-(defun scala-mode:indent-scaladoc-asterisk (&optional insert-space-p)
-  (message "scala-mode:indent-scaladoc-asterisk has been deprecated"))
-
-
 (defun scala-indent:fixup-whitespace ()
   "scala-mode version of `fixup-whitespace'"
   (interactive "*")
