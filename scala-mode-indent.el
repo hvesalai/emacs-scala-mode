@@ -583,7 +583,7 @@ keyword, or nil if not."
 ;;; Block
 ;;;
 
-(defun scala-indent:goto-block-anchor ()
+(defun scala-indent:goto-block-anchor (&optional point)
   "Moves back to the point whose column will be used as the
 anchor for calculating block indent for current point (or point
 `point'). Returns point or (point-min) if not inside a block."
