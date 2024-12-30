@@ -759,7 +759,7 @@ cannot be determined."
          (scala-indent:goto-list-anchor scala-indent:resolve-list-step)
          (scala-indent:goto-body-anchor scala-indent:resolve-body-step)
          (scala-indent:goto-run-on-anchor scala-indent:resolve-run-on-step)
-         (scala-indent:goto-block-anchor)
+         (scala-indent:goto-block-anchor scala-indent:resolve-block-step)
      )
        point)
       0))
