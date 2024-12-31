@@ -487,7 +487,7 @@ Does not continue past limit.
     (scala-font-lock:mark-floatingPointLiteral . font-lock-constant-face)
     (scala-font-lock:mark-integerLiteral . font-lock-constant-face)
 
-    (scala-syntax:interpolation-matcher 0 font-lock-variable-name-face t)
+    (scala-syntax:interpolation-matcher 1 font-lock-variable-name-face t)
 
     ))
 

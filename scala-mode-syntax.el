@@ -156,7 +156,9 @@
           "\\|" "null" "\\)"))
 
 (defconst scala-syntax:interpolation-re
-  (concat "\\(" "\\$"  scala-syntax:id-re "\\|" "\\${[^}\n\\\\]*}" "\\)"))
+  (concat "\\(?:\\=\\|[^\\$]\\)\\(?:\\$\\$\\)*\\(\\$"
+          (string-replace "\\$" "" scala-syntax:id-re)
+          "\\|" "\\${[^}\n\\\\]*}" "\\)"))
 
 (defun scala-syntax:interpolation-matcher (end)
   (let* ((pos nil)
