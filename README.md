@@ -306,6 +306,26 @@ val xs = for (i <- 1 to 10)
          yield i
 ```
 
+### Extra indentation for method or class declarations
+
+Provided by `scala-indent:scala-indent:defition-parameter-scaling-factor`
+
+When this variable is set to `2` (or any integer, default: 1) indention for method and class
+decloration `scala-indent:step` multiply by `2` as:
+
+```scala
+case class Foo(
+    x: String,
+    y: Int
+)
+
+def foo(
+    x: String,
+    y: Int
+): Unit
+```
+
+
 ## Prettify-Symbols
 
 Scala-mode has a preconfigured list of prettify-symbols rules. The

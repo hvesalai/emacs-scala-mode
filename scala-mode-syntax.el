@@ -717,6 +717,17 @@ stableId"
          (forward-line -1)
          (looking-at-p scala-syntax:empty-line-re))))
 
+(defun scala-syntax:in-definition-parameter-list-p (anchor start)
+  "Return t if the (anchor, start) region is the parameter list
+of a definition(class or def)"
+  (save-excursion
+    (goto-char (or (nth 1 (syntax-ppss start)) 0))
+    (while (or (looking-at-p "\(")
+               (looking-at-p "\\["))
+      (backward-sexp))
+    (backward-sexp)
+    (looking-at-p "class\\|def")))
+
 (defun scala-syntax:skip-forward-ignorable ()
   "Moves forward over ignorable whitespace and comments. A
 completely empty line is not ignorable and will not be mobed over."
