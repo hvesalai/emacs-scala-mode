@@ -99,7 +99,7 @@
 (defconst scala-syntax:multiLineStringLiteral-end-re
   "\"\"+\\(\"\\)")
 (defconst scala-syntax:multiLineStringLiteral-re
-  (concat scala-syntax:multiLineStringLiteral-start-re
+  (concat "\\(\"\\)\"\"\\(.\\)*?"
           scala-syntax:multiLineStringLiteral-end-re))
 (defconst scala-syntax:stringLiteral-re
   (concat "\\(" scala-syntax:multiLineStringLiteral-re
